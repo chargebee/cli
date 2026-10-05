@@ -62,7 +62,7 @@
     "postinstall": "node scripts/postinstall.mjs"
   },
   "devDependencies": {
-    "@chargebee/code-sample-generator": "^1.0.1",
+    "@chargebee/code-sample-generator": "^1.0.2",
     "@clack/prompts": "^1.8.1",
     "@types/bun": "1.4.2",
     "chargebee": "^3.34.0",

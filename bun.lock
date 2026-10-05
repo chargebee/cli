@@ -5,7 +5,7 @@
     "": {
       "name": "chargebee-cli",
       "devDependencies": {
-        "@chargebee/code-sample-generator": "^1.0.1",
+        "@chargebee/code-sample-generator": "^1.0.2",
         "@clack/prompts": "^1.8.1",
         "@types/bun": "1.4.2",
         "chargebee": "^3.34.0",
@@ -15,7 +15,7 @@
     },
   },
   "packages": {
-    "@chargebee/code-sample-generator": ["@chargebee/code-sample-generator@1.0.1", "", { "dependencies": { "change-case": "^5.4.4", "dedent": "^1.7.0", "pluralize": "^8.0.0", "reserved-identifiers": "^1.0.0", "shiki": "^1.23.1" }, "peerDependencies": { "lucide-react": "^0.468.0", "react": "^18.2.0 || ^19.0.0", "react-dom": "^18.2.0 || ^19.0.0" }, "optionalPeers": ["lucide-react", "react", "react-dom"] }, "sha512-+MaGKRU44LahEQkLkTZ3oY0Yk6mogJi64jIzQTyzOD7mnuRH4mdPh7cMmZGln/jglJJ2u70Ggoq0R15zz84AQQ=="],
+    "@chargebee/code-sample-generator": ["@chargebee/code-sample-generator@1.0.2", "", { "dependencies": { "change-case": "^5.4.4", "dedent": "^1.7.0", "pluralize": "^8.0.0", "reserved-identifiers": "^1.0.0", "shiki": "^1.23.1" }, "peerDependencies": { "lucide-react": "^0.468.0", "react": "^18.2.0 || ^19.0.0", "react-dom": "^18.2.0 || ^19.0.0" }, "optionalPeers": ["lucide-react", "react", "react-dom"] }, "sha512-7L6DfMR+vLfIs3HMZrp3eR0DWARp6C7173pZb5RN/vxIcP6Lnk9OL44cBcAAhjdb4zUSi2yGp2dCVBjoVZiwoA=="],
 
     "@clack/core": ["@clack/core@1.5.1", "", { "dependencies": { "fast-wrap-ansi": "^0.2.0", "sisteransi": "^1.0.5" } }, "sha512-iHTrHA8MtVuLl2TfZySmcKv1qO2PoyC9Z7pfSDozEuV5vtY3/wcOPKJXlqJ5Oq2Cx5DDGQGAMVx6HZfRRoVEbQ=="],
 
