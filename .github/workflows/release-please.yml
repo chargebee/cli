@@ -1,0 +1,365 @@
+name: Release
+
+# Release Please owns the full release path:
+#   1. After CI and installation checks pass for the same main commit,
+#      it maintains a "release PR" that bumps
+#      package.json + CHANGELOG.md from feat: and fix: commits since the
+#      last release. docs, test, ci, build, and chore commits do not open one.
+#   2. Merging that release PR creates the git tag `vX.Y.Z` and a GitHub Release.
+#   3. The build / upload / publish jobs below run only on that event
+#      (release_created), attach the compiled binaries, and publish to npm.
+#
+# It is self-contained on purpose: a tag pushed by the default GITHUB_TOKEN does
+# NOT trigger other workflows, so the release steps must live in the same run as
+# release-please rather than relying on a separate tag-triggered workflow.
+
+on:
+  push:
+    branches: [main]
+
+# No blanket write token. Each job requests only the scopes it needs, so a
+# compromised build/publish dependency can't reach a repo-write credential.
+permissions: {}
+
+jobs:
+  # CI and install smoke run independently on the same push. Wait for their
+  # exact-SHA results before Release Please can create a tag/GitHub Release.
+  # Neither validation workflow depends on Release, avoiding a dependency cycle.
+  validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6  # v2.2.0
+        with:
+          bun-version: "1.4.2"
+      - name: Require successful CI and install checks for this main commit
+        run: bun run ci:wait
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+  release-please:
+    # This also holds release-PR maintenance until main is green. All downstream
+    # artifact uploads and npm publishing inherit the gate through this job.
+    needs: validation
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    # Root package (manifest key ".") emits bare outputs, not path-scoped
+    # `cli--release_created` / `cli--tag_name`.
+    outputs:
+      release_created: ${{ steps.rp.outputs.release_created }}
+      tag_name: ${{ steps.rp.outputs.tag_name }}
+    steps:
+      - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7  # v5.0.0
+        id: rp
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  build:
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        target:
+          - bun-darwin-arm64
+          - bun-darwin-x64
+          - bun-linux-arm64
+          - bun-linux-x64
+          - bun-windows-x64
+        include:
+          - target: bun-darwin-arm64
+            outfile: chargebee-cli-darwin-arm64
+          - target: bun-darwin-x64
+            outfile: chargebee-cli-darwin-x64
+          - target: bun-linux-arm64
+            outfile: chargebee-cli-linux-arm64
+          - target: bun-linux-x64
+            outfile: chargebee-cli-linux-x64
+          - target: bun-windows-x64
+            outfile: chargebee-cli-windows-x64.exe
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6  # v2.2.0
+        with:
+          bun-version: "1.4.2"
+
+      - run: bun install --frozen-lockfile
+
+      - name: Build ${{ matrix.target }}
+        run: bun run build --target=${{ matrix.target }}
+        env:
+          VERSION: ${{ needs.release-please.outputs.tag_name }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: ${{ matrix.outfile }}
+          path: dist/${{ matrix.outfile }}
+
+  upload-assets:
+    needs: [release-please, build]
+    if: needs.release-please.outputs.release_created == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        with:
+          path: dist/
+          merge-multiple: true
+
+      # install.sh / install.ps1 / `chargebee update` all verify this against
+      # the downloaded asset before running it.
+      - name: Generate checksums
+        run: |
+          cd dist
+          sha256sum * > SHA256SUMS.txt
+
+      # The binaries embed @chargebee/code-sample-generator, so its EULA is
+      # attached next to them.
+      - name: Attach binaries and third-party license to the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${{ needs.release-please.outputs.tag_name }}" dist/* licenses/code-sample-generator.txt --clobber --repo "$GITHUB_REPOSITORY"
+
+  publish:
+    # Depend on upload-assets so npm never ships a version whose release binaries
+    # failed to build/attach. Public package (`access: public`).
+    needs: [release-please, upload-assets]
+    if: needs.release-please.outputs.release_created == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020  # v7.0.0
+        with:
+          node-version: "22.23.2"
+          registry-url: "https://registry.npmjs.org"
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6  # v2.2.0
+        with:
+          bun-version: "1.4.2"
+
+      - run: bun install --frozen-lockfile
+
+      - name: Report npm toolchain
+        run: node --version && npm --version
+
+      # Build before npm reads package metadata (including bin and README).
+      # The publish command below skips lifecycle scripts because this build
+      # and packing-list check must describe exactly what will be published.
+      - name: Build and validate the npm package
+        run: |
+          bun run build:npm
+          npm pack --dry-run --ignore-scripts --json > "$RUNNER_TEMP/npm-pack.json"
+          node scripts/check-npm-package.mjs < "$RUNNER_TEMP/npm-pack.json"
+
+      - name: Select npm dist-tag
+        id: npm-dist-tag
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          if [[ "$VERSION" == *-* ]]; then
+            echo "tag=beta" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=latest" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Public GitHub Actions builds publish with npm provenance.
+      - name: Publish to npm
+        run: |
+          if [[ "${{ github.event.repository.private }}" == "false" ]]; then
+            npm publish --ignore-scripts --tag "${{ steps.npm-dist-tag.outputs.tag }}" --provenance
+          else
+            npm publish --ignore-scripts --tag "${{ steps.npm-dist-tag.outputs.tag }}"
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Wait for the published version
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          node scripts/wait-for-npm-release.mjs "@chargebee/cli@${VERSION}"
+
+      # Inspect the registry tarball, not just the local packing list. This is a
+      # required check: npm's separate README index can lag a valid publication.
+      - name: Verify the published package contents
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          npm pack "@chargebee/cli@${VERSION}" --dry-run --ignore-scripts --json > "$RUNNER_TEMP/published-pack.json"
+          node scripts/check-npm-package.mjs < "$RUNNER_TEMP/published-pack.json"
+
+  # npm owns this index; an empty field does not mean the tarball lacks a README.
+  # Keep the probe visible without blocking the actual published-install tests.
+  npm-readme-metadata:
+    needs: [release-please, publish]
+    if: needs.release-please.outputs.release_created == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020  # v7.0.0
+        with:
+          node-version: "22.23.2"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Check npm README indexing
+        id: readme
+        continue-on-error: true
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          # Indexing may take much longer than installation availability. Bound
+          # this advisory probe; a later read-only check can confirm recovery.
+          NPM_RELEASE_ATTEMPTS: "6"
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          node scripts/wait-for-npm-release.mjs "@chargebee/cli@${VERSION}" readme
+
+      - name: Report unavailable README metadata
+        if: steps.readme.outcome == 'failure'
+        run: |
+          echo "::warning::The published package contents passed validation, but npm README metadata could not be verified. See the README indexing step; check npm registry indexing or access before attempting another release."
+          cat >> "$GITHUB_STEP_SUMMARY" <<'EOF'
+          ### npm README metadata needs attention
+
+          The published package contains a README and CLI entry point. The separate
+          npm README metadata probe failed; its logs distinguish missing metadata
+          from authentication or registry errors. Published-install tests run independently.
+
+          Recheck with `node scripts/wait-for-npm-release.mjs @chargebee/cli@<version> readme`.
+          If the metadata remains empty, contact npm support about README indexing.
+          This check does not verify npmjs.com rendering. Do not republish the same version.
+          EOF
+
+  github-install-smoke:
+    needs: [release-please, upload-assets]
+    if: needs.release-please.outputs.release_created == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: install.sh from the GitHub Release
+        env:
+          CI: "1"
+          CHARGEBEE_CLI_VERSION: ${{ needs.release-please.outputs.tag_name }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          BIN_DIR="${RUNNER_TEMP}/cb-bin"
+          CONFIG="${RUNNER_TEMP}/cb-config"
+          mkdir -p "$BIN_DIR" "$CONFIG"
+          export CHARGEBEE_CLI_BIN_DIR="$BIN_DIR"
+          export CHARGEBEE_CONFIG_DIR="$CONFIG"
+          bash install.sh
+          echo "$BIN_DIR" >> "$GITHUB_PATH"
+          echo "CHARGEBEE_CONFIG_DIR=$CONFIG" >> "$GITHUB_ENV"
+
+      - name: Smoke and match the release tag
+        run: bash scripts/install-smoke-assert.sh "${{ needs.release-please.outputs.tag_name }}"
+
+  windows-install-smoke:
+    needs: [release-please, upload-assets]
+    if: needs.release-please.outputs.release_created == 'true'
+    runs-on: windows-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: install.ps1 from the GitHub Release
+        shell: bash
+        env:
+          CI: "1"
+          CHARGEBEE_CLI_VERSION: ${{ needs.release-please.outputs.tag_name }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          BIN_DIR="${RUNNER_TEMP}/cb-bin"
+          CONFIG="${RUNNER_TEMP}/cb-config"
+          mkdir -p "$BIN_DIR" "$CONFIG"
+          export CHARGEBEE_CLI_BIN_DIR="$BIN_DIR"
+          export CHARGEBEE_CONFIG_DIR="$CONFIG"
+          pwsh -NoProfile -File install.ps1
+          echo "$BIN_DIR" >> "$GITHUB_PATH"
+          echo "CHARGEBEE_CONFIG_DIR=$CONFIG" >> "$GITHUB_ENV"
+
+      - name: Smoke and match the release tag
+        run: bash scripts/install-smoke-assert.sh "${{ needs.release-please.outputs.tag_name }}"
+
+  npm-install-smoke:
+    needs: [release-please, publish]
+    if: needs.release-please.outputs.release_created == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        # Every Node line the package declares (engines >=22) (#106).
+        node: ["22", "24"]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020  # v7.0.0
+        with:
+          node-version: ${{ matrix.node }}
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install the published package globally
+        env:
+          CI: "1"
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          TAG="${{ needs.release-please.outputs.tag_name }}"
+          VER="${TAG#v}"
+          PREFIX="${RUNNER_TEMP}/npm-global"
+          CONFIG="${RUNNER_TEMP}/cb-config"
+          mkdir -p "$PREFIX" "$CONFIG"
+          export CHARGEBEE_CONFIG_DIR="$CONFIG"
+          echo "CHARGEBEE_CONFIG_DIR=$CONFIG" >> "$GITHUB_ENV"
+          echo "EXPECT_VER=$VER" >> "$GITHUB_ENV"
+          node scripts/wait-for-npm-release.mjs "@chargebee/cli@${VER}"
+          node scripts/npm-global-install.mjs "$PREFIX" "@chargebee/cli@${VER}"
+          echo "${PREFIX}/bin" >> "$GITHUB_PATH"
+
+      - name: Smoke the registry install
+        run: bash scripts/install-smoke-assert.sh "${EXPECT_VER}"

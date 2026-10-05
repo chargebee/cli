@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+chargebee-cli
+chargebee-cli-*
+*.tsbuildinfo
+.cache/
+.tmp/
+coverage/
+
+# Environment / secrets
+.env
+.env.*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Local Claude Code settings / allowlists (do not commit)
+.claude/
+
+# Chargebee AI skill installs (`chargebee skills add` into the repo)
+.cursor/skills/
+
+docs/

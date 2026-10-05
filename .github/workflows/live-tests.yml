@@ -1,0 +1,79 @@
+name: Live integration tests
+
+# Trusted, compiled-CLI integration tests against US fixtures.
+# SITE_1/KEY_1 and SITE_2/KEY_2: two distinct US test sites; both may use PC2.
+# CB_LIVE_SITE/KEY: dedicated live-mode validation site with a read-only key.
+# The only successful remote mutations are customer create and cleanup delete
+# on test sites. LIVE creation must be rejected by the CLI.
+# Public US tunnel deployment is required for event-forwarding verification.
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Daily at 06:00 UTC.
+    - cron: "0 6 * * *"
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: live-tests
+  cancel-in-progress: false
+
+jobs:
+  validation:
+    uses: ./.github/workflows/source-checks.yml
+    permissions:
+      contents: read
+      pull-requests: write
+
+  live:
+    needs: validation
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      # Tunnel sessions share the fixture site; serialize OS runs.
+      max-parallel: 1
+      matrix:
+        include:
+          - os: ubuntu-latest
+            binary: dist/chargebee-cli
+          - os: macos-latest
+            binary: dist/chargebee-cli
+          - os: windows-latest
+            binary: dist/chargebee-cli.exe
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6  # v2.2.0
+        with:
+          bun-version: "1.4.2"
+
+      - run: bun install --frozen-lockfile
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020  # v7.0.0
+        with:
+          node-version: "22"
+
+      - name: Compile native binary
+        run: bun run build --outfile=${{ matrix.binary }}
+
+      - name: Test live flows with native credential storage
+        uses: ./.github/actions/native-credentials
+        with:
+          suite: test:live
+        env:
+          CB_REQUIRE_BINARY: "1"
+          CHARGEBEE_CLI_BINARY: ${{ github.workspace }}/${{ matrix.binary }}
+          CB_REQUIRE_LIVE: "1"
+          CB_TEST_SITE_1: ${{ secrets.CB_TEST_SITE_1 }}
+          CB_TEST_KEY_1: ${{ secrets.CB_TEST_KEY_1 }}
+          CB_TEST_SITE_2: ${{ secrets.CB_TEST_SITE_2 }}
+          CB_TEST_KEY_2: ${{ secrets.CB_TEST_KEY_2 }}
+          CB_LIVE_SITE: ${{ secrets.CB_LIVE_SITE }}
+          CB_LIVE_KEY: ${{ secrets.CB_LIVE_KEY }}

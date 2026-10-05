@@ -1,0 +1,169 @@
+name: Install-channel smoke
+
+# Snapshot installs from this commit's artifacts — not GitHub's latest
+# release (still an older cut) and not the npm registry.
+# Real curl|bash / npm -g from the registry run in release-please.yml
+# after assets are uploaded.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  contents: read
+
+concurrency:
+  # Pending runs can be replaced even with cancel-in-progress: false. Give each
+  # main run its own group so every commit can satisfy the release gate.
+  group: install-smoke-${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  github-install:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6  # v2.2.0
+        with:
+          bun-version: "1.4.2"
+
+      - run: bun install --frozen-lockfile
+
+      - name: Compile native binary
+        run: |
+          bun build --compile --minify src/index.ts \
+            --outfile dist/chargebee-cli \
+            --define "process.env.VERSION='0.0.0-ci'"
+
+      - name: install.sh from the compiled file
+        env:
+          CI: "1"
+        run: |
+          BIN_DIR="${RUNNER_TEMP}/cb-bin"
+          CONFIG="${RUNNER_TEMP}/cb-config"
+          mkdir -p "$BIN_DIR" "$CONFIG"
+          export CHARGEBEE_CLI_INSTALL_FILE="${PWD}/dist/chargebee-cli"
+          export CHARGEBEE_CLI_BIN_DIR="$BIN_DIR"
+          export CHARGEBEE_CONFIG_DIR="$CONFIG"
+          bash install.sh
+          echo "$BIN_DIR" >> "$GITHUB_PATH"
+          echo "CHARGEBEE_CONFIG_DIR=$CONFIG" >> "$GITHUB_ENV"
+          test "$(tr -d '[:space:]' < "$CONFIG/install-method")" = "github"
+
+      - name: Smoke the installed binary
+        run: bash scripts/install-smoke-assert.sh
+
+  npm-install:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        node: ["22", "24"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020  # v7.0.0
+        with:
+          node-version: ${{ matrix.node }}
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6  # v2.2.0
+        with:
+          bun-version: "1.4.2"
+
+      - run: bun install --frozen-lockfile
+
+      - name: Pack and install the tarball globally
+        env:
+          CI: "1"
+        run: |
+          bun run build:npm
+          npm pack
+          PREFIX="${RUNNER_TEMP}/npm-global"
+          CONFIG="${RUNNER_TEMP}/cb-config"
+          mkdir -p "$PREFIX" "$CONFIG"
+          export CHARGEBEE_CONFIG_DIR="$CONFIG"
+          echo "CHARGEBEE_CONFIG_DIR=$CONFIG" >> "$GITHUB_ENV"
+          shopt -s nullglob
+          tarballs=(chargebee-cli-*.tgz)
+          test "${#tarballs[@]}" -eq 1
+          node scripts/npm-global-install.mjs "$PREFIX" "./${tarballs[0]}"
+          echo "${PREFIX}/bin" >> "$GITHUB_PATH"
+          echo "${PREFIX}" >> "$GITHUB_PATH"
+
+      - name: Smoke the npm-global CLI
+        run: bash scripts/install-smoke-assert.sh
+
+      - name: install-method is npm
+        run: |
+          marker="${CHARGEBEE_CONFIG_DIR}/install-method"
+          test -f "$marker"
+          test "$(tr -d '[:space:]' < "$marker")" = "npm"
+
+  windows-install:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6  # v2.2.0
+        with:
+          bun-version: "1.4.2"
+
+      - run: bun install --frozen-lockfile
+
+      - name: Compile Windows exe
+        run: |
+          bun build --compile --minify src/index.ts \
+            --outfile dist/chargebee-cli.exe \
+            --define "process.env.VERSION='0.0.0-ci'"
+
+      - name: install.ps1 from the compiled file
+        env:
+          CI: "1"
+        run: |
+          BIN_DIR="${RUNNER_TEMP}/cb-bin"
+          CONFIG="${RUNNER_TEMP}/cb-config"
+          mkdir -p "$BIN_DIR" "$CONFIG"
+          export CHARGEBEE_CLI_INSTALL_FILE="${PWD}/dist/chargebee-cli.exe"
+          export CHARGEBEE_CLI_BIN_DIR="$BIN_DIR"
+          export CHARGEBEE_CONFIG_DIR="$CONFIG"
+          pwsh -NoProfile -File install.ps1
+          echo "$BIN_DIR" >> "$GITHUB_PATH"
+          echo "CHARGEBEE_CONFIG_DIR=$CONFIG" >> "$GITHUB_ENV"
+          test "$(tr -d '[:space:]' < "$CONFIG/install-method")" = "github"
+
+      - name: Smoke the installed chargebee.exe
+        run: bash scripts/install-smoke-assert.sh
+
+  required-checks:
+    name: Install required checks
+    if: ${{ always() }}
+    needs: [github-install, npm-install, windows-install]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify required job results
+        env:
+          GITHUB_INSTALL_RESULT: ${{ needs.github-install.result }}
+          NPM_INSTALL_RESULT: ${{ needs.npm-install.result }}
+          WINDOWS_INSTALL_RESULT: ${{ needs.windows-install.result }}
+        run: |
+          set -euo pipefail
+          require_result() {
+            if [[ "$2" != "$3" ]]; then
+              echo "::error::$1 returned $2; expected $3"
+              exit 1
+            fi
+          }
+          require_result github-install "$GITHUB_INSTALL_RESULT" success
+          require_result npm-install "$NPM_INSTALL_RESULT" success
+          require_result windows-install "$WINDOWS_INSTALL_RESULT" success

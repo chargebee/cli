@@ -1,0 +1,19 @@
+name: Native credential tests
+description: Provision an isolated credential session and run the selected test suite
+inputs:
+  suite:
+    description: Package script to run
+    required: false
+    default: test:os
+runs:
+  using: composite
+  steps:
+    - name: Install Linux credential service
+      if: runner.os == 'Linux'
+      shell: bash
+      run: sudo apt-get update && sudo apt-get install -y dbus-x11 gnome-keyring libsecret-tools
+    - name: Run with native credential storage
+      shell: bash
+      env:
+        CREDENTIAL_TEST_SUITE: ${{ inputs.suite }}
+      run: bash scripts/test-native-credentials.sh

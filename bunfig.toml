@@ -1,0 +1,9 @@
+[install]
+peer = false
+
+[test]
+coveragePathIgnorePatterns = ["**/commands/generated/**", "**/lib/test-support/**"]
+coverageReporter = ["text", "lcov"]
+# Do not set coverageThreshold or coverage = true. Bun 1.4.x `bun test --coverage`
+# then exits 1 after a green suite even when every file is above the floor
+# (oven-sh/bun#17028). Per-file 95% is enforced by src/tools/coverage-gate.ts.

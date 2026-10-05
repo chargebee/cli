@@ -1,0 +1,74 @@
+Chargebee Code Sample Generator — End User License Agreement
+
+Copyright (c) 2024-2026 Chargebee Inc. All rights reserved.
+
+This End User License Agreement ("Agreement") is a legal agreement between you
+(either an individual or an entity, "You") and Chargebee Inc. ("Chargebee")
+governing Your use of the @chargebee/code-sample-generator package as
+distributed through the npm registry, including its compiled, bundled, and
+distribution files (collectively, the "Package").
+
+BY INSTALLING, COPYING, OR OTHERWISE USING THE PACKAGE, YOU AGREE TO BE BOUND BY
+THE TERMS OF THIS AGREEMENT. IF YOU DO NOT AGREE TO THESE TERMS, DO NOT INSTALL
+OR USE THE PACKAGE.
+
+1. LICENSE GRANT
+   Subject to Your continued compliance with this Agreement, Chargebee grants
+   You a non-exclusive, non-transferable, non-sublicensable, worldwide,
+   royalty-free license to install and use the Package, in the form
+   distributed, solely for the purpose of developing, building, and operating
+   integrations with Chargebee products and services.
+
+2. OWNERSHIP AND RESERVATION OF RIGHTS
+   The Package is licensed, not sold. The Package, including its source code,
+   structure, organization, and all intellectual property rights therein, is
+   and remains the sole and exclusive property of Chargebee and is proprietary
+   and confidential. The source code of the Package is NOT licensed or
+   otherwise made available to You under this Agreement. All rights not
+   expressly granted to You in this Agreement are reserved by Chargebee.
+
+3. RESTRICTIONS
+   You shall not, and shall not permit or enable any third party to:
+   (a) reverse engineer, decompile, disassemble, or otherwise attempt to
+       discover, derive, or reconstruct the source code, underlying ideas, or
+       algorithms of the Package, except and only to the extent that such
+       activity is expressly permitted by applicable law notwithstanding this
+       limitation;
+   (b) modify, adapt, translate, or create derivative works based on the
+       Package;
+   (c) redistribute, republish, sublicense, sell, rent, lease, loan, or
+       otherwise make the Package available to any third party as a standalone
+       product or as part of a competing or substantially similar offering;
+   (d) remove, obscure, or alter any copyright, trademark, or other proprietary
+       rights notices contained in or accompanying the Package.
+
+4. NO WARRANTY
+   THE PACKAGE IS PROVIDED "AS IS" AND "AS AVAILABLE", WITHOUT WARRANTY OF ANY
+   KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, AND
+   NON-INFRINGEMENT. CHARGEBEE DOES NOT WARRANT THAT THE PACKAGE WILL BE
+   ERROR-FREE OR OPERATE WITHOUT INTERRUPTION.
+
+5. LIMITATION OF LIABILITY
+   TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL
+   CHARGEBEE BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR
+   PUNITIVE DAMAGES, OR FOR ANY LOSS OF PROFITS, REVENUE, DATA, OR BUSINESS,
+   ARISING OUT OF OR IN CONNECTION WITH THIS AGREEMENT OR THE USE OF OR
+   INABILITY TO USE THE PACKAGE, WHETHER IN AN ACTION OF CONTRACT, TORT, OR
+   OTHERWISE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+6. TERMINATION
+   This Agreement is effective until terminated. This Agreement and the license
+   granted herein will terminate automatically and immediately if You breach any
+   of its terms. Upon termination, You must cease all use of the Package and
+   destroy all copies in Your possession or control. Sections 2 through 7 survive
+   termination.
+
+7. GENERAL
+   This Agreement constitutes the entire agreement between You and Chargebee with
+   respect to the Package and supersedes all prior or contemporaneous
+   understandings regarding such subject matter. If any provision of this
+   Agreement is held to be unenforceable, the remaining provisions will remain in
+   full force and effect.
+
+For licensing inquiries, contact: legal@chargebee.com
