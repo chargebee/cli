@@ -461,6 +461,29 @@ export function registerCustomer(parent: Command): void {
     });
 
   cmd
+    .command("send-payment-request")
+    .argument("[customer-id]", "The unique identifier of the customer resource.")
+    .argument("[json]", "'-' reads a JSON object from stdin.")
+    .description("Send Payment Request Email")
+    .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
+    .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
+    .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs customer send-payment-request\n")
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+      const resource = takeResourceId(id, json, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "send_payment_request_email", opIdV1: "send_payment_request_email", method: "POST", uri: "/customers/{id}/send_payment_request", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "customer-id", pcVersionFlag: opts.pcVersion });
+      if (!resource.id) command.error("error: missing required argument 'customer-id'");
+      assertResourceId(resource.id, command);
+      await ensureWriteAllowed("POST");
+      try {
+        const client = await getClient();
+        const result = await (client as any).customer.sendPaymentRequest(resource.id, params);
+        printResult(result);
+      } catch (e) { handleSdkError(e); }
+    });
+
+  cmd
     .command("set-promotional-credits")
     .argument("[id]", "Resource identifier.")
     .argument("[json]", "'-' reads a JSON object from stdin.")

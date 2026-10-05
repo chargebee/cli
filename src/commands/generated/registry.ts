@@ -9,6 +9,8 @@ import { registerAlert } from "./alert.js";
 import { registerAlertStatus } from "./alert_status.js";
 import { registerAttachedItem } from "./attached_item.js";
 import { registerBusinessEntity } from "./business_entity.js";
+import { registerBusinessRule } from "./business_rule.js";
+import { registerBusinessRuleset } from "./business_ruleset.js";
 import { registerCard } from "./card.js";
 import { registerComment } from "./comment.js";
 import { registerConfiguration } from "./configuration.js";
@@ -21,6 +23,9 @@ import { registerCurrency } from "./currency.js";
 import { registerCustomer } from "./customer.js";
 import { registerCustomerEntitlement } from "./customer_entitlement.js";
 import { registerDifferentialPrice } from "./differential_price.js";
+import { registerDispute } from "./dispute.js";
+import { registerEinvoice } from "./einvoice.js";
+import { registerEmailLog } from "./email_log.js";
 import { registerEntitlement } from "./entitlement.js";
 import { registerEntitlementOverride } from "./entitlement_override.js";
 import { registerEstimate } from "./estimate.js";
@@ -48,6 +53,7 @@ import { registerOmnichannelSubscription } from "./omnichannel_subscription.js";
 import { registerOmnichannelSubscriptionItem } from "./omnichannel_subscription_item.js";
 import { registerOrder } from "./order.js";
 import { registerPaymentIntent } from "./payment_intent.js";
+import { registerPaymentSchedule } from "./payment_schedule.js";
 import { registerPaymentScheduleScheme } from "./payment_schedule_scheme.js";
 import { registerPaymentSource } from "./payment_source.js";
 import { registerPaymentVoucher } from "./payment_voucher.js";
@@ -97,6 +103,10 @@ export function registerAll(rootCmd: Command): void {
   { const cmd = rootCmd.commands.find(c => c.name() === "attached-item"); if (cmd) setCommandGroup(cmd, "resource"); }
   registerBusinessEntity(rootCmd);
   { const cmd = rootCmd.commands.find(c => c.name() === "business-entity"); if (cmd) setCommandGroup(cmd, "resource"); }
+  registerBusinessRule(rootCmd);
+  { const cmd = rootCmd.commands.find(c => c.name() === "business-rule"); if (cmd) setCommandGroup(cmd, "resource"); }
+  registerBusinessRuleset(rootCmd);
+  { const cmd = rootCmd.commands.find(c => c.name() === "business-ruleset"); if (cmd) setCommandGroup(cmd, "resource"); }
   registerCard(rootCmd);
   { const cmd = rootCmd.commands.find(c => c.name() === "card"); if (cmd) setCommandGroup(cmd, "resource"); }
   registerComment(rootCmd);
@@ -121,6 +131,12 @@ export function registerAll(rootCmd: Command): void {
   { const cmd = rootCmd.commands.find(c => c.name() === "customer-entitlement"); if (cmd) setCommandGroup(cmd, "resource"); }
   registerDifferentialPrice(rootCmd);
   { const cmd = rootCmd.commands.find(c => c.name() === "differential-price"); if (cmd) setCommandGroup(cmd, "resource"); }
+  registerDispute(rootCmd);
+  { const cmd = rootCmd.commands.find(c => c.name() === "dispute"); if (cmd) setCommandGroup(cmd, "resource"); }
+  registerEinvoice(rootCmd);
+  { const cmd = rootCmd.commands.find(c => c.name() === "einvoice"); if (cmd) setCommandGroup(cmd, "resource"); }
+  registerEmailLog(rootCmd);
+  { const cmd = rootCmd.commands.find(c => c.name() === "email-log"); if (cmd) setCommandGroup(cmd, "resource"); }
   registerEntitlement(rootCmd);
   { const cmd = rootCmd.commands.find(c => c.name() === "entitlement"); if (cmd) setCommandGroup(cmd, "resource"); }
   registerEntitlementOverride(rootCmd);
@@ -175,6 +191,8 @@ export function registerAll(rootCmd: Command): void {
   { const cmd = rootCmd.commands.find(c => c.name() === "order"); if (cmd) setCommandGroup(cmd, "resource"); }
   registerPaymentIntent(rootCmd);
   { const cmd = rootCmd.commands.find(c => c.name() === "payment-intent"); if (cmd) setCommandGroup(cmd, "resource"); }
+  registerPaymentSchedule(rootCmd);
+  { const cmd = rootCmd.commands.find(c => c.name() === "payment-schedule"); if (cmd) setCommandGroup(cmd, "resource"); }
   registerPaymentScheduleScheme(rootCmd);
   { const cmd = rootCmd.commands.find(c => c.name() === "payment-schedule-scheme"); if (cmd) setCommandGroup(cmd, "resource"); }
   registerPaymentSource(rootCmd);
