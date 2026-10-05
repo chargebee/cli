@@ -708,11 +708,11 @@ exit 1
 
 
 describe.skipIf(process.platform === "win32")("curl-piped installer", () => {
-  it("runs skill installation without a nested picker", () => {
+  it.each(["y", "n", ""])("honors terminal consent %j without a nested picker", (answer) => {
     const root = mkdtempSync(join(tmpdir(), "cb-install-curl-"));
     try {
-      const home = join(root, "home");
-      mkdirSync(home);
+      const targetHome = join(root, "home");
+      mkdirSync(targetHome);
       const binary = join(root, "fixture-cli");
       const marker = join(root, "skills-args");
       writeFileSync(binary, `#!/bin/bash
@@ -722,17 +722,64 @@ if [[ "$1" == skills ]]; then printf '%s\\n' "$*" > "$SKILLS_MARKER"; fi
 `);
       chmodSync(binary, 0o755);
 
-      const script = join(root, "install.sh");
-      writeFileSync(script, readFileSync(INSTALL_SH, "utf8").replace(/main "\$@"\s*$/, `
-onboarding_can_prompt() { return 0; }
-onboarding_prompt_yn() { [[ "$1" == "Install the Chargebee CLI skill for your coding agent?" ]]; }
-main "$@"
-`));
-
-      const proc = Bun.spawnSync(["bash", "-c", 'curl -fsSL "file://$INSTALL_SCRIPT" | bash'], {
+      // Keep the installer and its /dev/tty prompts intact. A PTY supplies the
+      // keyboard while curl supplies Bash's stdin, as in a user's terminal.
+      const python = `
+import os, pty, select, signal, sys, time
+pid, fd = pty.fork()
+if pid == 0:
+    os.execv("/bin/bash", ["bash", "-c", 'curl -fsSL "file://$INSTALL_SCRIPT" | bash'])
+output = b""
+skill_answered = alias_answered = finished = False
+try:
+    deadline = time.monotonic() + 20
+    while time.monotonic() < deadline:
+        ready, _, _ = select.select([fd], [], [], 0.1)
+        if ready:
+            try:
+                data = os.read(fd, 65536)
+            except OSError:
+                data = b""
+            if not data:
+                # The terminal can close just before waitpid reports exit.
+                time.sleep(0.01)
+            output += data
+            if not skill_answered and b"all detected coding agents? [Y/n]" in output:
+                assert not os.path.exists(os.environ["SKILLS_MARKER"]), "Skills ran before consent"
+                os.write(fd, (os.environ["SKILL_ANSWER"] + "\\n").encode())
+                skill_answered = True
+            if not alias_answered and b"Add a cb shortcut for the chargebee command? [Y/n]" in output:
+                os.write(fd, b"n\\n")
+                alias_answered = True
+        done, status = os.waitpid(pid, os.WNOHANG)
+        if done:
+            finished = True
+            break
+    if not finished:
+        done, status = os.waitpid(pid, os.WNOHANG)
+        finished = bool(done)
+    sys.stdout.buffer.write(output)
+    assert finished, "Installer did not finish"
+    assert skill_answered and alias_answered, "Installer did not show both prompts"
+    sys.exit(os.waitstatus_to_exitcode(status))
+finally:
+    os.close(fd)
+    if not finished:
+        # Kill the pipeline too, so a stalled child cannot outlive this test.
+        try:
+            os.killpg(pid, signal.SIGKILL)
+        except (ProcessLookupError, PermissionError):
+            os.kill(pid, signal.SIGKILL)
+        os.waitpid(pid, 0)
+`;
+      const proc = Bun.spawnSync(["/usr/bin/python3", "-c", python], {
         env: hermeticEnv({
-          HOME: home,
-          INSTALL_SCRIPT: script,
+          HOME: targetHome,
+          TERM: "xterm",
+          CI: "",
+          CHARGEBEE_CLI_NO_ONBOARDING: "",
+          INSTALL_SCRIPT: INSTALL_SH,
+          SKILL_ANSWER: answer,
           SKILLS_MARKER: marker,
           CHARGEBEE_CLI_INSTALL_FILE: binary,
           CHARGEBEE_CLI_BIN_DIR: join(root, "bin"),
@@ -741,7 +788,12 @@ main "$@"
         stdin: "ignore", stdout: "pipe", stderr: "pipe", timeout: 30_000,
       });
       expect(proc.exitCode, proc.stdout.toString() + proc.stderr.toString()).toBe(0);
-      expect(readFileSync(marker, "utf8").trim()).toBe("skills add --global --yes");
+      if (answer === "n") {
+        expect(existsSync(marker)).toBe(false);
+        expect(proc.stdout.toString()).toContain("Later: chargebee skills add --global");
+      } else {
+        expect(readFileSync(marker, "utf8").trim()).toBe("skills add --global --yes");
+      }
       expect(proc.stdout.toString()).toContain("Get started:");
     } finally {
       rmSync(root, { recursive: true, force: true });

@@ -300,7 +300,7 @@ main() {
       SKILL_SCOPE=(--path "$TARGET_HOME" --no-gitignore)
     fi
     echo ""
-    if onboarding_prompt_yn "Install the Chargebee CLI skill for your coding agent?"; then
+    if onboarding_prompt_yn "Install the Chargebee CLI skill for all detected coding agents?"; then
       # A nested Bun picker cannot read /dev/tty reliably when curl feeds this script to bash.
       # The answer above authorizes installation for every detected agent.
       run_as_target_user "$CHARGEBEE" skills add "${SKILL_SCOPE[@]}" --yes || true
