@@ -6,7 +6,8 @@ import { Option, type Command } from "commander";
 import { getClient, ensureWriteAllowed, ensureCatalogAllowed } from "../../lib/api/sdk.js";
 import { handleSdkError, printResult } from "../../lib/api/print.js";
 import { assertResourceId, handleCodeSample } from "../../lib/api/generated-command.js";
-import { loadOperationParams, takeResourceId, readJsonMarker } from "../../lib/api/stdin-params.js";
+import { warnBareListFilters } from "../../lib/codesample/index.js";
+import { loadOperationParams, takeResourceId, readJsonMarker, warnBareJsonFilters } from "../../lib/api/stdin-params.js";
 
 export function registerPaymentScheduleScheme(parent: Command): void {
   const cmd = parent
@@ -55,6 +56,29 @@ export function registerPaymentScheduleScheme(parent: Command): void {
       try {
         const client = await getClient();
         const result = await (client as any).paymentScheduleScheme.delete(resource.id, params);
+        printResult(result);
+      } catch (e) { handleSdkError(e); }
+    });
+
+  cmd
+    .command("list")
+    .argument("[json]", "'-' reads a JSON object from stdin.")
+    .description("List payment schedule schemes")
+    .option("-d, --data <pairs...>", "Parameters as key=value. List filters require an operator suffix (id[is]=…). Bare keys: limit, offset, include_deleted.")
+    .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
+    .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .addHelpText("after", "\n\u001b[1mLIST FILTERS\u001b[0m\n  Filter fields need an operator suffix: [is], [in], [starts_with], [between], [gt], [lt], ...\n  Pagination uses bare keys: -d limit=10\n  See https://apidocs.chargebee.com/docs/api/list-ops\n  Per-resource Filter Params: chargebee docs payment-schedule-scheme list")
+    .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs payment-schedule-scheme list\n")
+    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+      const fromStdin = readJsonMarker(json, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "payment-schedule-scheme list");
+      if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "list_payment_schedule_schemes", opIdV1: "", method: "GET", uri: "/payment_schedule_schemes", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
+      if (fromStdin) warnBareJsonFilters(params, "payment-schedule-scheme");
+      else warnBareListFilters(opts.data ?? [], "payment-schedule-scheme");
+      try {
+        const client = await getClient();
+        const result = await (client as any).paymentScheduleScheme.list(params);
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
