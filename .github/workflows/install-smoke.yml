@@ -145,10 +145,26 @@ jobs:
       - name: Smoke the installed chargebee.exe
         run: bash scripts/install-smoke-assert.sh
 
+  # CI=1 deliberately skips prompts in the snapshot jobs above. Exercise the
+  # released executable through real Windows console input in both PS editions.
+  windows-terminal-install:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        shell: [powershell, pwsh]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - name: Install ConPTY test driver
+        run: python -m pip install --disable-pip-version-check pywinpty==3.0.5
+      - name: Test released Windows installer with real terminal input
+        run: python src/tests/native/windows-install-terminal.py --shell ${{ matrix.shell }} --release v1.4.0
+
   required-checks:
     name: Install required checks
     if: ${{ always() }}
-    needs: [github-install, npm-install, windows-install]
+    needs: [github-install, npm-install, windows-install, windows-terminal-install]
     runs-on: ubuntu-latest
     steps:
       - name: Verify required job results
@@ -156,6 +172,7 @@ jobs:
           GITHUB_INSTALL_RESULT: ${{ needs.github-install.result }}
           NPM_INSTALL_RESULT: ${{ needs.npm-install.result }}
           WINDOWS_INSTALL_RESULT: ${{ needs.windows-install.result }}
+          WINDOWS_TERMINAL_INSTALL_RESULT: ${{ needs.windows-terminal-install.result }}
         run: |
           set -euo pipefail
           require_result() {
@@ -167,3 +184,4 @@ jobs:
           require_result github-install "$GITHUB_INSTALL_RESULT" success
           require_result npm-install "$NPM_INSTALL_RESULT" success
           require_result windows-install "$WINDOWS_INSTALL_RESULT" success
+          require_result windows-terminal-install "$WINDOWS_TERMINAL_INSTALL_RESULT" success
