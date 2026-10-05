@@ -800,6 +800,29 @@ export function registerInvoice(parent: Command): void {
     });
 
   cmd
+    .command("send-email")
+    .argument("[invoice-id]", "The invoice number.")
+    .argument("[json]", "'-' reads a JSON object from stdin.")
+    .description("Send Invoice Email")
+    .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
+    .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
+    .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice send-email\n")
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+      const resource = takeResourceId(id, json, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "send_invoice_email", opIdV1: "send_invoice_email", method: "POST", uri: "/invoices/{id}/send_email", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "invoice-id", pcVersionFlag: opts.pcVersion });
+      if (!resource.id) command.error("error: missing required argument 'invoice-id'");
+      assertResourceId(resource.id, command);
+      await ensureWriteAllowed("POST");
+      try {
+        const client = await getClient();
+        const result = await (client as any).invoice.sendEmail(resource.id, params);
+        printResult(result);
+      } catch (e) { handleSdkError(e); }
+    });
+
+  cmd
     .command("stop-dunning")
     .argument("[invoice-id]", "The invoice number.")
     .argument("[json]", "'-' reads a JSON object from stdin.")
