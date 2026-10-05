@@ -14,6 +14,7 @@ import queue
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 import threading
 import time
@@ -27,6 +28,7 @@ def run_case(shell, release, url, answer):
     from winpty import PtyProcess
     from winpty.enums import Backend
 
+    print(f"START {Path(shell).name}: answer={answer or 'Enter'}", flush=True)
     with tempfile.TemporaryDirectory(prefix="cb-windows-terminal-") as temp:
         root = Path(temp)
         target_home = root / "home"
@@ -136,6 +138,10 @@ def run_case(shell, release, url, answer):
 
 
 def main():
+    # GitHub captures stdout through a pipe; Windows' legacy code page cannot
+    # encode the CLI's arrows and picker glyphs in failure transcripts.
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--shell", choices=("powershell", "pwsh"), required=True)
     parser.add_argument("--release", required=True)
