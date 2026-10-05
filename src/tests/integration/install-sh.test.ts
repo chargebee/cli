@@ -171,7 +171,7 @@ main "$@"
           expect(result.exitCode).toBe(0);
           expect(result.stderr).toBe("");
           expect(readFileSync(calls, "utf8").split("\n")).toEqual([
-            modern ? "<skills><add><--global>" : `<skills><add><--path><${home}><--no-gitignore>`,
+            modern ? "<skills><add><--global><--yes>" : `<skills><add><--path><${home}><--no-gitignore><--yes>`,
             force ? "<alias><set><--force>" : "<alias><set>",
             "",
           ]);
@@ -707,75 +707,42 @@ exit 1
 });
 
 
-describe.skipIf(process.platform === "win32")("piped installer terminal input", () => {
-  it("gives the skills child a TTY when the installer is piped into bash", () => {
-    const root = mkdtempSync(join(tmpdir(), "cb-install-pty-"));
+describe.skipIf(process.platform === "win32")("curl-piped installer", () => {
+  it("runs skill installation without a nested picker", () => {
+    const root = mkdtempSync(join(tmpdir(), "cb-install-curl-"));
     try {
       const home = join(root, "home");
       mkdirSync(home);
       const binary = join(root, "fixture-cli");
-      const marker = join(root, "skills-tty");
+      const marker = join(root, "skills-args");
       writeFileSync(binary, `#!/bin/bash
 if [[ "$1" == --version ]]; then echo 1.4.0; exit 0; fi
 if [[ "$*" == "skills add --help" ]]; then echo --global; exit 0; fi
-if [[ "$*" == "skills add --global" ]]; then
-  if [[ -t 0 ]]; then echo tty > "$TTY_MARKER"; else echo pipe > "$TTY_MARKER"; fi
-fi
+if [[ "$1" == skills ]]; then printf '%s\\n' "$*" > "$SKILLS_MARKER"; fi
 `);
       chmodSync(binary, 0o755);
-      const python = `
-import os, pty, select, signal, sys, time
-pid, fd = pty.fork()
-if pid == 0:
-    os.execv("/bin/bash", ["bash", "-c", 'cat "$INSTALL_SCRIPT" | bash'])
-output = b""
-answered = False
-finished = False
-try:
-    deadline = time.monotonic() + 20
-    while time.monotonic() < deadline:
-        ready, _, _ = select.select([fd], [], [], 0.1)
-        if ready:
-            try:
-                data = os.read(fd, 65536)
-            except OSError:
-                break
-            if not data:
-                break
-            output += data
-            if not answered and b"Install the Chargebee CLI skill" in output:
-                os.write(fd, b"y\\nn\\n")
-                answered = True
-        done, status = os.waitpid(pid, os.WNOHANG)
-        if done:
-            finished = True
-            sys.stdout.buffer.write(output)
-            sys.exit(os.waitstatus_to_exitcode(status))
-    done, status = os.waitpid(pid, os.WNOHANG)
-    if done:
-        finished = True
-        sys.stdout.buffer.write(output)
-        sys.exit(os.waitstatus_to_exitcode(status))
-    raise RuntimeError("installer did not finish")
-finally:
-    os.close(fd)
-    if not finished:
-        os.kill(pid, signal.SIGKILL)
-        os.waitpid(pid, 0)
-`;
-      const proc = Bun.spawnSync(["/usr/bin/python3", "-c", python], {
+
+      const script = join(root, "install.sh");
+      writeFileSync(script, readFileSync(INSTALL_SH, "utf8").replace(/main "\$@"\s*$/, `
+onboarding_can_prompt() { return 0; }
+onboarding_prompt_yn() { [[ "$1" == "Install the Chargebee CLI skill for your coding agent?" ]]; }
+main "$@"
+`));
+
+      const proc = Bun.spawnSync(["bash", "-c", 'curl -fsSL "file://$INSTALL_SCRIPT" | bash'], {
         env: hermeticEnv({
-          HOME: home, TERM: "xterm", INSTALL_SCRIPT: INSTALL_SH, TTY_MARKER: marker,
+          HOME: home,
+          INSTALL_SCRIPT: script,
+          SKILLS_MARKER: marker,
           CHARGEBEE_CLI_INSTALL_FILE: binary,
           CHARGEBEE_CLI_BIN_DIR: join(root, "bin"),
           CHARGEBEE_CONFIG_DIR: join(root, "config"),
-          CI: "", CHARGEBEE_CLI_NO_ONBOARDING: "",
         }),
-        stdout: "pipe", stderr: "pipe", timeout: 30_000,
+        stdin: "ignore", stdout: "pipe", stderr: "pipe", timeout: 30_000,
       });
-      expect(proc.stderr.toString()).toBe("");
-      expect(proc.exitCode).toBe(0);
-      expect(readFileSync(marker, "utf8").trim()).toBe("tty");
+      expect(proc.exitCode, proc.stdout.toString() + proc.stderr.toString()).toBe(0);
+      expect(readFileSync(marker, "utf8").trim()).toBe("skills add --global --yes");
+      expect(proc.stdout.toString()).toContain("Get started:");
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
