@@ -301,7 +301,9 @@ main() {
     fi
     echo ""
     if onboarding_prompt_yn "Install the Chargebee CLI skill for your coding agent?"; then
-      run_as_target_user "$CHARGEBEE" skills add "${SKILL_SCOPE[@]}" < /dev/tty || true
+      # A nested Bun picker cannot read /dev/tty reliably when curl feeds this script to bash.
+      # The answer above authorizes installation for every detected agent.
+      run_as_target_user "$CHARGEBEE" skills add "${SKILL_SCOPE[@]}" --yes || true
     else
       printf '  Later: chargebee skills add'; printf ' %q' "${SKILL_SCOPE[@]}"; printf '\n'
     fi
