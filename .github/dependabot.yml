@@ -1,0 +1,24 @@
+# Keeps the SHA-pinned GitHub Actions and the npm dependencies current.
+# Actions are pinned to commit SHAs in the workflows; Dependabot rewrites the
+# SHA and the trailing version comment together.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: "ci"
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      dev-dependencies:
+        dependency-type: development
+    commit-message:
+      prefix: "build"

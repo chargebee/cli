@@ -1,0 +1,97 @@
+name: Source checks
+
+on:
+  workflow_call: {}
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6  # v2.2.0
+        with:
+          bun-version: "1.4.2"
+
+      - run: bun install --frozen-lockfile
+
+      # Bun 1.4.x `bun test --coverage` exits 1 after a green suite (with or
+      # without bunfig coverageThreshold). Fail this step only on test failures.
+      # Per-file 95% is enforced by coverage-gate.ts in the next step.
+      - name: Run tests with coverage
+        run: |
+          set +o pipefail
+          bun run test:coverage 2>&1 | tee coverage.txt
+          fails=$(awk '/^[[:space:]]+[0-9]+ fail[[:space:]]*$/ { n=$1 } END { print n }' coverage.txt)
+          if [ -z "$fails" ]; then
+            echo "bun test output is missing a 'N fail' summary line"
+            exit 1
+          fi
+          if [ "$fails" -ne 0 ]; then
+            exit 1
+          fi
+
+      - name: Enforce 95% per-file coverage
+        if: success() || failure()
+        run: bun run src/tools/coverage-gate.ts coverage.txt --comment coverage-comment.md
+
+      - name: Comment coverage on the PR
+        if: github.event_name == 'pull_request' && (success() || failure())
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          MARKER='<!-- cb-cli-coverage -->'
+          BODY="$(cat coverage-comment.md)"
+          PR="${{ github.event.pull_request.number }}"
+          EXISTING="$(gh api "repos/${{ github.repository }}/issues/${PR}/comments" \
+            --jq ".[] | select(.body | contains(\"${MARKER}\")) | .id" | head -n 1)"
+          if [ -n "$EXISTING" ]; then
+            gh api --method PATCH "repos/${{ github.repository }}/issues/comments/${EXISTING}" \
+              -f body="$BODY"
+          else
+            gh pr comment "$PR" --body "$BODY"
+          fi
+
+      - name: Type check
+        run: bun run typecheck
+
+  codegen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6  # v2.2.0
+        with:
+          bun-version: "1.4.2"
+
+      - run: bun install --frozen-lockfile
+
+      # Regenerates API commands from the public OpenAPI specs. This job has
+      # no .cache/specs/, so it always fetches. Locally, bun run generate
+      # reuses that cache unless --refresh is passed. Missing operationIds are
+      # not a failure (an empty id just means no code sample for that op); the
+      # real gate is the drift check below.
+      - name: Regenerate API commands
+        run: |
+          echo "Fetching the public OpenAPI specs. Locally, 'bun run generate' reuses .cache/specs/ unless you pass --refresh."
+          bun run src/tools/generate.ts
+
+      # Fails if the committed generated files drift from the specs.
+      - name: Verify generated commands are up to date
+        run: |
+          if ! git diff --exit-code -- src/commands/generated; then
+            echo "::error::Generated commands are out of date. Locally run 'bun run generate --refresh' and commit the result. Plain 'bun run generate' reuses .cache/specs/ and will not match this job."
+            exit 1
+          fi
