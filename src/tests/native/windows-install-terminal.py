@@ -49,8 +49,8 @@ def run_case(shell, release, url, answer):
             "CHARGEBEE_CLI_VERSION": release, "DO_NOT_TRACK": "1",
             "TERM": "xterm-256color",
         })
-        # Override only the destination of alias writes; the real Read-Host and
-        # CLI prompts run inside ConPTY, including the nested picker if present.
+        # Override only the destination of alias writes; real Read-Host prompts
+        # and the released CLI run inside ConPTY.
         escaped_profile = str(profile).replace("'", "''")
         command = (
             "$ErrorActionPreference = 'Stop'; "
@@ -74,7 +74,7 @@ def run_case(shell, release, url, answer):
 
         threading.Thread(target=read_output, daemon=True).start()
         output = ""
-        skill_answered = alias_answered = picker_answered = False
+        skill_answered = alias_answered = False
         cursor_queries = 0
         started = time.monotonic()
         exited_at = None
@@ -96,11 +96,7 @@ def run_case(shell, release, url, answer):
                         assert not list(target_home.rglob("SKILL.md")), "Skill installed before consent"
                         proc.write(answer + "\r")
                         skill_answered = True
-                    if not picker_answered and "Select agents" in visible:
-                        # Baseline behavior: accept the detected agents just as
-                        # a user would, so a picker input hang hits the deadline.
-                        proc.write("\r")
-                        picker_answered = True
+                    assert "Select agents" not in visible, "Installer opened a nested agent picker"
                     if not alias_answered and re.search(r"Add a cb shortcut.*?\[Y/n\]", visible):
                         assert not profile.exists(), "Alias written before consent"
                         proc.write(answer + "\r")
@@ -127,7 +123,7 @@ def run_case(shell, release, url, answer):
                 assert all("name: chargebee-cli" in path.read_text(encoding="utf-8") for path in skills)
                 assert "Set-Alias cb" in profile.read_text(encoding="utf-8"), "Alias was not installed"
             print(f"PASS {Path(shell).name}: answer={answer or 'Enter'}, version={version}, "
-                  f"skills={len(skills)}, picker={picker_answered}, seconds={time.monotonic()-started:.1f}", flush=True)
+                  f"skills={len(skills)}, no nested picker, seconds={time.monotonic()-started:.1f}", flush=True)
         except Exception:
             print(plain(output), flush=True)
             raise

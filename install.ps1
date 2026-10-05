@@ -209,10 +209,12 @@ function Read-YesNo([string]$question) {
 
 if (Test-OnboardingPrompt) {
   Write-Host ""
-  if (Read-YesNo "Install the Chargebee CLI skill for your coding agent?") {
-    & $dest skills add --path $env:USERPROFILE
+  if (Read-YesNo "Install the Chargebee CLI skill for all detected coding agents?") {
+    # --path treats the home directory as a project and puts Codex skills in
+    # the wrong scope. The answer above authorizes all detected global targets.
+    & $dest skills add --global --yes
   } else {
-    Write-Host "  Later: chargebee skills add"
+    Write-Host "  Later: chargebee skills add --global"
   }
   if (Read-YesNo "Add a cb shortcut for the chargebee command?") {
     # Tell the CLI which profile this PowerShell edition actually loads.
@@ -226,7 +228,7 @@ if (Test-OnboardingPrompt) {
 } else {
   Write-Host ""
   Write-Host "  Using an AI agent? Install the Chargebee CLI skill:"
-  Write-Host "    chargebee skills add"
+  Write-Host "    chargebee skills add --global"
   Write-Host "  Prefer a shorter command?"
   Write-Host "    chargebee alias set"
 }

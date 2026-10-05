@@ -18,13 +18,13 @@ The Chargebee CLI is available for macOS, Linux, and Windows.
 curl -fsSL https://raw.githubusercontent.com/chargebee/cli/main/install.sh | bash
 ```
 
-If you accept the skill installation prompt, the installer adds the skill for every detected coding agent. To choose agents yourself, answer No and then run `chargebee skills add --global --agent cursor` (repeat `--agent` for other agents).
-
 **Windows** (PowerShell)
 
 ```powershell
 irm https://raw.githubusercontent.com/chargebee/cli/main/install.ps1 | iex
 ```
+
+On macOS, Linux, and Windows, accepting the skill installation prompt adds the skill for every detected coding agent. To choose agents yourself, answer No and then run `chargebee skills add --global --agent cursor` (repeat `--agent` for other agents).
 
 **npm** (requires Node.js 22+)
 
