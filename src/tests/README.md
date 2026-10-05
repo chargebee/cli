@@ -8,9 +8,12 @@
 | npm-specific behavior | `bun run test:npm` | Shared CLI suite plus detached telemetry-child tests | Linux, macOS, Windows × Node 22/24 | None |
 | Native credentials | `bun run test:os` | Actual OS credential adapters | Linux, macOS, Windows | Provisioned disposable credential session |
 | Installation | Install-channel smoke workflow | Installs this commit's artifacts and runs the installed CLI | Supported OS/channel combinations; npm Node 22/24 | Package tooling |
+| Windows installer prompts | Install-channel smoke workflow | Real ConPTY input, release download and checksum, skill and alias consent | Windows x64; PowerShell 5.1 and 7 | Python, pinned pywinpty, GitHub release v1.4.0 |
 | Live API | `bun run test:live` | Compiled native CLI | Linux, macOS, Windows, serialized | US site fixtures, read-only live-site key, public US tunnel |
 
 CI and installation checks run in full on all PRs and pushes to main. Release automation waits for both workflows to succeed on its exact main commit. See [release installation checks](../../CONTRIBUTING.md#release-installation-checks).
+
+The Windows terminal test serves this checkout's unchanged `install.ps1` over loopback and runs `irm ... | iex` with the released executable. It removes the inherited CI flag and isolates credentials, agent directories, the install directory, and the PowerShell profile. Yes, No, and Enter must reach both onboarding prompts and exit within two minutes per case. Accepted installations must use global skill paths; declined installations must leave skills and aliases absent. Run `python src/tests/native/windows-install-terminal.py --shell powershell --release v1.4.0` (or `--shell pwsh`) only in a disposable Windows session with `pywinpty==3.0.5` installed.
 
 Live tests run daily at 06:00 UTC or by manual dispatch, after source quality checks for the same commit. Only source tests contribute to the 95% per-file coverage gate; coverage of the Bun test process does not measure separately compiled CLI processes.
 
