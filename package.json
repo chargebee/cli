@@ -1,0 +1,73 @@
+{
+  "name": "@chargebee/cli",
+  "version": "1.4.0",
+  "description": "Chargebee CLI — Build with Chargebee from the terminal",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "chargebee": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "scripts/postinstall.mjs",
+    "README.md",
+    "LICENSE",
+    "licenses",
+    "THIRD_PARTY_NOTICES.txt"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chargebee/cli.git"
+  },
+  "homepage": "https://github.com/chargebee/cli#readme",
+  "bugs": {
+    "url": "https://github.com/chargebee/cli/issues"
+  },
+  "keywords": [
+    "chargebee",
+    "cli",
+    "billing",
+    "subscriptions",
+    "api"
+  ],
+  "author": "Chargebee",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "ci:release-scope": "bun run scripts/release-ci.ts scope",
+    "ci:wait": "bun run scripts/release-ci.ts wait",
+    "dev": "bun --watch src/index.ts",
+    "build": "bun run src/tools/build.ts",
+    "build:all": "bun run src/tools/build.ts --all",
+    "build:notices": "bun run src/tools/third-party-notices.ts",
+    "build:npm": "bun run build:notices && bun run src/tools/build-npm.ts",
+    "test": "bun test src/tests/unit src/tests/integration src/tests/cli",
+    "test:source": "bun test src/tests/unit src/tests/integration",
+    "test:cli": "bun test src/tests/cli",
+    "test:npm": "bun run test:cli && bun test src/tests/npm",
+    "test:os": "bun test src/tests/native",
+    "test:coverage": "bun test --coverage src/tests/unit src/tests/integration",
+    "coverage:gate": "bun run src/tools/coverage-gate.ts",
+    "test:live": "bun test --timeout 60000 src/tests/live",
+    "typecheck": "tsc --noEmit",
+    "generate": "bun run src/tools/generate.ts",
+    "clean": "rm -rf dist chargebee-cli",
+    "start": "bun src/index.ts",
+    "prepublishOnly": "bun run build:npm",
+    "postinstall": "node scripts/postinstall.mjs"
+  },
+  "devDependencies": {
+    "@chargebee/code-sample-generator": "^1.0.0",
+    "@clack/prompts": "^1.8.1",
+    "@types/bun": "1.4.0",
+    "chargebee": "^3.33.0",
+    "commander": "^15.0.0",
+    "typescript": "^7.0.2"
+  }
+}

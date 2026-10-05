@@ -1,0 +1,33 @@
+name: CI scope
+
+# Shared by CI and install smoke so both use the same diff/base-validation policy.
+# Only an explicit "true" output permits reduced jobs; uncertainty selects full CI.
+on:
+  workflow_call:
+    outputs:
+      release_only:
+        value: ${{ jobs.scope.outputs.release_only }}
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  scope:
+    runs-on: ubuntu-latest
+    outputs:
+      release_only: ${{ steps.classify.outputs.release_only }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          # The classifier compares the tested merge SHA with the event's base SHA.
+          # A shallow checkout may omit that base, especially on older release PRs.
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6  # v2.2.0
+        with:
+          bun-version: "1.4.2"
+      - id: classify
+        run: bun run ci:release-scope
+        env:
+          GH_TOKEN: ${{ github.token }}

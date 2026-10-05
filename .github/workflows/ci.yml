@@ -1,0 +1,195 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  # Pending runs can be replaced even with cancel-in-progress: false. Give each
+  # main run its own group so every commit can satisfy the release gate.
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  scope:
+    uses: ./.github/workflows/ci-scope.yml
+    permissions:
+      contents: read
+      actions: read
+
+  # Source tests, coverage, and typecheck always run. Only codegen is optional
+  # when the classifier proves that a successful base already tested this source.
+  test:
+    needs: scope
+    # Runs even if scope fails; skip-codegen is then false, so codegen runs too.
+    if: ${{ !cancelled() }}
+    uses: ./.github/workflows/source-checks.yml
+    with:
+      skip-codegen: ${{ needs.scope.outputs.release_only == 'true' }}
+    permissions:
+      contents: read
+      pull-requests: write
+
+  # Execute the shared process suite against each native artifact.
+  # The calculated scope, not the branch name, controls all expensive matrices.
+  cli:
+    needs: scope
+    # A failed scope check must fall back to full CI, not skip it.
+    if: ${{ !cancelled() && needs.scope.outputs.release_only != 'true' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            binary: dist/chargebee-cli
+          - os: macos-latest
+            binary: dist/chargebee-cli
+          - os: windows-latest
+            binary: dist/chargebee-cli.exe
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6  # v2.2.0
+        with:
+          bun-version: "1.4.2"
+
+      - run: bun install --frozen-lockfile
+
+      - name: Compile native binary
+        run: bun run build --outfile=${{ matrix.binary }}
+
+      - name: Test compiled CLI
+        run: |
+          export CHARGEBEE_CLI_BINARY="$(pwd)/${{ matrix.binary }}"
+          bun run test:cli
+        env:
+          CB_REQUIRE_BINARY: "1"
+
+      - name: Verify native credential storage
+        uses: ./.github/actions/native-credentials
+        env:
+          CB_REQUIRE_BINARY: "1"
+          CHARGEBEE_CLI_BINARY: ${{ github.workspace }}/${{ matrix.binary }}
+
+  # Exercise the same CLI scenarios under each supported npm runtime and OS.
+  npm-bundle:
+    needs: scope
+    # A failed scope check must fall back to full CI, not skip it.
+    if: ${{ !cancelled() && needs.scope.outputs.release_only != 'true' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ["22", "24"]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6  # v2.2.0
+        with:
+          bun-version: "1.4.2"
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020  # v7.0.0
+        with:
+          node-version: ${{ matrix.node }}
+
+      - run: bun install --frozen-lockfile
+
+      - name: Build the npm bundle
+        run: bun run build:npm
+
+      - name: Test npm CLI
+        run: |
+          export CHARGEBEE_CLI_BINARY="$(pwd)/dist/index.js"
+          export CHARGEBEE_CLI_NODE="$(node -p 'process.execPath')"
+          bun run test:npm
+        env:
+          CB_REQUIRE_BINARY: "1"
+
+  # Release-only PRs still build native/npm artifacts in release-smoke. The five
+  # target builds remain on main and in the gated Release workflow.
+  build:
+    runs-on: ubuntu-latest
+    needs: [scope, test]
+    # A failed scope check must fall back to full CI; a failed test still blocks the build.
+    if: ${{ !cancelled() && needs.test.result == 'success' && needs.scope.outputs.release_only != 'true' }}
+    strategy:
+      matrix:
+        target:
+          - bun-darwin-arm64
+          - bun-darwin-x64
+          - bun-linux-arm64
+          - bun-linux-x64
+          - bun-windows-x64
+        include:
+          - target: bun-darwin-arm64
+            outfile: chargebee-cli-darwin-arm64
+          - target: bun-darwin-x64
+            outfile: chargebee-cli-darwin-x64
+          - target: bun-linux-arm64
+            outfile: chargebee-cli-linux-arm64
+          - target: bun-linux-x64
+            outfile: chargebee-cli-linux-x64
+          - target: bun-windows-x64
+            outfile: chargebee-cli-windows-x64.exe
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6  # v2.2.0
+        with:
+          bun-version: "1.4.2"
+
+      - run: bun install --frozen-lockfile
+
+      - name: Build ${{ matrix.target }}
+        run: bun run build --target=${{ matrix.target }}
+        env:
+          VERSION: ${{ github.ref_name }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: ${{ matrix.outfile }}
+          path: dist/${{ matrix.outfile }}
+
+  required-checks:
+    name: CI required checks
+    if: ${{ always() }}
+    needs: [scope, test, cli, npm-bundle, build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify required job results
+        env:
+          RELEASE_ONLY: ${{ needs.scope.outputs.release_only }}
+          SCOPE_RESULT: ${{ needs.scope.result }}
+          TEST_RESULT: ${{ needs.test.result }}
+          CLI_RESULT: ${{ needs.cli.result }}
+          NPM_BUNDLE_RESULT: ${{ needs.npm-bundle.result }}
+          BUILD_RESULT: ${{ needs.build.result }}
+        run: |
+          set -euo pipefail
+          require_result() {
+            if [[ "$2" != "$3" ]]; then
+              echo "::error::$1 returned $2; expected $3"
+              exit 1
+            fi
+          }
+          require_result scope "$SCOPE_RESULT" success
+          require_result test "$TEST_RESULT" success
+          expected=success
+          if [[ "$RELEASE_ONLY" == "true" ]]; then
+            expected=skipped
+          fi
+          require_result cli "$CLI_RESULT" "$expected"
+          require_result npm-bundle "$NPM_BUNDLE_RESULT" "$expected"
+          require_result build "$BUILD_RESULT" "$expected"
