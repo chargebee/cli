@@ -100,7 +100,7 @@ function showStatus(): void {
     }
   }
   humanLog();
-  humanLog("  Sent        : command name, flag names, outcome, CLI version, OS/arch, the install id above, and your site name.");
+  humanLog("  Sent        : command name, flag names, outcome, CLI version and install method, OS/arch and runtime, the install id above, and your site name.");
   humanLog("  Never sent  : argument values, API keys, customer data or webhook payloads.");
   humanLog("  Learn more  : https://github.com/chargebee/cli/blob/main/TELEMETRY.md");
   humanLog(disabled ? "  Enable with : chargebee telemetry enable" : "  Disable with: chargebee telemetry disable");

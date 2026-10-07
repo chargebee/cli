@@ -15,6 +15,10 @@ export interface MetadataInput {
   productCatalogVersion?: string;
   generatedResource?: string;
   listenPhase?: "established" | "closed" | "error";
+  /** How this copy was installed (npm, github, pnpm, ...), from the update module. */
+  installMethod?: string;
+  /** Date (YYYY-MM-DD) the first-run notice was shown; set only on an install's first event. */
+  firstRun?: string;
 }
 
 const MAX_VALUE_LEN = 1024;
@@ -72,13 +76,32 @@ export function detectIsCi(): boolean {
 /**
  * Best-effort detection of the AI agent driving the CLI, if any.
  *
- * Not User-Agent regexes — these are env vars the agent runtimes set. Order
- * matters (first match wins): Claude Code, then Cursor. Closed set on purpose.
+ * Not User-Agent regexes — these are env vars the agent runtimes set for the
+ * commands they spawn. Order matters (first match wins). Closed set on purpose:
+ * only agents with a documented marker are listed. Codex sets its markers only
+ * when it sandboxes the command, so unsandboxed Codex runs are not detected.
  */
 export function detectAiAgent(): string | undefined {
   if (process.env.CLAUDECODE || process.env.CLAUDE_CODE) return "claude-code";
   if (process.env.CURSOR_TRACE_ID || process.env.CURSOR_AGENT) return "cursor";
+  if (process.env.CODEX_SANDBOX || process.env.CODEX_SANDBOX_NETWORK_DISABLED) return "codex";
+  if (process.env.GEMINI_CLI) return "gemini-cli";
   return undefined;
+}
+
+/** Runtime version as major.minor (Bun wins over the Node compatibility version it reports). */
+export function runtimeVersion(versions: { node?: string; bun?: string } = process.versions): string {
+  const v = versions.bun ?? versions.node;
+  const m = v ? /^(\d+)\.(\d+)/.exec(v) : null;
+  return m ? `${m[1]}.${m[2]}` : "unknown";
+}
+
+/** Whether a person is at a terminal: both stdin and stdout are TTYs (false for pipes, scripts, most agents). */
+export function isTerminal(
+  stdin: { isTTY?: boolean } = process.stdin,
+  stdout: { isTTY?: boolean } = process.stdout,
+): boolean {
+  return stdin.isTTY === true && stdout.isTTY === true;
 }
 
 function detectRuntime(): string {
@@ -95,6 +118,8 @@ export function buildMetadata(input: MetadataInput): Record<string, string> {
     os: process.platform,
     arch: process.arch,
     rt: detectRuntime(),
+    rtv: runtimeVersion(),
+    tty: String(isTerminal()),
     status: input.status,
     ci: String(detectIsCi()),
   };
@@ -105,6 +130,8 @@ export function buildMetadata(input: MetadataInput): Record<string, string> {
   if (input.productCatalogVersion) meta.pcv = input.productCatalogVersion;
   if (input.generatedResource) meta.code_lang = clip(input.generatedResource);
   if (input.listenPhase) meta.listen_phase = input.listenPhase;
+  if (input.installMethod) meta.im = input.installMethod;
+  if (input.firstRun) meta.first_run = input.firstRun;
 
   const agent = detectAiAgent();
   if (agent) meta.agent = agent;

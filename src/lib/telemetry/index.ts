@@ -22,7 +22,8 @@ import { wasInteractive } from "./interactive.js";
 import { isTelemetryDisabled, maybeShowFirstRunNotice } from "./optout.js";
 import { getVisitorId } from "./identity.js";
 import { appendRecord, spoolStats } from "./spool.js";
-import { readState } from "./state.js";
+import { readState, writeState } from "./state.js";
+import { detectInstallMethod } from "../update/index.js";
 import { knownCommandPath } from "./command-path.js";
 import type { SpoolRecord } from "./types.js";
 
@@ -89,24 +90,55 @@ interface PendingInvocation {
   siteName: string;
   pcv?: string;
   env: string;
+  installMethod?: string;
 }
 
 let pending: PendingInvocation | null = null;
 
-function ensurePendingForUsage(program: Command): void {
+/** Install method for the event; never lets detection break telemetry. */
+function safeInstallMethod(): string | undefined {
+  try {
+    return detectInstallMethod();
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Seed an event for an invocation that never reaches preAction: a parse failure
+ * (`usage`), or `--help` / `--version`, which Commander handles itself.
+ */
+function ensurePendingWithoutAction(program: Command, fallbackName: string, flagNames: string[]): void {
   if (pending || isTelemetryDisabled()) return;
-  // Parse failures skip preAction, so the notice may not have been printed yet.
+  // These paths skip preAction, so the notice may not have been printed yet.
   // Nothing is recorded until the user has seen the notice at least once.
   if (!readState().notice_shown) return;
   const command = knownCommandPath(program, process.argv.slice(2));
   if (command === FLUSH_COMMAND) return;
   pending = {
-    command: command || "unknown",
-    flagNames: [],
+    command: command || fallbackName,
+    flagNames,
     visitorId: getVisitorId(),
     siteName: "unconfigured",
     env: "production",
+    installMethod: safeInstallMethod(),
   };
+}
+
+/**
+ * The notice date to stamp on this install's first recorded event, or undefined.
+ * Installs that saw the notice before `notice_shown_at` existed have no date and
+ * are never reported as new.
+ */
+function pendingFirstRun(): string | undefined {
+  const state = readState();
+  if (state.first_event_recorded || !state.notice_shown_at) return undefined;
+  return state.notice_shown_at;
+}
+
+/** Mark the activation event as recorded (also for upgraded installs, so the check stays cheap). */
+function markFirstEventRecorded(): void {
+  if (!readState().first_event_recorded) writeState({ first_event_recorded: true });
 }
 
 /** Build the dotted command path (e.g. "addon create"), excluding the root program. */
@@ -183,6 +215,7 @@ async function begin(actionCommand: Command): Promise<void> {
       siteName: siteName || "unconfigured",
       pcv,
       env: telemetryEnvLabel(host),
+      installMethod: safeInstallMethod(),
     };
   } catch {
     // telemetry must never break a command
@@ -207,6 +240,8 @@ export function emitListenPhase(phase: ListenPhase, errorType?: string): void {
         phase === "error" ? (errorType ?? "listen_connect_error") : undefined,
       productCatalogVersion: pending.pcv,
       listenPhase: phase,
+      installMethod: pending.installMethod,
+      firstRun: pendingFirstRun(),
     });
 
     appendRecord({
@@ -220,6 +255,7 @@ export function emitListenPhase(phase: ListenPhase, errorType?: string): void {
         metadata,
       },
     });
+    markFirstEventRecorded();
     spawnFlush();
   } catch {
     // telemetry must never break listen
@@ -238,6 +274,7 @@ function finalize(exitCode: number): void {
     const status: "ok" | "error" = exitCode === 0 ? "ok" : "error";
     const errorType = status === "error" ? takeTelemetryError() ?? "nonzero_exit" : undefined;
     const skipDuration = wasInteractive() || pending.command === "listen";
+    const firstRun = pendingFirstRun();
 
     const metadata = buildMetadata({
       flagNames: pending.flagNames,
@@ -248,6 +285,8 @@ function finalize(exitCode: number): void {
       errorType,
       productCatalogVersion: pending.pcv,
       generatedResource: pending.generatedResource,
+      installMethod: pending.installMethod,
+      firstRun,
     });
 
     const record: SpoolRecord = {
@@ -259,9 +298,12 @@ function finalize(exitCode: number): void {
     };
 
     appendRecord(record);
+    markFirstEventRecorded();
 
+    // Send a new install's first event right away: otherwise someone who tries the
+    // CLI once or twice never reaches BATCH_SIZE and is never seen.
     const { count, oldestAgeMs } = spoolStats();
-    if (count >= BATCH_SIZE || oldestAgeMs >= MAX_AGE_MS) spawnFlush();
+    if (firstRun || count >= BATCH_SIZE || oldestAgeMs >= MAX_AGE_MS) spawnFlush();
   } catch {
     // swallow — never block process exit
   }
@@ -309,20 +351,31 @@ export function installTelemetry(program: Command, version: string): void {
     await begin(actionCommand as Command);
   });
 
-  // Commander prints the usage error, then calls this instead of process.exit.
-  // Parse-time failures (unknown command, missing required arg) skip preAction,
-  // so seed a pending event from registered command names only.
-  program.exitOverride((err: CommanderError) => {
+  // Commander prints the usage error (or help / version), then calls this instead of
+  // process.exit. These paths skip preAction, so seed a pending event from
+  // registered command names only. Installed on every command: Commander raises a
+  // subcommand's parse error or `--help` through that subcommand's own callback,
+  // and `configureJsonOutput` has already given each one an override.
+  const onCommanderExit = (err: CommanderError): never => {
     try {
       if (err.exitCode !== 0) {
         recordTelemetryError("usage");
-        ensurePendingForUsage(program);
+        ensurePendingWithoutAction(program, "unknown", []);
+      } else if (err.code === "commander.helpDisplayed" || err.code === "commander.help") {
+        ensurePendingWithoutAction(program, "help", ["help"]);
+      } else if (err.code === "commander.version") {
+        ensurePendingWithoutAction(program, "version", ["version"]);
       }
     } catch {
       // telemetry must never break commander
     }
-    exitCommand(err.exitCode, err.code);
-  });
+    return exitCommand(err.exitCode, err.code);
+  };
+  const overrideAll = (cmd: Command): void => {
+    cmd.exitOverride(onCommanderExit);
+    for (const sub of cmd.commands) overrideAll(sub);
+  };
+  overrideAll(program);
 
   if (exitHandler) process.removeListener("exit", exitHandler);
   exitHandler = onProcessExit;
