@@ -1,6 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
-import { buildMetadata, detectAiAgent, normalizeGeneratedResource } from "../../../../lib/telemetry/metadata.js";
+import {
+  buildMetadata,
+  detectAiAgent,
+  isTerminal,
+  normalizeGeneratedResource,
+  runtimeVersion,
+} from "../../../../lib/telemetry/metadata.js";
 
 describe("buildMetadata duration", () => {
   it("includes dur_ms when provided", () => {
@@ -73,6 +79,43 @@ describe("buildMetadata allow-list", () => {
   });
 });
 
+describe("buildMetadata runtime context", () => {
+  it("emits the runtime major.minor as rtv", () => {
+    const meta = buildMetadata({ flagNames: [], status: "ok" });
+    expect(meta.rtv).toMatch(/^\d+\.\d+$/);
+  });
+
+  it("emits tty as a boolean string", () => {
+    const meta = buildMetadata({ flagNames: [], status: "ok" });
+    expect(meta.tty).toMatch(/^(true|false)$/);
+  });
+
+  it("emits im and first_run only when provided", () => {
+    const bare = buildMetadata({ flagNames: [], status: "ok" });
+    expect("im" in bare).toBe(false);
+    expect("first_run" in bare).toBe(false);
+    const meta = buildMetadata({ flagNames: [], status: "ok", installMethod: "npm", firstRun: "2026-10-07" });
+    expect(meta.im).toBe("npm");
+    expect(meta.first_run).toBe("2026-10-07");
+  });
+});
+
+describe("runtimeVersion", () => {
+  it("reduces a version to major.minor", () => {
+    expect(runtimeVersion({ node: "22.12.0" })).toBe("22.12");
+    expect(runtimeVersion({ node: "24.1.3", bun: "1.3.14" })).toBe("1.3");
+    expect(runtimeVersion({})).toBe("unknown");
+  });
+});
+
+describe("isTerminal", () => {
+  it("is true only when both stdin and stdout are TTYs", () => {
+    expect(isTerminal({ isTTY: true }, { isTTY: true })).toBe(true);
+    expect(isTerminal({ isTTY: false }, { isTTY: true })).toBe(false);
+    expect(isTerminal({}, { isTTY: true })).toBe(false);
+  });
+});
+
 describe("normalizeGeneratedResource", () => {
   it("accepts known languages, lower-cased and trimmed", () => {
     expect(normalizeGeneratedResource("curl")).toBe("curl");
@@ -107,6 +150,9 @@ describe("detectAiAgent", () => {
     "CURSOR_AGENT",
     "AIDER_VERSION",
     "GITHUB_COPILOT_CLI",
+    "CODEX_SANDBOX",
+    "CODEX_SANDBOX_NETWORK_DISABLED",
+    "GEMINI_CLI",
   ];
   const prev: Record<string, string | undefined> = {};
 
@@ -132,6 +178,19 @@ describe("detectAiAgent", () => {
   it("returns cursor for CURSOR_AGENT", () => {
     process.env.CURSOR_AGENT = "1";
     expect(detectAiAgent()).toBe("cursor");
+  });
+
+  it("returns codex for either Codex sandbox marker", () => {
+    process.env.CODEX_SANDBOX = "seatbelt";
+    expect(detectAiAgent()).toBe("codex");
+    delete process.env.CODEX_SANDBOX;
+    process.env.CODEX_SANDBOX_NETWORK_DISABLED = "1";
+    expect(detectAiAgent()).toBe("codex");
+  });
+
+  it("returns gemini-cli for GEMINI_CLI", () => {
+    process.env.GEMINI_CLI = "1";
+    expect(detectAiAgent()).toBe("gemini-cli");
   });
 
   it("ignores Aider and Copilot", () => {

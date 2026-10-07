@@ -10,7 +10,7 @@ Telemetry data is **pseudonymous, not anonymous**. Events include a randomly gen
 
 On your first CLI command, a telemetry notice is displayed and **no telemetry is collected**.
 
-Telemetry starts from your next command, giving you an opportunity to opt out before any event is recorded.
+Telemetry starts from your next command, giving you an opportunity to opt out before any event is recorded. That first recorded event carries the date the notice was shown (`first_run`) and is sent straight away, so Chargebee can count new installs; later events are sent in batches.
 
 ## Commands
 
@@ -25,7 +25,9 @@ chargebee telemetry status --pending # View events waiting to be sent
 
 ## What is Collected
 
-The CLI normally records **one event per command**. `chargebee listen` may record multiple lifecycle events while it is running.
+The CLI normally records **one event per command**, including `--help` and `--version`. `chargebee listen` may record multiple lifecycle events while it is running.
+
+Events are queued locally and sent in the background, in batches of five or once the oldest queued event is five minutes old, checked when a command finishes. An install's first recorded event is sent immediately.
 
 Telemetry is sent to a Chargebee owned endpoint. The destination cannot be changed through CLI configuration or environment variables.
 
@@ -48,6 +50,9 @@ A telemetry request has the following structure:
         "os": "darwin",
         "arch": "arm64",
         "rt": "node",
+        "rtv": "22.12",
+        "tty": "true",
+        "im": "npm",
         "ci": "false"
       }
     }
@@ -68,15 +73,19 @@ A telemetry request has the following structure:
 | `os` | Always | Operating system, such as `darwin`. |
 | `arch` | Always | System architecture, such as `arm64`. |
 | `rt` | Always | Runtime used by the CLI, such as `node` or `bun`. |
+| `rtv` | Always | Runtime version as major.minor, such as `22.12`. |
+| `tty` | Always | `true` when both input and output are a terminal; `false` for pipes, scripts and most agents. |
+| `im` | When detected | How the CLI was installed: `npm`, `pnpm`, `yarn`, `bun-global`, `github` (installer or release binary) or `source`. |
 | `status` | Always | Whether the command completed with `ok` or `error`. |
 | `ci` | Always | `false` for recorded events because telemetry is disabled in CI. |
-| `flags` | When flags are used | Flag names only, such as `data,fields`. **Flag values are never collected.** |
+| `flags` | When flags are used | Flag names only, such as `data,fields`. **Flag values are never collected.** `--help` and `--version` are recorded as `help` and `version`. |
 | `dur_ms` | Non-interactive commands | Command duration in milliseconds. Omitted for interactive commands and `listen`. |
 | `err_type` | Errors | Coarse error category such as `api_404` or `cli_error`. Error messages are never collected. |
 | `pcv` | When available | Product Catalog version (`v1` or `v2`) of the configured site. |
 | `code_lang` | Code generation | Generated code language, such as `go` or `js`. |
-| `agent` | When detected | Supported agent runtime, such as `cursor` or `claude-code`. |
+| `agent` | When detected | Supported agent runtime: `claude-code`, `cursor`, `codex` (sandboxed runs) or `gemini-cli`, detected from environment variables those tools set. |
 | `listen_phase` | `chargebee listen` | Tunnel lifecycle state: `established`, `closed`, or `error`. |
+| `first_run` | First recorded event only | Date (`YYYY-MM-DD`) the first-run notice was shown. |
 
 ## What is Never Collected
 
@@ -91,6 +100,8 @@ Chargebee CLI telemetry does **not** collect:
 - Webhook forwarding URLs or session IDs
 
 The command itself and flag **names** may be collected, but their values are never included.
+
+Like any HTTPS request, telemetry requests are handled by network infrastructure whose request logs record the connecting IP address and user agent for security and operations. The CLI does not add the IP address or user agent to telemetry events.
 
 ## Environment Variables and CI
 

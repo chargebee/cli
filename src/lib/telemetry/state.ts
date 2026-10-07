@@ -19,6 +19,13 @@ export interface TelemetryState {
   enabled: boolean;
   /** Whether the one-time first-run notice has been shown. */
   notice_shown: boolean;
+  /**
+   * UTC date (YYYY-MM-DD) the notice was shown. Empty for installs that saw the
+   * notice before this field existed, so they are never reported as new.
+   */
+  notice_shown_at: string;
+  /** Whether this install has recorded its first event (the activation event). */
+  first_event_recorded: boolean;
   /** Consecutive flush runs that ended with at least one failed batch. */
   consecutive_flush_failures: number;
   /** Epoch ms before which `spawnFlush` skips spawning a new flush child. */
@@ -29,6 +36,8 @@ const DEFAULT_STATE: TelemetryState = {
   anonymous_id: "",
   enabled: true,
   notice_shown: false,
+  notice_shown_at: "",
+  first_event_recorded: false,
   consecutive_flush_failures: 0,
   next_flush_attempt_at: 0,
 };
@@ -43,6 +52,11 @@ export function readState(): TelemetryState {
         typeof parsed.anonymous_id === "string" ? parsed.anonymous_id : "",
       enabled: parsed.enabled !== false,
       notice_shown: parsed.notice_shown === true,
+      notice_shown_at:
+        typeof parsed.notice_shown_at === "string" && /^\d{4}-\d{2}-\d{2}$/.test(parsed.notice_shown_at)
+          ? parsed.notice_shown_at
+          : "",
+      first_event_recorded: parsed.first_event_recorded === true,
       consecutive_flush_failures:
         typeof parsed.consecutive_flush_failures === "number" ? parsed.consecutive_flush_failures : 0,
       next_flush_attempt_at:

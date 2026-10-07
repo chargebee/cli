@@ -24,6 +24,7 @@ import { __resetKeychainForTest, __setKeychainForTest, type KeychainStore } from
 import { saveProfile } from "../../../../lib/config/profiles.js";
 import { writeConfig } from "../../../../lib/config/store.js";
 import { __resetRuntimeState } from "../../../../lib/api/sdk.js";
+import { __setInstallMethodForTest } from "../../../../lib/update/index.js";
 
 function sample(over: Partial<SpoolRecord> = {}): SpoolRecord {
   return {
@@ -306,6 +307,165 @@ describe("installTelemetry recorder", () => {
         // process.exit stub throws
       }
       __finalizeForTest(1);
+      expect(() => readFileSync(spoolPath(), "utf-8")).toThrow();
+    });
+  });
+
+  describe("activation (first recorded event)", () => {
+    function pingProgram(): Command {
+      const program = new Command();
+      program.exitOverride();
+      program.command("ping").action(() => undefined);
+      installTelemetry(program, "1.0.0-test");
+      return program;
+    }
+
+    function spooled(): SpoolRecord[] {
+      return readFileSync(spoolPath(), "utf-8")
+        .trim()
+        .split("\n")
+        .map((line) => JSON.parse(line) as SpoolRecord);
+    }
+
+    it("stamps the notice date on a new install's first event and flushes it at once", async () => {
+      writeState({ notice_shown: false });
+      const quiet = process.stderr.write;
+      process.stderr.write = (() => true) as typeof process.stderr.write;
+      try {
+        await pingProgram().parseAsync(["ping"], { from: "user" }); // notice run, records nothing
+        __finalizeForTest(0);
+      } finally {
+        process.stderr.write = quiet;
+      }
+      const noticeDate = readState().notice_shown_at;
+      expect(noticeDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(spawns).toHaveLength(0);
+
+      __resetTelemetryRecorderForTest();
+      await pingProgram().parseAsync(["ping"], { from: "user" });
+      __finalizeForTest(0);
+      expect(spooled()[0].event.metadata.first_run).toBe(noticeDate);
+      expect(spawns).toHaveLength(1); // below BATCH_SIZE, flushed anyway
+      expect(readState().first_event_recorded).toBe(true);
+
+      __resetTelemetryRecorderForTest();
+      spawns = [];
+      await pingProgram().parseAsync(["ping"], { from: "user" });
+      __finalizeForTest(0);
+      expect("first_run" in spooled()[1].event.metadata).toBe(false);
+      expect(spawns).toHaveLength(0);
+    });
+
+    it("does not treat an upgraded install (no notice date) as new", async () => {
+      // beforeEach: notice_shown true, no notice_shown_at, like installs from older versions.
+      await pingProgram().parseAsync(["ping"], { from: "user" });
+      __finalizeForTest(0);
+      expect("first_run" in spooled()[0].event.metadata).toBe(false);
+      expect(spawns).toHaveLength(0);
+      expect(readState().first_event_recorded).toBe(true);
+    });
+
+    it("stamps first_run on a listen lifecycle event when listen is the first command", async () => {
+      writeState({ notice_shown: true, notice_shown_at: "2026-10-01" });
+      const program = new Command();
+      program.exitOverride();
+      program.command("listen").action(() => {
+        emitListenPhase("established");
+        emitListenPhase("closed");
+      });
+      installTelemetry(program, "1.0.0-test");
+      await program.parseAsync(["listen"], { from: "user" });
+      __finalizeForTest(0);
+      const recs = spooled();
+      expect(recs[0].event.metadata.first_run).toBe("2026-10-01");
+      expect("first_run" in recs[1].event.metadata).toBe(false);
+    });
+
+    it("records the install method", async () => {
+      __setInstallMethodForTest("npm");
+      try {
+        await pingProgram().parseAsync(["ping"], { from: "user" });
+        __finalizeForTest(0);
+      } finally {
+        __setInstallMethodForTest(null);
+      }
+      expect(spooled()[0].event.metadata.im).toBe("npm");
+    });
+  });
+
+  describe("help and version", () => {
+    function program(): Command {
+      const p = new Command();
+      p.name("chargebee").version("1.0.0-test", "-v, --version");
+      p.command("customer").command("list").action(() => undefined);
+      installTelemetry(p, "1.0.0-test");
+      return p;
+    }
+
+    async function run(argv: string[]): Promise<SpoolRecord> {
+      const out = process.stdout.write;
+      process.stdout.write = (() => true) as typeof process.stdout.write;
+      process.argv = ["bun", "chargebee", ...argv];
+      try {
+        await program().parseAsync(argv, { from: "user" });
+      } catch {
+        // process.exit stub throws
+      } finally {
+        process.stdout.write = out;
+      }
+      __finalizeForTest(0);
+      return JSON.parse(readFileSync(spoolPath(), "utf-8").trim()) as SpoolRecord;
+    }
+
+    it("records root --help as an ok help event", async () => {
+      const rec = await run(["--help"]);
+      expect(rec.event.name).toBe("help");
+      expect(rec.event.metadata.status).toBe("ok");
+      expect(rec.event.metadata.flags).toBe("help");
+    });
+
+    it("records subcommand --help under the command path", async () => {
+      const rec = await run(["customer", "list", "--help"]);
+      expect(rec.event.name).toBe("customer list");
+      expect(rec.event.metadata.flags).toBe("help");
+    });
+
+    it("records --version", async () => {
+      const rec = await run(["--version"]);
+      expect(rec.event.name).toBe("version");
+      expect(rec.event.metadata.status).toBe("ok");
+      expect(rec.event.metadata.flags).toBe("version");
+    });
+
+    it("records a subcommand usage error (unknown option) under the command path", async () => {
+      const err = process.stderr.write;
+      process.stderr.write = (() => true) as typeof process.stderr.write;
+      process.argv = ["bun", "chargebee", "customer", "list", "--bogus"];
+      try {
+        await program().parseAsync(["customer", "list", "--bogus"], { from: "user" });
+      } catch {
+        // process.exit stub throws
+      } finally {
+        process.stderr.write = err;
+      }
+      __finalizeForTest(1);
+      const rec = JSON.parse(readFileSync(spoolPath(), "utf-8").trim()) as SpoolRecord;
+      expect(rec.event.name).toBe("customer list");
+      expect(rec.event.metadata.err_type).toBe("usage");
+    });
+
+    it("records nothing for help before the notice has been shown", async () => {
+      writeState({ notice_shown: false });
+      const out = process.stdout.write;
+      process.stdout.write = (() => true) as typeof process.stdout.write;
+      try {
+        await program().parseAsync(["--help"], { from: "user" });
+      } catch {
+        // process.exit stub throws
+      } finally {
+        process.stdout.write = out;
+      }
+      __finalizeForTest(0);
       expect(() => readFileSync(spoolPath(), "utf-8")).toThrow();
     });
   });

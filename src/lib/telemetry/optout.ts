@@ -82,7 +82,7 @@ export function setTelemetryEnabled(enabled: boolean): boolean {
 const NOTICE = [
   "",
   "  Chargebee CLI sends usage data to Chargebee: command name, flag names, exit status, error category,",
-  "  CLI version, OS/arch, a random install id, and the Chargebee site name of the active profile.",
+  "  CLI version and install method, OS/arch and runtime, a random install id, and the Chargebee site name of the active profile.",
   "  Never sent: argument values, API keys, customer data or webhook payloads. This run was not recorded.",
   "  Opt out anytime: chargebee telemetry disable  |  https://github.com/chargebee/cli/blob/main/TELEMETRY.md",
   "",
@@ -104,6 +104,6 @@ export function maybeShowFirstRunNotice(): boolean {
   } catch {
     // ignore
   }
-  writeState({ notice_shown: true });
+  writeState({ notice_shown: true, notice_shown_at: new Date().toISOString().slice(0, 10) });
   return true;
 }
