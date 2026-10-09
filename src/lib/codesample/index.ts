@@ -10,6 +10,9 @@ import {
 
 import { diagnostic, isJsonMode } from "../output.js";
 import { PRODUCTION_SUFFIX, rewriteApiHostInText, type ApiHost } from "../config/host.js";
+import { assertSafeParameterKey, bracketPath, buildParams, type ParamEntry } from "../api/params.js";
+
+export { assertSafeParameterKey } from "../api/params.js";
 
 /**
  * Names we advertise in `--help`, `--code-sample list`, README, and the skill.
@@ -219,22 +222,30 @@ export async function generate(opts: GenerateOptions): Promise<string> {
 /**
  * Coerce a raw CLI value into the shape the Chargebee SDK expects.
  *
- * Values that look like JSON arrays/objects (`[...]` / `{...}`) are parsed into
- * real JS values; everything else stays a string. This matters for list filter
- * operators (`[in]`, `[not_in]`, `[between]`): the SDK's serializer JSON-encodes
- * those values, so passing a JSON *string* would double-encode it (producing
- * `id[in]="[\"a\"]"` and a `wrong format` API error). Parsing to a real array
- * makes the SDK emit the correct `id[in]=["a"]`.
+ * JSON-body operations parse JSON-looking values. For form operations, a
+ * top-level array is a shorthand for indexed fields and filter operators need
+ * real arrays so the SDK sends one JSON value. An indexed field's value stays
+ * literal, avoiding an extra index when it looks like JSON itself.
  *
  * Parsing is best-effort: malformed JSON falls back to the raw string so a value
  * that merely starts with `[`/`{` can never throw.
  */
-function coerceValue(raw: string): unknown {
+function coerceValue(raw: string, path: string[], jsonInput: boolean): unknown {
   const trimmed = raw.trim();
-  if (trimmed.startsWith("[") || trimmed.startsWith("{")) {
+  const last = path.at(-1);
+  const parseArray = jsonInput || path.length === 1 || last === "in" || last === "not_in" || last === "between";
+  const parseObject = jsonInput || !/^\d+$/.test(last ?? "");
+  if ((parseObject && trimmed.startsWith("{")) || (parseArray && trimmed.startsWith("["))) {
     try {
       return JSON.parse(trimmed);
     } catch {
+      // Convenience shorthand for simple string arrays. Quoted JSON is needed
+      // when an item itself contains a comma or other JSON syntax.
+      if (parseArray && trimmed.startsWith("[") && trimmed.endsWith("]")) {
+        const inner = trimmed.slice(1, -1);
+        const items = inner.split(",").map((item) => item.trim());
+        if (items.every((item) => item && !/[\[\]{}"']/.test(item))) return items;
+      }
       return raw;
     }
   }
@@ -279,22 +290,17 @@ export function warnBareListFilters(
 }
 
 /** Reject path segments that could traverse or replace object prototypes. */
-export function assertSafeParameterKey(key: string): void {
-  if (key.split(/[\[\]]/).some((part) => ["__proto__", "constructor", "prototype"].includes(part))) {
-    throw new Error(`Invalid parameter key ${JSON.stringify(key)}.`);
-  }
-}
-
 /**
  * Parse CLI -d key=value flags into a nested params object.
  * Handles bracket notation: "billing_address[line1]=value" → { billing_address: { line1: "value" } }
  * Indexed item fields become arrays of objects: "items[id][0]=value" → { items: [{ id: "value" }] }.
- * JSON-looking values are parsed so list filters like `id[in]=["a","b"]` encode correctly.
+ * JSON-array shorthand and list filters like `id[in]=["a","b"]` encode correctly.
  */
 export function parseDataFlags(
-  dataFlags: string[]
+  dataFlags: string[],
+  opts: { jsonInput?: boolean } = {},
 ): Record<string, unknown> {
-  const params: Record<string, unknown> = {};
+  const entries = new Map<string, ParamEntry>();
 
   for (const d of dataFlags) {
     const eqIdx = d.indexOf("=");
@@ -307,36 +313,10 @@ export function parseDataFlags(
 
     const key = d.slice(0, eqIdx);
     assertSafeParameterKey(key);
-    const value = coerceValue(d.slice(eqIdx + 1));
-
-    const indexedField = /^([^\[\]]+)\[([^\[\]]+)\]\[(\d+)\]$/.exec(key);
-    if (indexedField) {
-      const [, topKey, field, rawIndex] = indexedField;
-      const index = Number(rawIndex);
-      if (!Number.isSafeInteger(index) || index > 10_000) {
-        throw new Error(`Invalid indexed parameter ${JSON.stringify(key)}.`);
-      }
-      if (!Array.isArray(params[topKey])) params[topKey] = [];
-      const items = params[topKey] as Record<string, unknown>[];
-      if (!items[index]) items[index] = {};
-      items[index][field] = value;
-      continue;
-    }
-
-    // Handle bracket notation
-    const bracketIdx = key.indexOf("[");
-    if (bracketIdx > 0) {
-      const topKey = key.slice(0, bracketIdx);
-      const subKey = key.slice(bracketIdx + 1, -1); // strip trailing ]
-
-      if (!Object.hasOwn(params, topKey) || !params[topKey] || typeof params[topKey] !== "object") {
-        params[topKey] = {};
-      }
-      (params[topKey] as Record<string, unknown>)[subKey] = value;
-    } else {
-      params[key] = value;
-    }
+    const path = bracketPath(key);
+    if (!path) throw new Error(`Invalid parameter key ${JSON.stringify(key)}.`);
+    entries.set(key, { key, path, value: coerceValue(d.slice(eqIdx + 1), path, opts.jsonInput === true) });
   }
 
-  return params;
+  return buildParams([...entries.values()]);
 }

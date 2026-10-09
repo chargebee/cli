@@ -9,6 +9,8 @@ import { handleCodeSample } from "../../lib/api/generated-command.js";
 import { warnBareListFilters } from "../../lib/codesample/index.js";
 import { loadOperationParams, readJsonMarker, warnBareJsonFilters } from "../../lib/api/stdin-params.js";
 
+import { toSdkParams } from "../../lib/api/params.js";
+
 export function registerConfiguration(parent: Command): void {
   const cmd = parent
     .command("configuration")
@@ -25,13 +27,13 @@ export function registerConfiguration(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs configuration list\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "list_site_configurations", opIdV1: "list_site_configurations", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "list_site_configurations", opIdV1: "list_site_configurations", method: "GET", uri: "/configurations", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       if (fromStdin) warnBareJsonFilters(params, "configuration");
       else warnBareListFilters(opts.data ?? [], "configuration");
       try {
         const client = await getClient();
-        const result = await (client as any).configuration.list(params);
+        const result = await (client as any).configuration.list(toSdkParams(params, "GET", true));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });

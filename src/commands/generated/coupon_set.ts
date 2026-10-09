@@ -9,6 +9,8 @@ import { assertResourceId, handleCodeSample } from "../../lib/api/generated-comm
 import { warnBareListFilters } from "../../lib/codesample/index.js";
 import { loadOperationParams, takeResourceId, readJsonMarker, warnBareJsonFilters } from "../../lib/api/stdin-params.js";
 
+import { toSdkParams } from "../../lib/api/params.js";
+
 export function registerCouponSet(parent: Command): void {
   const cmd = parent
     .command("coupon-set")
@@ -26,7 +28,7 @@ export function registerCouponSet(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs coupon-set add-coupon-codes\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "add_coupon_codes_to_coupon_set", opIdV1: "add_coupon_codes_to_coupon_set", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "add_coupon_codes_to_coupon_set", opIdV1: "add_coupon_codes_to_coupon_set", method: "POST", uri: "/coupon_sets/{id}/add_coupon_codes", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "coupon-set-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'coupon-set-id'");
       assertResourceId(resource.id, command);
@@ -48,7 +50,7 @@ export function registerCouponSet(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs coupon-set create\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_a_coupon_set", opIdV1: "create_a_coupon_set", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_a_coupon_set", opIdV1: "create_a_coupon_set", method: "POST", uri: "/coupon_sets", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
       try {
@@ -69,7 +71,7 @@ export function registerCouponSet(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs coupon-set delete\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "delete_a_coupon_set", opIdV1: "delete_a_coupon_set", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "delete_a_coupon_set", opIdV1: "delete_a_coupon_set", method: "POST", uri: "/coupon_sets/{id}/delete", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "coupon-set-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'coupon-set-id'");
       assertResourceId(resource.id, command);
@@ -92,7 +94,7 @@ export function registerCouponSet(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs coupon-set delete-unused-coupon-codes\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "delete_unused_coupon_codes", opIdV1: "delete_unused_coupon_codes", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "delete_unused_coupon_codes", opIdV1: "delete_unused_coupon_codes", method: "POST", uri: "/coupon_sets/{id}/delete_unused_coupon_codes", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "coupon-set-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'coupon-set-id'");
       assertResourceId(resource.id, command);
@@ -115,13 +117,13 @@ export function registerCouponSet(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs coupon-set list\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "list_coupon_sets", opIdV1: "list_coupon_sets", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "list_coupon_sets", opIdV1: "list_coupon_sets", method: "GET", uri: "/coupon_sets", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       if (fromStdin) warnBareJsonFilters(params, "coupon-set");
       else warnBareListFilters(opts.data ?? [], "coupon-set");
       try {
         const client = await getClient();
-        const result = await (client as any).couponSet.list(params);
+        const result = await (client as any).couponSet.list(toSdkParams(params, "GET", true));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -137,13 +139,13 @@ export function registerCouponSet(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs coupon-set retrieve\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "retrieve_a_coupon_set", opIdV1: "retrieve_a_coupon_set", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "retrieve_a_coupon_set", opIdV1: "retrieve_a_coupon_set", method: "GET", uri: "/coupon_sets/{id}", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "coupon-set-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'coupon-set-id'");
       assertResourceId(resource.id, command);
       try {
         const client = await getClient();
-        const result = await (client as any).couponSet.retrieve(resource.id, params);
+        const result = await (client as any).couponSet.retrieve(resource.id, toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -159,7 +161,7 @@ export function registerCouponSet(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs coupon-set update\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "update_a_coupon_set", opIdV1: "update_a_coupon_set", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "update_a_coupon_set", opIdV1: "update_a_coupon_set", method: "POST", uri: "/coupon_sets/{id}/update", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "coupon-set-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'coupon-set-id'");
       assertResourceId(resource.id, command);

@@ -8,6 +8,8 @@ import { handleSdkError, printResult } from "../../lib/api/print.js";
 import { assertResourceId, handleCodeSample } from "../../lib/api/generated-command.js";
 import { loadOperationParams, takeResourceId, readJsonMarker } from "../../lib/api/stdin-params.js";
 
+import { toSdkParams } from "../../lib/api/params.js";
+
 export function registerPaymentIntent(parent: Command): void {
   const cmd = parent
     .command("payment-intent")
@@ -24,7 +26,7 @@ export function registerPaymentIntent(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs payment-intent create\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_a_payment_intent", opIdV1: "create_a_payment_intent", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_a_payment_intent", opIdV1: "create_a_payment_intent", method: "POST", uri: "/payment_intents", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
       try {
@@ -45,13 +47,13 @@ export function registerPaymentIntent(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs payment-intent retrieve\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "retrieve_a_payment_intent", opIdV1: "retrieve_a_payment_intent", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "retrieve_a_payment_intent", opIdV1: "retrieve_a_payment_intent", method: "GET", uri: "/payment_intents/{id}", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "payment-intent-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'payment-intent-id'");
       assertResourceId(resource.id, command);
       try {
         const client = await getClient();
-        const result = await (client as any).paymentIntent.retrieve(resource.id, params);
+        const result = await (client as any).paymentIntent.retrieve(resource.id, toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -67,7 +69,7 @@ export function registerPaymentIntent(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs payment-intent update\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "update_a_payment_intent", opIdV1: "update_a_payment_intent", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "update_a_payment_intent", opIdV1: "update_a_payment_intent", method: "POST", uri: "/payment_intents/{id}", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "payment-intent-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'payment-intent-id'");
       assertResourceId(resource.id, command);

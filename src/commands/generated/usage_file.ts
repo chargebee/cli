@@ -8,6 +8,8 @@ import { handleSdkError, printResult } from "../../lib/api/print.js";
 import { assertResourceId, handleCodeSample } from "../../lib/api/generated-command.js";
 import { loadOperationParams, takeResourceId, readJsonMarker } from "../../lib/api/stdin-params.js";
 
+import { toSdkParams } from "../../lib/api/params.js";
+
 export function registerUsageFile(parent: Command): void {
   const cmd = parent
     .command("usage-file")
@@ -25,14 +27,14 @@ export function registerUsageFile(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs usage-file processing-status\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "get_uploaded_file_processing_status", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "usage-file processing-status");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "get_uploaded_file_processing_status", opIdV1: "", method: "GET", uri: "/usage_files/{id}/processing_status", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "usage-file-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'usage-file-id'");
       assertResourceId(resource.id, command);
       try {
         const client = await getClient();
-        const result = await (client as any).usageFile.processingStatus(resource.id, params);
+        const result = await (client as any).usageFile.processingStatus(resource.id, toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -47,7 +49,7 @@ export function registerUsageFile(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs usage-file upload-url\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "get_usages_file_upload_url", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "usage-file upload-url");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "get_usages_file_upload_url", opIdV1: "", method: "POST", uri: "/usage_files/upload_url", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");

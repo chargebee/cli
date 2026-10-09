@@ -9,6 +9,8 @@ import { assertResourceId, handleCodeSample } from "../../lib/api/generated-comm
 import { warnBareListFilters } from "../../lib/codesample/index.js";
 import { loadOperationParams, takeResourceId, readJsonMarker, warnBareJsonFilters } from "../../lib/api/stdin-params.js";
 
+import { toSdkParams } from "../../lib/api/params.js";
+
 export function registerItemPrice(parent: Command): void {
   const cmd = parent
     .command("item-price")
@@ -25,7 +27,7 @@ export function registerItemPrice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs item-price create\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_an_item_price", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "item-price create");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_an_item_price", opIdV1: "", method: "POST", uri: "/item_prices", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
@@ -47,7 +49,7 @@ export function registerItemPrice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs item-price delete\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "delete_an_item_price", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "item-price delete");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "delete_an_item_price", opIdV1: "", method: "POST", uri: "/item_prices/{id}/delete", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "item-price-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'item-price-id'");
@@ -71,14 +73,14 @@ export function registerItemPrice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs item-price find-applicable-item-prices\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "list_applicable_item_prices_for_a_plan-item_price", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "item-price find-applicable-item-prices");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "list_applicable_item_prices_for_a_plan-item_price", opIdV1: "", method: "GET", uri: "/item_prices/{id}/applicable_item_prices", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "item-price-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'item-price-id'");
       assertResourceId(resource.id, command);
       try {
         const client = await getClient();
-        const result = await (client as any).itemPrice.findApplicableItemPrices(resource.id, params);
+        const result = await (client as any).itemPrice.findApplicableItemPrices(resource.id, toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -94,14 +96,14 @@ export function registerItemPrice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs item-price find-applicable-items\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "list_applicable_items_for_a_plan-item_price", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "item-price find-applicable-items");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "list_applicable_items_for_a_plan-item_price", opIdV1: "", method: "GET", uri: "/item_prices/{id}/applicable_items", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "item-price-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'item-price-id'");
       assertResourceId(resource.id, command);
       try {
         const client = await getClient();
-        const result = await (client as any).itemPrice.findApplicableItems(resource.id, params);
+        const result = await (client as any).itemPrice.findApplicableItems(resource.id, toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -117,14 +119,14 @@ export function registerItemPrice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mEXAMPLE\u001b[0m\n  chargebee item-price list \\\n    -d limit=10\n\n\u001b[1mGENERATE SDK CODE\u001b[0m\n  Add --code-sample python to the example above.\n\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs item-price list\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "list_item_prices", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "item-price list");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "list_item_prices", opIdV1: "", method: "GET", uri: "/item_prices", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       if (fromStdin) warnBareJsonFilters(params, "item-price");
       else warnBareListFilters(opts.data ?? [], "item-price");
       try {
         const client = await getClient();
-        const result = await (client as any).itemPrice.list(params);
+        const result = await (client as any).itemPrice.list(toSdkParams(params, "GET", true));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -140,14 +142,14 @@ export function registerItemPrice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mEXAMPLE\u001b[0m\n  chargebee item-price retrieve '<item-price-id>'\n\n\u001b[1mGENERATE SDK CODE\u001b[0m\n  Add --code-sample python to the example above.\n\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs item-price retrieve\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "retrieve_an_item_price", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "item-price retrieve");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "retrieve_an_item_price", opIdV1: "", method: "GET", uri: "/item_prices/{id}", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "item-price-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'item-price-id'");
       assertResourceId(resource.id, command);
       try {
         const client = await getClient();
-        const result = await (client as any).itemPrice.retrieve(resource.id, params);
+        const result = await (client as any).itemPrice.retrieve(resource.id, toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -163,7 +165,7 @@ export function registerItemPrice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs item-price update\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "update_an_item_price", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "item-price update");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "update_an_item_price", opIdV1: "", method: "POST", uri: "/item_prices/{id}", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "item-price-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'item-price-id'");

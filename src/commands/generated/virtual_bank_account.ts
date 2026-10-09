@@ -9,6 +9,8 @@ import { assertResourceId, handleCodeSample } from "../../lib/api/generated-comm
 import { warnBareListFilters } from "../../lib/codesample/index.js";
 import { loadOperationParams, takeResourceId, readJsonMarker, warnBareJsonFilters } from "../../lib/api/stdin-params.js";
 
+import { toSdkParams } from "../../lib/api/params.js";
+
 export function registerVirtualBankAccount(parent: Command): void {
   const cmd = parent
     .command("virtual-bank-account")
@@ -25,7 +27,7 @@ export function registerVirtualBankAccount(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs virtual-bank-account create\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_a_virtual_bank_account", opIdV1: "create_a_virtual_bank_account", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_a_virtual_bank_account", opIdV1: "create_a_virtual_bank_account", method: "POST", uri: "/virtual_bank_accounts", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
       try {
@@ -45,7 +47,7 @@ export function registerVirtualBankAccount(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs virtual-bank-account create-using-permanent-token\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_a_virtual_bank_account_using_permanent_token", opIdV1: "create_a_virtual_bank_account_using_permanent_token", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_a_virtual_bank_account_using_permanent_token", opIdV1: "create_a_virtual_bank_account_using_permanent_token", method: "POST", uri: "/virtual_bank_accounts/create_using_permanent_token", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
       try {
@@ -66,7 +68,7 @@ export function registerVirtualBankAccount(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs virtual-bank-account delete\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "delete_a_virtual_bank_account", opIdV1: "delete_a_virtual_bank_account", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "delete_a_virtual_bank_account", opIdV1: "delete_a_virtual_bank_account", method: "POST", uri: "/virtual_bank_accounts/{id}/delete", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "virtual-bank-account-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'virtual-bank-account-id'");
       assertResourceId(resource.id, command);
@@ -89,7 +91,7 @@ export function registerVirtualBankAccount(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs virtual-bank-account delete-local\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "local_delete_a_virtual_bank_account", opIdV1: "local_delete_a_virtual_bank_account", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "local_delete_a_virtual_bank_account", opIdV1: "local_delete_a_virtual_bank_account", method: "POST", uri: "/virtual_bank_accounts/{id}/delete_local", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "virtual-bank-account-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'virtual-bank-account-id'");
       assertResourceId(resource.id, command);
@@ -112,13 +114,13 @@ export function registerVirtualBankAccount(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs virtual-bank-account list\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "list_virtual_bank_accounts", opIdV1: "list_virtual_bank_accounts", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "list_virtual_bank_accounts", opIdV1: "list_virtual_bank_accounts", method: "GET", uri: "/virtual_bank_accounts", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       if (fromStdin) warnBareJsonFilters(params, "virtual-bank-account");
       else warnBareListFilters(opts.data ?? [], "virtual-bank-account");
       try {
         const client = await getClient();
-        const result = await (client as any).virtualBankAccount.list(params);
+        const result = await (client as any).virtualBankAccount.list(toSdkParams(params, "GET", true));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -134,13 +136,13 @@ export function registerVirtualBankAccount(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs virtual-bank-account retrieve\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "retrieve_a_virtual_bank_account", opIdV1: "retrieve_a_virtual_bank_account", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "retrieve_a_virtual_bank_account", opIdV1: "retrieve_a_virtual_bank_account", method: "GET", uri: "/virtual_bank_accounts/{id}", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "virtual-bank-account-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'virtual-bank-account-id'");
       assertResourceId(resource.id, command);
       try {
         const client = await getClient();
-        const result = await (client as any).virtualBankAccount.retrieve(resource.id, params);
+        const result = await (client as any).virtualBankAccount.retrieve(resource.id, toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
