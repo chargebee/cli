@@ -18,7 +18,13 @@ The Chargebee CLI is available for macOS, Linux, and Windows.
 curl -fsSL https://raw.githubusercontent.com/chargebee/cli/main/install.sh | bash
 ```
 
-If you accept the skill installation prompt, the installer adds the skill for every detected coding agent. To choose agents yourself, answer No and then run `chargebee skills add --global --agent cursor` (repeat `--agent` for other agents).
+The installer can also add the Chargebee skill for detected coding agents. To choose agents manually, decline the prompt and run:
+
+```bash
+chargebee skills add --global --agent cursor
+```
+
+Repeat `--agent` for each agent.
 
 **Windows** (PowerShell)
 
@@ -38,13 +44,13 @@ Verify the installation:
 chargebee --version
 ```
 
-To upgrade to the latest version:
+Upgrade to the latest version:
 
 ```bash
 chargebee update
 ```
 
-Prebuilt binaries are also available on the [Releases](https://github.com/chargebee/cli/releases) page.
+Prebuilt binaries are available on the [Releases](https://github.com/chargebee/cli/releases) page.
 
 ## Configuration
 
@@ -54,11 +60,11 @@ Connect the CLI to your Chargebee site:
 chargebee auth add
 ```
 
-You'll be prompted for your site name and API key. The CLI verifies the credentials and saves the configuration locally.
+The CLI prompts for your site name and API key, verifies them, and saves the profile locally.
 
-API keys use macOS Keychain, Linux Secret Service (`secret-tool` and an accessible login keyring), or Windows Credential Manager (via Windows PowerShell). If unavailable, keys are saved in the local profile file; `auth add` reports the storage used.
+API keys are stored in macOS Keychain, Linux Secret Service, or Windows Credential Manager when available. Otherwise, they are saved in the local profile file. `auth add` reports the storage used.
 
-You can also provide them directly:
+You can also pass credentials directly:
 
 ```bash
 chargebee auth add --site acme-test --api-key test_xxxxxxxxxxxx
@@ -87,7 +93,7 @@ chargebee customer create \
   -d auto_collection=off
 ```
 
-The same parameters can be a JSON object on stdin. `-` reads that object. Nested fields are objects, and list filters use an operator key:
+Pass request parameters as JSON on stdin with `-`:
 
 ```bash
 echo '{"email":"ada@example.com","first_name":"Ada","billing_address":{"city":"San Francisco"}}' \
@@ -103,7 +109,7 @@ Retrieve the customer:
 chargebee customer retrieve <customer-id>
 ```
 
-API responses are written as JSON to stdout, so standard tools work as expected:
+API responses are JSON, so standard tools work as expected:
 
 ```bash
 chargebee customer list | jq '.list[].customer.email'
@@ -111,86 +117,31 @@ chargebee customer list | jq '.list[].customer.email'
 
 ## JSON output
 
-API commands already print pretty JSON. Add the global `--json` flag for compact,
-machine-readable output across API commands and built-ins:
+API commands print readable JSON by default. Use `--json` when you need compact output for scripts:
 
 ```bash
-chargebee auth status --json
-chargebee --json resources
 chargebee customer list --json | jq '.list[].customer.id'
-chargebee customer create --code-sample curl --json | jq -r '.code'
-chargebee customer list --help --json
+chargebee auth status --json
 ```
 
-For commands that finish, stdout contains one JSON value followed by a newline.
-API responses retain their resource envelopes and pagination fields; SDK transport
-headers are excluded. Built-ins return command-specific fields, such as
-`configured`, `profiles`, `installations`, or `updated`. Empty lists remain arrays.
-Profile output omits API keys. Code samples return `{ "language": "curl", "code": "…" }`;
-help returns command metadata and version returns `{ "version": "…" }`.
-
-On failure, stdout is empty and stderr contains one JSON error:
-
-```json
-{"error":{"code":"live_write_refused","message":"…","exit_code":6}}
-```
-
-`error.code` identifies the failure; `message` is explanatory text, not a value to
-match in scripts. Errors may include `details` (for example, HTTP status and API
-error codes). Usage errors preserve Commander's codes such as
-`commander.unknownOption`. Other codes include `command_failed`, `input_required`,
-`api_error`, `rate_limited`, `timeout`, `network_error`, `unconfigured`,
-`catalog_refused`, and `live_write_refused`. Existing process exit codes are
-unchanged. Successful commands can emit one `{ "warnings": ["…"] }` object on
-stderr. No colour escapes, banners, or progress spinners are emitted in JSON mode.
-
-`--json` disables interactive prompts, even in a terminal. Supply required inputs
-explicitly; profile and skill removal still require `--yes`. Skill installation
-requires `--agent`. Existing scope defaults still apply. The flag does not bypass
-live-site write protection or catalog checks. Browser commands report the URL and
-whether a browser launch was requested, not whether the page loaded.
-
-### Listening with JSON
-
-```bash
-chargebee listen --forward-to http://localhost:3000/webhooks --json
-```
-
-`listen` uses JSON Lines: each stdout line is an independent JSON object, emitted
-as activity occurs. Do not parse the whole session as a single JSON document.
-Records have `type` and an ISO `timestamp`:
-
-- `connecting`: connection progress (`message`).
-- `ready`: the local forwarding target (`forward_to`).
-- `forward_result`: event type and local HTTP response (`event_type`, `http_status`).
-- `forward_failed`: event type and forwarding failure (`event_type`, `message`).
-- `stopped`: graceful shutdown after pending forwards finish.
-
-Warnings use `{ "type": "warning", "timestamp": "…", "message": "…" }` on stderr.
-Terminal failures use the ordinary `error` object and a nonzero exit code; earlier
-stdout records remain valid. A local non-2xx response is a `forward_result` and does
-not terminate the listener. Shutdown still has a deadline; interrupted or timed-out
-shutdown reports `shutdown_failed`. An OS-forced kill cannot guarantee a final record.
-
-These records contain listener and forwarding metadata only. `--json` does not
-print webhook bodies, customer fields, authorization tokens, or response bodies.
+In JSON mode, successful commands write JSON to stdout. Failures write a JSON error to stderr.
 
 ## Commands
 
 | Command | Description |
 |---|---|
-| `auth` | Add API-key credentials and manage saved profiles |
-| `whoami` | Show the active site and configuration |
-| `resources` | List available API resources |
-| `<resource> <operation>` | Call a Chargebee API |
-| `docs` | Browse API documentation from the terminal |
-| `listen` | Forward webhook events to a local URL |
-| `skills` | Install the Chargebee skill for supported AI coding agents |
-| `open` | Open Chargebee Dashboard pages |
-| `feedback` | Share feedback about the CLI |
-| `alias` | Configure a shell alias for `chargebee` |
-| `update` | Update the CLI |
-| `telemetry` | Manage CLI telemetry |
+| `auth` | Add API-key credentials and manage saved profiles. |
+| `whoami` | Show the active site and configuration. |
+| `resources` | List available API resources. |
+| `<resource> <operation>` | Call a Chargebee API. |
+| `docs` | Browse API documentation from the terminal. |
+| `listen` | Forward webhook events to a local URL. |
+| `skills` | Install the Chargebee skill for supported AI coding agents. |
+| `open` | Open Chargebee Dashboard pages. |
+| `feedback` | Share feedback about the CLI. |
+| `alias` | Configure a shell alias for `chargebee`. |
+| `update` | Update the CLI. |
+| `telemetry` | Manage CLI telemetry. |
 
 Explore commands with:
 
@@ -200,8 +151,6 @@ chargebee <resource> --help
 chargebee <resource> <operation> --help
 ```
 
-Operation help identifies arguments such as `customer-id` and `subscription-id` and links to full parameter documentation. Request examples for common operations are derived from the public API specs during generation and omitted when the specs do not provide enough safe values.
-
 For API parameters and operations:
 
 ```bash
@@ -210,7 +159,7 @@ chargebee docs <resource> <operation>
 
 ## Generate SDK Code
 
-Add `--code-sample <language>` to an API command to generate runnable SDK code instead of executing the request:
+Use `--code-sample <language>` to generate runnable SDK code instead of making the API request:
 
 ```bash
 chargebee customer create \
@@ -220,34 +169,24 @@ chargebee customer create \
 
 Supported languages include `curl`, `python`, `nodejs`, `go`, `java`, `php`, `ruby`, and `dotnet`.
 
-Run the following for the complete list:
+To see all supported languages:
 
 ```bash
 chargebee customer create --code-sample list
 ```
 
-Code samples check required parameters and parameter names against the generator's bundled API schema. Site-specific `cf_` custom fields are allowed. Value types and enum values are not validated locally; the API remains authoritative. These schema checks apply to code samples, not API execution.
-
-For indexed item arrays, use Chargebee's field-first bracket notation, such as
-`-d 'subscription_items[item_price_id][0]=basic-USD'` and
-`-d 'subscription_items[quantity][0]=1'`. Fields with the same index describe one item.
-For scalar arrays, either use indexed keys such as
-`-d 'mandatory_items_to_remove[0]=basic-USD' -d 'mandatory_items_to_remove[1]=addon-USD'`
-or pass one JSON array as a shorthand:
-`-d 'mandatory_items_to_remove=["basic-USD","addon-USD"]'`.
-Both forms send the indexed fields expected by form API requests. Quote the
-argument so your shell does not interpret its brackets or quotes. For simple
-string items, `-d 'mandatory_items_to_remove=[basic-USD,addon-USD]'` also works;
-use JSON quotes when an item contains a comma.
-
-For both API requests and code samples, each `-d` argument must contain a non-empty key followed by `=` and its value. Malformed arguments such as `-d email` fail with an error; empty values such as `-d email=` are allowed.
-
 ## Webhook Forwarding
 
-Listen for webhook events and forward them directly to your local application:
+Listen for webhook events and forward them to your local application:
 
 ```bash
 chargebee listen --forward-to http://localhost:3000/webhooks
+```
+
+Use `--json` for machine-readable listener output:
+
+```bash
+chargebee listen --forward-to http://localhost:3000/webhooks --json
 ```
 
 Press `Ctrl+C` to stop listening.
@@ -285,7 +224,7 @@ rm "$(command -v chargebee)"
 Remove-Item (Get-Command chargebee).Source
 ```
 
-To remove CLI configuration and local state:
+Remove CLI configuration and local state:
 
 ```bash
 rm -rf ~/.chargebee/cli
@@ -293,9 +232,13 @@ rm -rf ~/.chargebee/cli
 
 ## Telemetry
 
-The Chargebee CLI collects limited usage telemetry to help improve the CLI. You can opt out at any time with `chargebee telemetry disable`.
+The Chargebee CLI collects limited usage telemetry to improve the CLI. Opt out with:
 
-See [TELEMETRY.md](TELEMETRY.md) for details on what is collected and how telemetry works.
+```bash
+chargebee telemetry disable
+```
+
+See [TELEMETRY.md](TELEMETRY.md) for details.
 
 ## Documentation
 
@@ -303,7 +246,7 @@ See [TELEMETRY.md](TELEMETRY.md) for details on what is collected and how teleme
 - [Chargebee Documentation](https://www.chargebee.com/docs/)
 - [Releases](https://github.com/chargebee/cli/releases)
 
-You can also browse API documentation directly from the CLI:
+Browse API documentation from the CLI:
 
 ```bash
 chargebee docs
@@ -311,7 +254,11 @@ chargebee docs
 
 ## Feedback
 
-Found a bug or have a feature request? Run `chargebee feedback "what happened"`.
+Found a bug or have a feature request?
+
+```bash
+chargebee feedback "what happened"
+```
 
 ## Contributing
 
