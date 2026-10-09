@@ -9,6 +9,8 @@ import { assertResourceId, handleCodeSample } from "../../lib/api/generated-comm
 import { warnBareListFilters } from "../../lib/codesample/index.js";
 import { loadOperationParams, takeResourceId, readJsonMarker, warnBareJsonFilters } from "../../lib/api/stdin-params.js";
 
+import { toSdkParams } from "../../lib/api/params.js";
+
 export function registerBusinessRule(parent: Command): void {
   const cmd = parent
     .command("business-rule")
@@ -26,7 +28,7 @@ export function registerBusinessRule(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs business-rule activate-rule\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "activate_a_business_rule", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "business-rule activate-rule");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "activate_a_business_rule", opIdV1: "", method: "POST", uri: "/business_rules/{id}/activate", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "business-rule-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'business-rule-id'");
@@ -49,7 +51,7 @@ export function registerBusinessRule(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs business-rule apply-rules\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "apply_business_rules", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "business-rule apply-rules");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "apply_business_rules", opIdV1: "", method: "POST", uri: "/business_rules/apply_rules", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
@@ -70,7 +72,7 @@ export function registerBusinessRule(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs business-rule create\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_a_business_rule", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "business-rule create");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_a_business_rule", opIdV1: "", method: "POST", uri: "/business_rules", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
@@ -92,7 +94,7 @@ export function registerBusinessRule(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs business-rule deactivate-rule\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "deactivate_a_business_rule", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "business-rule deactivate-rule");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "deactivate_a_business_rule", opIdV1: "", method: "POST", uri: "/business_rules/{id}/deactivate", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "business-rule-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'business-rule-id'");
@@ -116,7 +118,7 @@ export function registerBusinessRule(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs business-rule delete\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "delete_a_business_rule", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "business-rule delete");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "delete_a_business_rule", opIdV1: "", method: "POST", uri: "/business_rules/{id}/delete", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "business-rule-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'business-rule-id'");
@@ -140,7 +142,7 @@ export function registerBusinessRule(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs business-rule delete-draft\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "delete_a_business_rule_draft", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "business-rule delete-draft");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "delete_a_business_rule_draft", opIdV1: "", method: "POST", uri: "/business_rules/{id}/delete_draft", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "business-rule-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'business-rule-id'");
@@ -164,14 +166,14 @@ export function registerBusinessRule(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs business-rule list\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "list_business_rules", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "business-rule list");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "list_business_rules", opIdV1: "", method: "GET", uri: "/business_rules", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       if (fromStdin) warnBareJsonFilters(params, "business-rule");
       else warnBareListFilters(opts.data ?? [], "business-rule");
       try {
         const client = await getClient();
-        const result = await (client as any).businessRule.list(params);
+        const result = await (client as any).businessRule.list(toSdkParams(params, "GET", true));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -187,7 +189,7 @@ export function registerBusinessRule(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs business-rule release-rule\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "release_a_business_rule", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "business-rule release-rule");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "release_a_business_rule", opIdV1: "", method: "POST", uri: "/business_rules/{id}/release", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "business-rule-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'business-rule-id'");
@@ -211,14 +213,14 @@ export function registerBusinessRule(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs business-rule retrieve\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "retrieve_a_business_rule", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "business-rule retrieve");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "retrieve_a_business_rule", opIdV1: "", method: "GET", uri: "/business_rules/{id}", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "business-rule-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'business-rule-id'");
       assertResourceId(resource.id, command);
       try {
         const client = await getClient();
-        const result = await (client as any).businessRule.retrieve(resource.id, params);
+        const result = await (client as any).businessRule.retrieve(resource.id, toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -234,14 +236,14 @@ export function registerBusinessRule(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs business-rule retrieve-draft\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "retrieve_a_business_rule_draft", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "business-rule retrieve-draft");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "retrieve_a_business_rule_draft", opIdV1: "", method: "GET", uri: "/business_rules/{id}/draft", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "business-rule-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'business-rule-id'");
       assertResourceId(resource.id, command);
       try {
         const client = await getClient();
-        const result = await (client as any).businessRule.retrieveDraft(resource.id, params);
+        const result = await (client as any).businessRule.retrieveDraft(resource.id, toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -257,7 +259,7 @@ export function registerBusinessRule(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs business-rule update-draft\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "update_a_business_rule_draft", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "business-rule update-draft");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "update_a_business_rule_draft", opIdV1: "", method: "POST", uri: "/business_rules/{id}/draft", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "business-rule-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'business-rule-id'");

@@ -9,6 +9,8 @@ import { assertResourceId, handleCodeSample } from "../../lib/api/generated-comm
 import { warnBareListFilters } from "../../lib/codesample/index.js";
 import { loadOperationParams, takeResourceId, readJsonMarker, warnBareJsonFilters } from "../../lib/api/stdin-params.js";
 
+import { toSdkParams } from "../../lib/api/params.js";
+
 export function registerDifferentialPrice(parent: Command): void {
   const cmd = parent
     .command("differential-price")
@@ -26,7 +28,7 @@ export function registerDifferentialPrice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs differential-price create\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_a_differential_price", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "differential-price create");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_a_differential_price", opIdV1: "", method: "POST", uri: "/item_prices/{id}/differential_prices", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "item-price-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'item-price-id'");
@@ -50,7 +52,7 @@ export function registerDifferentialPrice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs differential-price delete\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "delete_a_differential_price", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "differential-price delete");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "delete_a_differential_price", opIdV1: "", method: "POST", uri: "/differential_prices/{id}/delete", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "differential-price-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'differential-price-id'");
@@ -74,14 +76,14 @@ export function registerDifferentialPrice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs differential-price list\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "list_differential_prices", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "differential-price list");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "list_differential_prices", opIdV1: "", method: "GET", uri: "/differential_prices", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       if (fromStdin) warnBareJsonFilters(params, "differential-price");
       else warnBareListFilters(opts.data ?? [], "differential-price");
       try {
         const client = await getClient();
-        const result = await (client as any).differentialPrice.list(params);
+        const result = await (client as any).differentialPrice.list(toSdkParams(params, "GET", true));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -97,14 +99,14 @@ export function registerDifferentialPrice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs differential-price retrieve\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "retrieve_a_differential_price", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "differential-price retrieve");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "retrieve_a_differential_price", opIdV1: "", method: "GET", uri: "/differential_prices/{id}", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "differential-price-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'differential-price-id'");
       assertResourceId(resource.id, command);
       try {
         const client = await getClient();
-        const result = await (client as any).differentialPrice.retrieve(resource.id, params);
+        const result = await (client as any).differentialPrice.retrieve(resource.id, toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -120,7 +122,7 @@ export function registerDifferentialPrice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs differential-price update\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "update_a_differential_price", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "differential-price update");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "update_a_differential_price", opIdV1: "", method: "POST", uri: "/differential_prices/{id}", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "differential-price-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'differential-price-id'");

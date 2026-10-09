@@ -8,6 +8,8 @@ import { handleSdkError, printResult } from "../../lib/api/print.js";
 import { handleCodeSample } from "../../lib/api/generated-command.js";
 import { loadOperationParams, readJsonMarker } from "../../lib/api/stdin-params.js";
 
+import { toSdkParams } from "../../lib/api/params.js";
+
 export function registerLedgerAccountBalance(parent: Command): void {
   const cmd = parent
     .command("ledger-account-balance")
@@ -24,12 +26,12 @@ export function registerLedgerAccountBalance(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs ledger-account-balance list-ledger-account-balances\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "list_ledger_account_balances", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "ledger-account-balance list-ledger-account-balances");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "list_ledger_account_balances", opIdV1: "", method: "GET", uri: "/ledger_account_balances", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       try {
         const client = await getClient();
-        const result = await (client as any).ledgerAccountBalance.listLedgerAccountBalances(params);
+        const result = await (client as any).ledgerAccountBalance.listLedgerAccountBalances(toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });

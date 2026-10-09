@@ -8,6 +8,8 @@ import { handleSdkError, printResult } from "../../lib/api/print.js";
 import { handleCodeSample } from "../../lib/api/generated-command.js";
 import { loadOperationParams, readJsonMarker } from "../../lib/api/stdin-params.js";
 
+import { toSdkParams } from "../../lib/api/params.js";
+
 export function registerBusinessEntity(parent: Command): void {
   const cmd = parent
     .command("business-entity")
@@ -24,7 +26,7 @@ export function registerBusinessEntity(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs business-entity create-transfers\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "transfer_resources_to_another_business_entity", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "business-entity create-transfers");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "transfer_resources_to_another_business_entity", opIdV1: "", method: "POST", uri: "/business_entities/transfers", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
@@ -45,12 +47,12 @@ export function registerBusinessEntity(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs business-entity get-transfers\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "list_the_business_entity_transfers", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "business-entity get-transfers");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "list_the_business_entity_transfers", opIdV1: "", method: "GET", uri: "/business_entities/transfers", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       try {
         const client = await getClient();
-        const result = await (client as any).businessEntity.getTransfers(params);
+        const result = await (client as any).businessEntity.getTransfers(toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });

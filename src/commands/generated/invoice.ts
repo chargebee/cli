@@ -9,6 +9,8 @@ import { assertResourceId, handleCodeSample } from "../../lib/api/generated-comm
 import { warnBareListFilters } from "../../lib/codesample/index.js";
 import { loadOperationParams, takeResourceId, readJsonMarker, warnBareJsonFilters } from "../../lib/api/stdin-params.js";
 
+import { toSdkParams } from "../../lib/api/params.js";
+
 export function registerInvoice(parent: Command): void {
   const cmd = parent
     .command("invoice")
@@ -25,7 +27,7 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice add-addon-charge\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "", opIdV1: "add_non-recurring_addon_to_a_pending_invoice", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc1", "invoice add-addon-charge");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "", opIdV1: "add_non-recurring_addon_to_a_pending_invoice", method: "POST", uri: "/invoices/{id}/add_addon_charge", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "invoice-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'invoice-id'");
@@ -49,7 +51,7 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice add-charge\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "add_one-time_charge_to_a_pending_invoice", opIdV1: "add_one-time_charge_to_a_pending_invoice", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "add_one-time_charge_to_a_pending_invoice", opIdV1: "add_one-time_charge_to_a_pending_invoice", method: "POST", uri: "/invoices/{id}/add_charge", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "invoice-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'invoice-id'");
       assertResourceId(resource.id, command);
@@ -72,7 +74,7 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice add-charge-item\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "add_a_charge-item_to_a_pending_invoice", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "invoice add-charge-item");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "add_a_charge-item_to_a_pending_invoice", opIdV1: "", method: "POST", uri: "/invoices/{id}/add_charge_item", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "invoice-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'invoice-id'");
@@ -96,7 +98,7 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice apply-credits\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "apply_credits_for_an_invoice", opIdV1: "apply_credits_for_an_invoice", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "apply_credits_for_an_invoice", opIdV1: "apply_credits_for_an_invoice", method: "POST", uri: "/invoices/{id}/apply_credits", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "invoice-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'invoice-id'");
       assertResourceId(resource.id, command);
@@ -119,7 +121,7 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice apply-payments\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "apply_payments_for_an_invoice", opIdV1: "apply_payments_for_an_invoice", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "apply_payments_for_an_invoice", opIdV1: "apply_payments_for_an_invoice", method: "POST", uri: "/invoices/{id}/apply_payments", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "invoice-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'invoice-id'");
       assertResourceId(resource.id, command);
@@ -142,7 +144,7 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice apply-payment-schedule-scheme\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "apply_payment_schedule_scheme_to_an_invoice", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "invoice apply-payment-schedule-scheme");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "apply_payment_schedule_scheme_to_an_invoice", opIdV1: "", method: "POST", uri: "/invoices/{id}/apply_payment_schedule_scheme", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "invoice-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'invoice-id'");
@@ -165,7 +167,7 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice charge\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "", opIdV1: "create_invoice_for_a_one-time_charge", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc1", "invoice charge");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "", opIdV1: "create_invoice_for_a_one-time_charge", method: "POST", uri: "/invoices/charge", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
@@ -186,7 +188,7 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice charge-addon\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "", opIdV1: "create_invoice_for_a_non-recurring_addon", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc1", "invoice charge-addon");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "", opIdV1: "create_invoice_for_a_non-recurring_addon", method: "POST", uri: "/invoices/charge_addon", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
@@ -208,7 +210,7 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice close\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "close_a_pending_invoice", opIdV1: "close_a_pending_invoice", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "close_a_pending_invoice", opIdV1: "close_a_pending_invoice", method: "POST", uri: "/invoices/{id}/close", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "invoice-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'invoice-id'");
       assertResourceId(resource.id, command);
@@ -231,7 +233,7 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice collect-payment\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "collect_payment_for_an_invoice", opIdV1: "collect_payment_for_an_invoice", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "collect_payment_for_an_invoice", opIdV1: "collect_payment_for_an_invoice", method: "POST", uri: "/invoices/{id}/collect_payment", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "invoice-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'invoice-id'");
       assertResourceId(resource.id, command);
@@ -253,7 +255,7 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice create\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "", opIdV1: "create_an_invoice", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc1", "invoice create");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "", opIdV1: "create_an_invoice", method: "POST", uri: "/invoices", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
@@ -274,7 +276,7 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice create-for-charge-item\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "", opIdV1: "", method: "POST", uri: "/invoices/create_for_charge_item", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
       try {
@@ -294,7 +296,7 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice create-for-charge-items-and-charges\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_invoice_for_items_and_one-time_charges", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "invoice create-for-charge-items-and-charges");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_invoice_for_items_and_one-time_charges", opIdV1: "", method: "POST", uri: "/invoices/create_for_charge_items_and_charges", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
@@ -316,7 +318,7 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice delete\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "delete_an_invoice", opIdV1: "delete_an_invoice", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "delete_an_invoice", opIdV1: "delete_an_invoice", method: "POST", uri: "/invoices/{id}/delete", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "invoice-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'invoice-id'");
       assertResourceId(resource.id, command);
@@ -339,7 +341,7 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice delete-line-items\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "delete_line_items", opIdV1: "delete_line_items", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "delete_line_items", opIdV1: "delete_line_items", method: "POST", uri: "/invoices/{id}/delete_line_items", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "invoice-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'invoice-id'");
       assertResourceId(resource.id, command);
@@ -362,13 +364,13 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice download-einvoice\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "download_e-invoice", opIdV1: "download_e-invoice", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "download_e-invoice", opIdV1: "download_e-invoice", method: "GET", uri: "/invoices/{id}/download_einvoice", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "invoice-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'invoice-id'");
       assertResourceId(resource.id, command);
       try {
         const client = await getClient();
-        const result = await (client as any).invoice.downloadEinvoice(resource.id, params);
+        const result = await (client as any).invoice.downloadEinvoice(resource.id, toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -383,7 +385,7 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice import-invoice\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "import_invoice", opIdV1: "import_invoice", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "import_invoice", opIdV1: "import_invoice", method: "POST", uri: "/invoices/import_invoice", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
       try {
@@ -404,13 +406,13 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice invoices-for-customer\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "", opIdV1: "", method: "GET", uri: "/customers/{id}/invoices", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: undefined, pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'id'");
       assertResourceId(resource.id, command);
       try {
         const client = await getClient();
-        const result = await (client as any).invoice.invoicesForCustomer(resource.id, params);
+        const result = await (client as any).invoice.invoicesForCustomer(resource.id, toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -426,13 +428,13 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice invoices-for-subscription\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "", opIdV1: "", method: "GET", uri: "/subscriptions/{id}/invoices", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: undefined, pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'id'");
       assertResourceId(resource.id, command);
       try {
         const client = await getClient();
-        const result = await (client as any).invoice.invoicesForSubscription(resource.id, params);
+        const result = await (client as any).invoice.invoicesForSubscription(resource.id, toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -448,13 +450,13 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mEXAMPLE\u001b[0m\n  chargebee invoice list \\\n    -d limit=10\n\n\u001b[1mGENERATE SDK CODE\u001b[0m\n  Add --code-sample python to the example above.\n\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice list\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "list_invoices", opIdV1: "list_invoices", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "list_invoices", opIdV1: "list_invoices", method: "GET", uri: "/invoices", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       if (fromStdin) warnBareJsonFilters(params, "invoice");
       else warnBareListFilters(opts.data ?? [], "invoice");
       try {
         const client = await getClient();
-        const result = await (client as any).invoice.list(params);
+        const result = await (client as any).invoice.list(toSdkParams(params, "GET", true));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -469,11 +471,11 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice list-payment-reference-numbers\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "list_payment_reference_numbers", opIdV1: "list_payment_reference_numbers", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "list_payment_reference_numbers", opIdV1: "list_payment_reference_numbers", method: "GET", uri: "/invoices/payment_reference_numbers", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       try {
         const client = await getClient();
-        const result = await (client as any).invoice.listPaymentReferenceNumbers(params);
+        const result = await (client as any).invoice.listPaymentReferenceNumbers(toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -489,7 +491,7 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice pause-dunning\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "pause_dunning_for_invoice", opIdV1: "pause_dunning_for_invoice", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "pause_dunning_for_invoice", opIdV1: "pause_dunning_for_invoice", method: "POST", uri: "/invoices/{id}/pause_dunning", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "invoice-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'invoice-id'");
       assertResourceId(resource.id, command);
@@ -512,14 +514,14 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice payment-schedules\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "retrieve_payment_schedules_for_an_invoice", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "invoice payment-schedules");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "retrieve_payment_schedules_for_an_invoice", opIdV1: "", method: "GET", uri: "/invoices/{id}/payment_schedules", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "invoice-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'invoice-id'");
       assertResourceId(resource.id, command);
       try {
         const client = await getClient();
-        const result = await (client as any).invoice.paymentSchedules(resource.id, params);
+        const result = await (client as any).invoice.paymentSchedules(resource.id, toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -535,7 +537,7 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice pdf\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "retrieve_invoice_as_pdf", opIdV1: "retrieve_invoice_as_pdf", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "retrieve_invoice_as_pdf", opIdV1: "retrieve_invoice_as_pdf", method: "POST", uri: "/invoices/{id}/pdf", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "invoice-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'invoice-id'");
       assertResourceId(resource.id, command);
@@ -558,7 +560,7 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice record-payment\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "record_an_invoice_payment", opIdV1: "record_an_invoice_payment", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "record_an_invoice_payment", opIdV1: "record_an_invoice_payment", method: "POST", uri: "/invoices/{id}/record_payment", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "invoice-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'invoice-id'");
       assertResourceId(resource.id, command);
@@ -581,7 +583,7 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice record-refund\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "record_refund_for_an_invoice", opIdV1: "record_refund_for_an_invoice", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "record_refund_for_an_invoice", opIdV1: "record_refund_for_an_invoice", method: "POST", uri: "/invoices/{id}/record_refund", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "invoice-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'invoice-id'");
       assertResourceId(resource.id, command);
@@ -604,7 +606,7 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice record-tax-withheld\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "record_tax_withheld_for_an_invoice", opIdV1: "record_tax_withheld_for_an_invoice", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "record_tax_withheld_for_an_invoice", opIdV1: "record_tax_withheld_for_an_invoice", method: "POST", uri: "/invoices/{id}/record_tax_withheld", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "invoice-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'invoice-id'");
       assertResourceId(resource.id, command);
@@ -627,7 +629,7 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice refund\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "refund_an_invoice", opIdV1: "refund_an_invoice", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "refund_an_invoice", opIdV1: "refund_an_invoice", method: "POST", uri: "/invoices/{id}/refund", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "invoice-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'invoice-id'");
       assertResourceId(resource.id, command);
@@ -650,7 +652,7 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice remove-credit-note\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "remove_credit_note_from_an_invoice", opIdV1: "remove_credit_note_from_an_invoice", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "remove_credit_note_from_an_invoice", opIdV1: "remove_credit_note_from_an_invoice", method: "POST", uri: "/invoices/{id}/remove_credit_note", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "invoice-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'invoice-id'");
       assertResourceId(resource.id, command);
@@ -673,7 +675,7 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice remove-payment\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "remove_payment_from_an_invoice", opIdV1: "remove_payment_from_an_invoice", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "remove_payment_from_an_invoice", opIdV1: "remove_payment_from_an_invoice", method: "POST", uri: "/invoices/{id}/remove_payment", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "invoice-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'invoice-id'");
       assertResourceId(resource.id, command);
@@ -696,7 +698,7 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice remove-tax-withheld\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "remove_tax_withheld_for_an_invoice", opIdV1: "remove_tax_withheld_for_an_invoice", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "remove_tax_withheld_for_an_invoice", opIdV1: "remove_tax_withheld_for_an_invoice", method: "POST", uri: "/invoices/{id}/remove_tax_withheld", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "invoice-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'invoice-id'");
       assertResourceId(resource.id, command);
@@ -719,7 +721,7 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice resend-einvoice\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "resend_failed_einvoice_in_invoices", opIdV1: "resend_failed_einvoice_in_invoices", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "resend_failed_einvoice_in_invoices", opIdV1: "resend_failed_einvoice_in_invoices", method: "POST", uri: "/invoices/{id}/resend_einvoice", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "invoice-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'invoice-id'");
       assertResourceId(resource.id, command);
@@ -742,7 +744,7 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice resume-dunning\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "resume_dunning_for_invoice", opIdV1: "resume_dunning_for_invoice", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "resume_dunning_for_invoice", opIdV1: "resume_dunning_for_invoice", method: "POST", uri: "/invoices/{id}/resume_dunning", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "invoice-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'invoice-id'");
       assertResourceId(resource.id, command);
@@ -765,13 +767,13 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mEXAMPLE\u001b[0m\n  chargebee invoice retrieve '<invoice-id>' \\\n    -d line_items_limit=100\n\n\u001b[1mGENERATE SDK CODE\u001b[0m\n  Add --code-sample python to the example above.\n\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice retrieve\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "retrieve_an_invoice", opIdV1: "retrieve_an_invoice", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "retrieve_an_invoice", opIdV1: "retrieve_an_invoice", method: "GET", uri: "/invoices/{id}", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "invoice-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'invoice-id'");
       assertResourceId(resource.id, command);
       try {
         const client = await getClient();
-        const result = await (client as any).invoice.retrieve(resource.id, params);
+        const result = await (client as any).invoice.retrieve(resource.id, toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -787,7 +789,7 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice send-einvoice\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "send_an_einvoice_for_invoices", opIdV1: "send_an_einvoice_for_invoices", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "send_an_einvoice_for_invoices", opIdV1: "send_an_einvoice_for_invoices", method: "POST", uri: "/invoices/{id}/send_einvoice", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "invoice-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'invoice-id'");
       assertResourceId(resource.id, command);
@@ -810,7 +812,7 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice send-email\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "send_invoice_email", opIdV1: "send_invoice_email", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "send_invoice_email", opIdV1: "send_invoice_email", method: "POST", uri: "/invoices/{id}/send_email", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "invoice-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'invoice-id'");
       assertResourceId(resource.id, command);
@@ -833,7 +835,7 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice stop-dunning\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "stop_dunning_for_invoice", opIdV1: "stop_dunning_for_invoice", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "stop_dunning_for_invoice", opIdV1: "stop_dunning_for_invoice", method: "POST", uri: "/invoices/{id}/stop_dunning", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "invoice-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'invoice-id'");
       assertResourceId(resource.id, command);
@@ -856,7 +858,7 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice sync-usages\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "sync_usages", opIdV1: "sync_usages", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "sync_usages", opIdV1: "sync_usages", method: "POST", uri: "/invoices/{id}/sync_usages", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "invoice-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'invoice-id'");
       assertResourceId(resource.id, command);
@@ -879,7 +881,7 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice update-details\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "update_invoice_details", opIdV1: "update_invoice_details", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "update_invoice_details", opIdV1: "update_invoice_details", method: "POST", uri: "/invoices/{id}/update_details", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "invoice-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'invoice-id'");
       assertResourceId(resource.id, command);
@@ -902,7 +904,7 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice void-before-capture\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "void_authorizations_before_capture", opIdV1: "void_authorizations_before_capture", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "void_authorizations_before_capture", opIdV1: "void_authorizations_before_capture", method: "POST", uri: "/invoices/{id}/void_before_capture", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "invoice-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'invoice-id'");
       assertResourceId(resource.id, command);
@@ -925,7 +927,7 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice void-invoice\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "void_an_invoice", opIdV1: "void_an_invoice", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "void_an_invoice", opIdV1: "void_an_invoice", method: "POST", uri: "/invoices/{id}/void", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "invoice-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'invoice-id'");
       assertResourceId(resource.id, command);
@@ -948,7 +950,7 @@ export function registerInvoice(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice write-off\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "write_off_an_invoice", opIdV1: "write_off_an_invoice", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "write_off_an_invoice", opIdV1: "write_off_an_invoice", method: "POST", uri: "/invoices/{id}/write_off", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "invoice-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'invoice-id'");
       assertResourceId(resource.id, command);

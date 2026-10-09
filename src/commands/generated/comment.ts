@@ -9,6 +9,8 @@ import { assertResourceId, handleCodeSample } from "../../lib/api/generated-comm
 import { warnBareListFilters } from "../../lib/codesample/index.js";
 import { loadOperationParams, takeResourceId, readJsonMarker, warnBareJsonFilters } from "../../lib/api/stdin-params.js";
 
+import { toSdkParams } from "../../lib/api/params.js";
+
 export function registerComment(parent: Command): void {
   const cmd = parent
     .command("comment")
@@ -24,7 +26,7 @@ export function registerComment(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs comment create\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_a_comment", opIdV1: "create_a_comment", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_a_comment", opIdV1: "create_a_comment", method: "POST", uri: "/comments", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
       try {
@@ -45,7 +47,7 @@ export function registerComment(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs comment delete\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "delete_a_comment", opIdV1: "delete_a_comment", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "delete_a_comment", opIdV1: "delete_a_comment", method: "POST", uri: "/comments/{id}/delete", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "comment-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'comment-id'");
       assertResourceId(resource.id, command);
@@ -68,13 +70,13 @@ export function registerComment(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs comment list\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "list_comments", opIdV1: "list_comments", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "list_comments", opIdV1: "list_comments", method: "GET", uri: "/comments", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       if (fromStdin) warnBareJsonFilters(params, "comment");
       else warnBareListFilters(opts.data ?? [], "comment");
       try {
         const client = await getClient();
-        const result = await (client as any).comment.list(params);
+        const result = await (client as any).comment.list(toSdkParams(params, "GET", true));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -90,13 +92,13 @@ export function registerComment(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs comment retrieve\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "retrieve_a_comment", opIdV1: "retrieve_a_comment", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "retrieve_a_comment", opIdV1: "retrieve_a_comment", method: "GET", uri: "/comments/{id}", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "comment-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'comment-id'");
       assertResourceId(resource.id, command);
       try {
         const client = await getClient();
-        const result = await (client as any).comment.retrieve(resource.id, params);
+        const result = await (client as any).comment.retrieve(resource.id, toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });

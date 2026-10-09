@@ -9,6 +9,8 @@ import { assertResourceId, handleCodeSample } from "../../lib/api/generated-comm
 import { warnBareListFilters } from "../../lib/codesample/index.js";
 import { loadOperationParams, takeResourceId, readJsonMarker, warnBareJsonFilters } from "../../lib/api/stdin-params.js";
 
+import { toSdkParams } from "../../lib/api/params.js";
+
 export function registerOmnichannelSubscription(parent: Command): void {
   const cmd = parent
     .command("omnichannel-subscription")
@@ -26,14 +28,14 @@ export function registerOmnichannelSubscription(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs omnichannel-subscription list\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "list_omnichannel_subscriptions", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "omnichannel-subscription list");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "list_omnichannel_subscriptions", opIdV1: "", method: "GET", uri: "/omnichannel_subscriptions", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       if (fromStdin) warnBareJsonFilters(params, "omnichannel-subscription");
       else warnBareListFilters(opts.data ?? [], "omnichannel-subscription");
       try {
         const client = await getClient();
-        const result = await (client as any).omnichannelSubscription.list(params);
+        const result = await (client as any).omnichannelSubscription.list(toSdkParams(params, "GET", true));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -49,7 +51,7 @@ export function registerOmnichannelSubscription(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs omnichannel-subscription move\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "move_an_omnichannel_subscription", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "omnichannel-subscription move");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "move_an_omnichannel_subscription", opIdV1: "", method: "POST", uri: "/omnichannel_subscriptions/{id}/move", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "omnichannel-subscription-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'omnichannel-subscription-id'");
@@ -73,14 +75,14 @@ export function registerOmnichannelSubscription(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs omnichannel-subscription omnichannel_transactions-for-omnichannel-subscription\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "list_omnichannel_transactions_of_an_omnichannel_subscription", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "omnichannel-subscription omnichannel_transactions-for-omnichannel-subscription");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "list_omnichannel_transactions_of_an_omnichannel_subscription", opIdV1: "", method: "GET", uri: "/omnichannel_subscriptions/{id}/omnichannel_transactions", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "omnichannel-subscription-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'omnichannel-subscription-id'");
       assertResourceId(resource.id, command);
       try {
         const client = await getClient();
-        const result = await (client as any).omnichannelSubscription.omnichannel_transactionsForOmnichannelSubscription(resource.id, params);
+        const result = await (client as any).omnichannelSubscription.omnichannel_transactionsForOmnichannelSubscription(resource.id, toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -96,14 +98,14 @@ export function registerOmnichannelSubscription(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs omnichannel-subscription retrieve\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "retrieve_an_omnichannel_subscription", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "omnichannel-subscription retrieve");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "retrieve_an_omnichannel_subscription", opIdV1: "", method: "GET", uri: "/omnichannel_subscriptions/{id}", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "omnichannel-subscription-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'omnichannel-subscription-id'");
       assertResourceId(resource.id, command);
       try {
         const client = await getClient();
-        const result = await (client as any).omnichannelSubscription.retrieve(resource.id, params);
+        const result = await (client as any).omnichannelSubscription.retrieve(resource.id, toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });

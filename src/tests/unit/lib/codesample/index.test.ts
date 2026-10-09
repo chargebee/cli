@@ -22,6 +22,9 @@ describe("parseDataFlags", () => {
     expect(parseDataFlags(['id[in]=["silver","murali"]'])).toEqual({
       id: { in: ["silver", "murali"] },
     });
+    expect(parseDataFlags(["id[in]=[silver,murali]"])).toEqual({
+      id: { in: ["silver", "murali"] },
+    });
   });
 
   it("parses id[not_in] into a real array", () => {
@@ -157,6 +160,22 @@ describe("code-sample parameter validation", () => {
     expect(python).toContain("unit_price=100");
   });
 
+  it("normalizes indexed-object and array fields in one code sample", async () => {
+    const code = await generate({
+      operationId: "create_subscription_for_items", language: "curl", method: "POST",
+      resourceId: "cus_demo", pathParamName: "customer-id",
+      params: { subscription_items: { item_price_id: { "0": "basic-USD" }, quantity: ["2"] } },
+    });
+    expect(code).toContain("subscription_items[item_price_id][0]");
+    expect(code).toContain("subscription_items[quantity][0]");
+
+    await expect(generate({
+      operationId: "create_subscription_for_items", language: "curl", method: "POST",
+      resourceId: "cus_demo", pathParamName: "customer-id",
+      params: { subscription_items: { item_price_id: { "10001": "basic-USD" } } },
+    })).rejects.toThrow("Invalid indexed parameter");
+  });
+
   it("uses the same indexed form for JSON stdin arrays and bracket keys", async () => {
     const inputs = [
       { subscription_items: [
@@ -229,6 +248,26 @@ describe("code-sample parameter validation", () => {
     expect(code).toContain("Filters.StringFilter");
     expect(code).toContain('"a"');
     expect(code).toContain('"b"');
+  });
+
+  it("renders nested export filters from bracket flags", async () => {
+    const code = await generate({
+      operationId: "export_subscriptions", language: "curl", method: "POST", uri: "/exports/subscriptions",
+      params: parseDataFlags(['subscription[status][is]=active', 'subscription[status][in]=["active","in_trial"]']),
+    });
+    expect(code).toContain("subscription[status][is]");
+    expect(code).toContain("subscription[status][in]");
+  });
+
+  it("renders indexed JSON-body arrays as arrays", async () => {
+    const code = await generate({
+      operationId: "list_personalized_offers", language: "curl", method: "POST", uri: "/personalized_offers",
+      params: parseDataFlags(["customer_id=cus_1", "roles[0]=admin", "roles[1]=engineer"], { jsonInput: true }),
+    });
+    expect(code).toContain('"roles"');
+    expect(code).toContain('"admin"');
+    expect(code).toContain('"engineer"');
+    expect(code).not.toContain('"0":');
   });
 
   it("propagates generator errors unrelated to parameter validation", async () => {

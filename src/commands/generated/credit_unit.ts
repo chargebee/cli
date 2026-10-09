@@ -9,6 +9,8 @@ import { assertResourceId, handleCodeSample } from "../../lib/api/generated-comm
 import { warnBareListFilters } from "../../lib/codesample/index.js";
 import { loadOperationParams, takeResourceId, readJsonMarker, warnBareJsonFilters } from "../../lib/api/stdin-params.js";
 
+import { toSdkParams } from "../../lib/api/params.js";
+
 export function registerCreditUnit(parent: Command): void {
   const cmd = parent
     .command("credit-unit")
@@ -26,7 +28,7 @@ export function registerCreditUnit(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs credit-unit archive\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "archive_a_credit_unit", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "credit-unit archive");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "archive_a_credit_unit", opIdV1: "", method: "POST", uri: "/credit_units/{id}/archive_command", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "credit-unit-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'credit-unit-id'");
@@ -49,7 +51,7 @@ export function registerCreditUnit(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs credit-unit create\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_a_credit_unit", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "credit-unit create");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_a_credit_unit", opIdV1: "", method: "POST", uri: "/credit_units", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
@@ -71,14 +73,14 @@ export function registerCreditUnit(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs credit-unit list\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "list_credit_units", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "credit-unit list");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "list_credit_units", opIdV1: "", method: "GET", uri: "/credit_units", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       if (fromStdin) warnBareJsonFilters(params, "credit-unit");
       else warnBareListFilters(opts.data ?? [], "credit-unit");
       try {
         const client = await getClient();
-        const result = await (client as any).creditUnit.list(params);
+        const result = await (client as any).creditUnit.list(toSdkParams(params, "GET", true));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -94,7 +96,7 @@ export function registerCreditUnit(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs credit-unit reactivate\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "reactivate_a_credit_unit", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "credit-unit reactivate");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "reactivate_a_credit_unit", opIdV1: "", method: "POST", uri: "/credit_units/{id}/reactivate_command", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "credit-unit-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'credit-unit-id'");
@@ -118,7 +120,7 @@ export function registerCreditUnit(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs credit-unit update\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "update_a_credit_unit", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "credit-unit update");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "update_a_credit_unit", opIdV1: "", method: "POST", uri: "/credit_units/{id}", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "credit-unit-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'credit-unit-id'");

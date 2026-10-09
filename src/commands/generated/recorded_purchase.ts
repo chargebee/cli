@@ -8,6 +8,8 @@ import { handleSdkError, printResult } from "../../lib/api/print.js";
 import { assertResourceId, handleCodeSample } from "../../lib/api/generated-command.js";
 import { loadOperationParams, takeResourceId, readJsonMarker } from "../../lib/api/stdin-params.js";
 
+import { toSdkParams } from "../../lib/api/params.js";
+
 export function registerRecordedPurchase(parent: Command): void {
   const cmd = parent
     .command("recorded-purchase")
@@ -24,7 +26,7 @@ export function registerRecordedPurchase(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs recorded-purchase create\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "record_a_purchase", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "recorded-purchase create");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "record_a_purchase", opIdV1: "", method: "POST", uri: "/recorded_purchases", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
@@ -46,14 +48,14 @@ export function registerRecordedPurchase(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs recorded-purchase retrieve\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "retrieve_a_recorded_purchase", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "recorded-purchase retrieve");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "retrieve_a_recorded_purchase", opIdV1: "", method: "GET", uri: "/recorded_purchases/{id}", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "recorded-purchase-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'recorded-purchase-id'");
       assertResourceId(resource.id, command);
       try {
         const client = await getClient();
-        const result = await (client as any).recordedPurchase.retrieve(resource.id, params);
+        const result = await (client as any).recordedPurchase.retrieve(resource.id, toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });

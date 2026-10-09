@@ -8,6 +8,8 @@ import { handleSdkError, printResult } from "../../lib/api/print.js";
 import { assertResourceId, handleCodeSample } from "../../lib/api/generated-command.js";
 import { loadOperationParams, takeResourceId } from "../../lib/api/stdin-params.js";
 
+import { toSdkParams } from "../../lib/api/params.js";
+
 export function registerItemEntitlement(parent: Command): void {
   const cmd = parent
     .command("item-entitlement")
@@ -25,7 +27,7 @@ export function registerItemEntitlement(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs item-entitlement add-item-entitlements\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "upsert_or_remove_item_entitlements_for_a_feature", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "item-entitlement add-item-entitlements");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "upsert_or_remove_item_entitlements_for_a_feature", opIdV1: "", method: "POST", uri: "/features/{id}/item_entitlements", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "feature-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'feature-id'");
@@ -49,14 +51,14 @@ export function registerItemEntitlement(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs item-entitlement item-entitlements-for-feature\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "list_item_entitlements_for_a_feature", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "item-entitlement item-entitlements-for-feature");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "list_item_entitlements_for_a_feature", opIdV1: "", method: "GET", uri: "/features/{id}/item_entitlements", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "feature-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'feature-id'");
       assertResourceId(resource.id, command);
       try {
         const client = await getClient();
-        const result = await (client as any).itemEntitlement.itemEntitlementsForFeature(resource.id, params);
+        const result = await (client as any).itemEntitlement.itemEntitlementsForFeature(resource.id, toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -72,14 +74,14 @@ export function registerItemEntitlement(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs item-entitlement item-entitlements-for-item\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "list_item_entitlements_for_an_item", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "item-entitlement item-entitlements-for-item");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "list_item_entitlements_for_an_item", opIdV1: "", method: "GET", uri: "/items/{id}/item_entitlements", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "item-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'item-id'");
       assertResourceId(resource.id, command);
       try {
         const client = await getClient();
-        const result = await (client as any).itemEntitlement.itemEntitlementsForItem(resource.id, params);
+        const result = await (client as any).itemEntitlement.itemEntitlementsForItem(resource.id, toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -95,7 +97,7 @@ export function registerItemEntitlement(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs item-entitlement upsert-or-remove-item-entitlements-for-item\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "upsert_or_remove_item_entitlements_for_an_item", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "item-entitlement upsert-or-remove-item-entitlements-for-item");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "upsert_or_remove_item_entitlements_for_an_item", opIdV1: "", method: "POST", uri: "/items/{id}/item_entitlements", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "item-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'item-id'");

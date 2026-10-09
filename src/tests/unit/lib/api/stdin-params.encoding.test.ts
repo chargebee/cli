@@ -7,7 +7,8 @@
 import { describe, expect, it } from "bun:test";
 import Chargebee from "chargebee";
 
-import { parseStdinParams } from "../../../../lib/api/stdin-params.js";
+import { parseStdinParams, resolveOperationParams } from "../../../../lib/api/stdin-params.js";
+import { toSdkParams } from "../../../../lib/api/params.js";
 import { parseDataFlags } from "../../../../lib/codesample/index.js";
 
 type Params = Record<string, unknown>;
@@ -29,7 +30,9 @@ const client = new Chargebee({
 } as never) as never as {
   customer: { create(p: Params): Promise<unknown>; list(p: Params): Promise<unknown> };
   subscription: { createWithItems(id: string, p: Params): Promise<unknown> };
-  export: { customers(p: Params): Promise<unknown> };
+  export: { customers(p: Params): Promise<unknown>; subscriptions(p: Params): Promise<unknown> };
+  personalizedOffer: { personalizedOffers(p: Params): Promise<unknown> };
+  usageEvent: { create(p: Params): Promise<unknown> };
 };
 
 /** Decoded so expectations read like the `--data-urlencode` values they mirror. */
@@ -242,6 +245,44 @@ describe("stdin JSON to form encoding", () => {
  * the params object to the SDK, and the SDK produces the same request.
  */
 describe("cURL request parity", () => {
+  it("accepts indexed and JSON-array shorthand for the same form array", async () => {
+    const indexed = parseDataFlags(["mandatory_items_to_remove[0]=p1", "mandatory_items_to_remove[1]=p2"]);
+    const shorthand = parseDataFlags(['mandatory_items_to_remove=["p1","p2"]']);
+    expect(indexed).toEqual(shorthand);
+    expect(indexed).toEqual(parseDataFlags(["mandatory_items_to_remove=[p1,p2]"]));
+    expect(await createBody(indexed)).toBe("mandatory_items_to_remove[0]=p1&mandatory_items_to_remove[1]=p2");
+    expect(await createBody(shorthand)).toBe(await createBody(parseStdinParams('{"mandatory_items_to_remove":["p1","p2"]}')));
+  });
+
+  it("keeps an indexed JSON-looking form value as one field", async () => {
+    expect(await createBody(parseDataFlags(['items[tags][0]=["a","b"]']))).toBe('items[tags][0]=["a","b"]');
+  });
+
+  it("sends both sibling GET filters through the CLI adapter", async () => {
+    const params = parseDataFlags(["created_at[after]=1", "created_at[before]=2", 'id[in]=["a","b"]']);
+    expect(await listQuery(toSdkParams(params, "GET", true))).toBe('created_at[after]=1&created_at[before]=2&id[in]=["a","b"]');
+    expect(await listQuery(toSdkParams(parseStdinParams('{"created_at":{"after":"1","before":"2"},"id":{"in":["a","b"]}}'), "GET", true)))
+      .toBe('created_at[after]=1&created_at[before]=2&id[in]=["a","b"]');
+  });
+
+  it("sends sub-resource export array filters as one field", async () => {
+    const params = parseDataFlags(['subscription[status][in]=["active","in_trial"]', 'subscription[next_billing_at][between]=[1,2]']);
+    await client.export.subscriptions(params);
+    expect(decode(captured?.body ?? "")).toBe('subscription[status][in]=["active","in_trial"]&subscription[next_billing_at][between]=[1,2]');
+  });
+
+  it("sends JSON-body indexed arrays and schema-typed numeric values", async () => {
+    const roles = await resolveOperationParams(["customer_id=cus_1", "roles[0]=admin", "roles[1]=engineer"], false,
+      { jsonInput: true, opIdV2: "list_personalized_offers", pcVersionFlag: "v2" });
+    await client.personalizedOffer.personalizedOffers(roles);
+    expect(JSON.parse(captured?.body ?? "{}")).toEqual({ customer_id: "cus_1", roles: ["admin", "engineer"] });
+
+    const usage = await resolveOperationParams(["deduplication_id=123", "subscription_id=sub_1", "usage_timestamp=1700000000", "properties={}"], false,
+      { jsonInput: true, opIdV2: "create_a_usage_event", pcVersionFlag: "v2" });
+    await client.usageEvent.create(usage);
+    expect(JSON.parse(captured?.body ?? "{}")).toEqual({ deduplication_id: "123", subscription_id: "sub_1", usage_timestamp: 1700000000, properties: {} });
+  });
+
   it("encodes indexed subscription item fields in the documented field-first order", async () => {
     await client.subscription.createWithItems("cus_demo", parseDataFlags([
       "subscription_items[item_price_id][0]=basic-USD",

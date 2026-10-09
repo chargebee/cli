@@ -8,6 +8,8 @@ import { handleSdkError, printResult } from "../../lib/api/print.js";
 import { assertResourceId, handleCodeSample } from "../../lib/api/generated-command.js";
 import { loadOperationParams, takeResourceId } from "../../lib/api/stdin-params.js";
 
+import { toSdkParams } from "../../lib/api/params.js";
+
 export function registerOmnichannelSubscriptionItem(parent: Command): void {
   const cmd = parent
     .command("omnichannel-subscription-item")
@@ -25,14 +27,14 @@ export function registerOmnichannelSubscriptionItem(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs omnichannel-subscription-item list-omni-sub-item-schedule-changes\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "list_scheduled_changes_for_omnichannel_subscription_item", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "omnichannel-subscription-item list-omni-sub-item-schedule-changes");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "list_scheduled_changes_for_omnichannel_subscription_item", opIdV1: "", method: "GET", uri: "/omnichannel_subscription_items/{id}/scheduled_changes", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "omnichannel-subscription-item-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'omnichannel-subscription-item-id'");
       assertResourceId(resource.id, command);
       try {
         const client = await getClient();
-        const result = await (client as any).omnichannelSubscriptionItem.listOmniSubItemScheduleChanges(resource.id, params);
+        const result = await (client as any).omnichannelSubscriptionItem.listOmniSubItemScheduleChanges(resource.id, toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });

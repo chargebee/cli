@@ -1,7 +1,18 @@
 import type { Command } from "commander";
+import { getOperation } from "@chargebee/code-sample-generator/node";
 
 import { diagnostic, isJsonMode } from "../output.js";
 import { LIST_NON_FILTER_KEYS, LIST_OPS_DOC_URL, assertSafeParameterKey, parseDataFlags } from "../codesample/index.js";
+import { resolveCatalogVersion } from "./sdk.js";
+import { bracketPath, buildParams, typeJsonScalars, type ParamEntry } from "./params.js";
+
+export interface OperationParamOptions {
+  method?: string;
+  jsonInput?: boolean;
+  opIdV1?: string;
+  opIdV2?: string;
+  pcVersionFlag?: string;
+}
 
 /** `-` reads one JSON object from stdin and uses it as the request params. */
 export class StdinParamsError extends Error {
@@ -60,11 +71,23 @@ export function parseStdinParams(text: string): Record<string, unknown> {
 export async function resolveOperationParams(
   dataFlags: string[],
   fromStdin: boolean,
+  opts: OperationParamOptions = {},
 ): Promise<Record<string, unknown>> {
   if (fromStdin && dataFlags.length > 0) {
     throw new StdinParamsError("error: pass parameters with '-' or with -d, not both.");
   }
-  if (!fromStdin) return parseDataFlags(dataFlags);
+  if (!fromStdin) {
+    const params = parseDataFlags(dataFlags, opts);
+    if (!opts.jsonInput || !dataFlags.length) return params;
+    const pcVersion = opts.pcVersionFlag === "v1" || opts.pcVersionFlag === "v2"
+      ? opts.pcVersionFlag
+      : (await resolveCatalogVersion()) ?? "v2";
+    const opId = pcVersion === "v1" ? opts.opIdV1 || opts.opIdV2 : opts.opIdV2 || opts.opIdV1;
+    if (!opId) return params;
+    const preferred = pcVersion === "v1" ? "v2-pcv1" : "v2-pcv2";
+    const other = pcVersion === "v1" ? "v2-pcv2" : "v2-pcv1";
+    return typeJsonScalars(params, (getOperation(preferred, opId) ?? getOperation(other, opId))?.params);
+  }
   if (process.stdin.isTTY) {
     throw new StdinParamsError("error: '-' reads a JSON object from stdin, and stdin is a terminal.");
   }
@@ -110,9 +133,10 @@ export async function loadOperationParams(
   dataFlags: string[],
   fromStdin: boolean,
   command: CommandExit,
+  opts: OperationParamOptions = {},
 ): Promise<Record<string, unknown>> {
   try {
-    return await resolveOperationParams(dataFlags, fromStdin);
+    return await resolveOperationParams(dataFlags, fromStdin, opts);
   } catch (e) {
     if (e instanceof StdinParamsError) command.error(e.message);
     throw e;
@@ -140,62 +164,20 @@ export function warnBareJsonFilters(
 }
 
 function expandBracketKeys(params: Record<string, unknown>): Record<string, unknown> {
-  const out: Record<string, unknown> = {};
+  const entries: ParamEntry[] = [];
   for (const [key, value] of Object.entries(params)) {
     try {
       assertSafeParameterKey(key);
     } catch {
       throw new StdinParamsError(`error: invalid parameter key '${key}'.`);
     }
-    if (!key.includes("[")) {
-      if (Object.prototype.hasOwnProperty.call(out, key)) {
-        throw new StdinParamsError(`error: conflicting parameter '${key}'.`);
-      }
-      out[key] = value;
-      continue;
-    }
-    const parts = bracketParts(key);
-    if (!parts) throw new StdinParamsError(`error: invalid parameter key '${key}'.`);
-    assignPath(out, parts, value);
+    const path = bracketPath(key);
+    if (!path) throw new StdinParamsError(`error: invalid parameter key '${key}'.`);
+    entries.push({ key, path, value });
   }
-  return out;
-}
-
-function formatPath(parts: string[]): string {
-  return parts[0] + parts.slice(1).map((part) => `[${part}]`).join("");
-}
-
-function bracketParts(key: string): string[] | null {
-  const open = key.indexOf("[");
-  if (open <= 0) return null;
-  const rest = key.slice(open);
-  if (!/^(?:\[[^\[\]]+\])+$/.test(rest)) return null;
-  const parts = [key.slice(0, open)];
-  for (const match of rest.matchAll(/\[([^\[\]]+)\]/g)) {
-    parts.push(match[1]);
+  try {
+    return buildParams(entries);
+  } catch (error) {
+    throw new StdinParamsError(`error: ${error instanceof Error ? error.message : String(error)}`);
   }
-  return parts;
-}
-
-function assignPath(root: Record<string, unknown>, parts: string[], value: unknown): void {
-  let cursor = root;
-  for (let i = 0; i < parts.length - 1; i++) {
-    const part = parts[i];
-    const next = Object.hasOwn(cursor, part) ? cursor[part] : undefined;
-    if (next === undefined) {
-      const created: Record<string, unknown> = {};
-      cursor[part] = created;
-      cursor = created;
-      continue;
-    }
-    if (!next || typeof next !== "object" || Array.isArray(next)) {
-      throw new StdinParamsError(`error: conflicting parameter '${formatPath(parts.slice(0, i + 1))}'.`);
-    }
-    cursor = next as Record<string, unknown>;
-  }
-  const leaf = parts[parts.length - 1];
-  if (Object.prototype.hasOwnProperty.call(cursor, leaf)) {
-    throw new StdinParamsError(`error: conflicting parameter '${formatPath(parts)}'.`);
-  }
-  cursor[leaf] = value;
 }

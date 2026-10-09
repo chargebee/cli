@@ -231,6 +231,14 @@ Code samples check required parameters and parameter names against the generator
 For indexed item arrays, use Chargebee's field-first bracket notation, such as
 `-d 'subscription_items[item_price_id][0]=basic-USD'` and
 `-d 'subscription_items[quantity][0]=1'`. Fields with the same index describe one item.
+For scalar arrays, either use indexed keys such as
+`-d 'mandatory_items_to_remove[0]=basic-USD' -d 'mandatory_items_to_remove[1]=addon-USD'`
+or pass one JSON array as a shorthand:
+`-d 'mandatory_items_to_remove=["basic-USD","addon-USD"]'`.
+Both forms send the indexed fields expected by form API requests. Quote the
+argument so your shell does not interpret its brackets or quotes. For simple
+string items, `-d 'mandatory_items_to_remove=[basic-USD,addon-USD]'` also works;
+use JSON quotes when an item contains a comma.
 
 For both API requests and code samples, each `-d` argument must contain a non-empty key followed by `=` and its value. Malformed arguments such as `-d email` fail with an error; empty values such as `-d email=` are allowed.
 
