@@ -151,9 +151,6 @@ chargebee <resource> --help
 chargebee <resource> <operation> --help
 ```
 
-Generated API command names use kebab-case. Previously published operation
-names that mixed underscores and hyphens remain available as aliases.
-
 For API parameters and operations:
 
 ```bash
