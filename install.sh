@@ -186,7 +186,31 @@ main() {
     mkdir -p "$BIN_DIR"
   fi
 
-  local ASSET="chargebee-cli-${OS}-${ARCH}"
+  local LIBC_SUFFIX=""
+  if [[ "$OS" == "linux" ]]; then
+    local LIBC="${CHARGEBEE_CLI_LIBC:-}"
+    if [[ -z "$LIBC" ]]; then
+      if ls /lib/ld-musl-*.so.1 >/dev/null 2>&1 || (ldd --version 2>&1 | grep -qi musl); then
+        LIBC="musl"
+      else
+        LIBC="glibc"
+      fi
+    fi
+    case "$LIBC" in
+      musl)
+        LIBC_SUFFIX="-musl"
+        if [[ -z "$(find /lib /usr/lib -name 'libstdc++.so.6' -print -quit 2>/dev/null)" ]] ||
+           [[ -z "$(find /lib /usr/lib -name 'libgcc_s.so.1' -print -quit 2>/dev/null)" ]]; then
+          echo "The Chargebee CLI needs libstdc++ and libgcc on Alpine:" >&2
+          echo "  apk add --no-cache libstdc++ libgcc" >&2
+          exit 1
+        fi
+        ;;
+      glibc) ;;
+      *) echo "Error: CHARGEBEE_CLI_LIBC must be musl or glibc" >&2; exit 1 ;;
+    esac
+  fi
+  local ASSET="chargebee-cli-${OS}-${ARCH}${LIBC_SUFFIX}"
 
   # Show current version if already installed
   local PREV_VERSION=""

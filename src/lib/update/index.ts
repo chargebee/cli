@@ -340,9 +340,13 @@ function reportUpdated(currentVersion: string, probe: () => ReturnType<SpawnSync
 }
 
 /** Release asset name, identical to install.sh / install.ps1. */
-export function githubAssetName(os: NodeJS.Platform = platform(), arch: NodeJS.Architecture = process.arch): string {
+export function githubAssetName(
+  os: NodeJS.Platform = platform(),
+  arch: NodeJS.Architecture = process.arch,
+  libc: string | undefined = process.env.CHARGEBEE_CLI_LIBC,
+): string {
   if (os === "win32") return "chargebee-cli-windows-x64.exe";
-  return `chargebee-cli-${os}-${arch}`;
+  return `chargebee-cli-${os}-${arch}${os === "linux" && libc === "musl" ? "-musl" : ""}`;
 }
 
 async function downloadAsset(url: string): Promise<Buffer> {

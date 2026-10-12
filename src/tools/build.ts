@@ -3,7 +3,7 @@
  * Compiles the standalone binary.
  *
  * Default: one binary for the host platform at `./chargebee-cli`. `--all`
- * cross-compiles the five release artifacts into `dist/`; `--target=<t>` builds
+ * cross-compiles the seven release artifacts into `dist/`; `--target=<t>` builds
  * just one of them (CI fans these out across runners).
  *
  * The version is baked in via `process.env.VERSION` — without it the binary
@@ -20,6 +20,8 @@ const TARGETS = [
   { target: "bun-darwin-x64", outfile: `dist/${BINARY}-darwin-x64` },
   { target: "bun-linux-arm64", outfile: `dist/${BINARY}-linux-arm64` },
   { target: "bun-linux-x64", outfile: `dist/${BINARY}-linux-x64` },
+  { target: "bun-linux-arm64-musl", outfile: `dist/${BINARY}-linux-arm64-musl` },
+  { target: "bun-linux-x64-musl", outfile: `dist/${BINARY}-linux-x64-musl` },
   { target: "bun-windows-x64", outfile: `dist/${BINARY}-windows-x64.exe` },
 ] as const;
 
@@ -36,6 +38,9 @@ async function compile(outfile: string, target?: string): Promise<void> {
     outfile,
     "--define",
     `process.env.VERSION='${version}'`,
+    ...(target?.startsWith("bun-linux-")
+      ? ["--define", `process.env.CHARGEBEE_CLI_LIBC='${target.endsWith("-musl") ? "musl" : "glibc"}'`]
+      : []),
     ...(target ? [`--target=${target}`] : []),
   ];
   const proc = Bun.spawn(["bun", ...args], { stdout: "inherit", stderr: "inherit" });
