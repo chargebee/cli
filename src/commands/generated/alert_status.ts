@@ -17,18 +17,19 @@ export function registerAlertStatus(parent: Command): void {
     .description("API operations for alert statuses");
 
   cmd
-    .command("alert_statuses-for-alert")
+    .command("alert-statuses-for-alert")
+    .alias("alert_statuses-for-alert")
     .argument("[alert-id]", "Uniquely identifies the alert configuration.")
     .argument("[json]", "'-' reads a JSON object from stdin.")
     .description("List alert statuses for an alert")
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs alert-status alert_statuses-for-alert\n")
+    .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs alert-status alert-statuses-for-alert\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "list_alert_statuses_for_an_alert", opIdV1: "", pcVersionFlag: opts.pcVersion });
-      if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "alert-status alert_statuses-for-alert");
+      if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "alert-status alert-statuses-for-alert");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "list_alert_statuses_for_an_alert", opIdV1: "", method: "GET", uri: "/alerts/{id}/alert_statuses", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "alert-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'alert-id'");
       assertResourceId(resource.id, command);
@@ -40,18 +41,19 @@ export function registerAlertStatus(parent: Command): void {
     });
 
   cmd
-    .command("alert_statuses-for-subscription")
+    .command("alert-statuses-for-subscription")
+    .alias("alert_statuses-for-subscription")
     .argument("[subscription-id]", "The unique identifier of the subscription resource.")
     .argument("[json]", "'-' reads a JSON object from stdin.")
     .description("List alert statuses for a subscription")
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs alert-status alert_statuses-for-subscription\n")
+    .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs alert-status alert-statuses-for-subscription\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "list_alert_statuses_for_a_subscription", opIdV1: "", pcVersionFlag: opts.pcVersion });
-      if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "alert-status alert_statuses-for-subscription");
+      if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "alert-status alert-statuses-for-subscription");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "list_alert_statuses_for_a_subscription", opIdV1: "", method: "GET", uri: "/subscriptions/{id}/alert_statuses", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "subscription-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'subscription-id'");
       assertResourceId(resource.id, command);
