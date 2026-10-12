@@ -37,14 +37,15 @@ export function registerPaymentVoucher(parent: Command): void {
     });
 
   cmd
-    .command("payment_vouchers-for-customer")
+    .command("payment-vouchers-for-customer")
+    .alias("payment_vouchers-for-customer")
     .argument("[customer-id]", "The unique identifier of the customer resource.")
     .argument("[json]", "'-' reads a JSON object from stdin.")
     .description("List vouchers for a customer")
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs payment-voucher payment_vouchers-for-customer\n")
+    .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs payment-voucher payment-vouchers-for-customer\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "list_vouchers_for_a_customer", opIdV1: "list_vouchers_for_a_customer", pcVersionFlag: opts.pcVersion });
@@ -59,14 +60,15 @@ export function registerPaymentVoucher(parent: Command): void {
     });
 
   cmd
-    .command("payment_vouchers-for-invoice")
+    .command("payment-vouchers-for-invoice")
+    .alias("payment_vouchers-for-invoice")
     .argument("[invoice-id]", "The invoice number.")
     .argument("[json]", "'-' reads a JSON object from stdin.")
     .description("List vouchers for an invoice")
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs payment-voucher payment_vouchers-for-invoice\n")
+    .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs payment-voucher payment-vouchers-for-invoice\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "list_vouchers_for_an_invoice", opIdV1: "list_vouchers_for_an_invoice", pcVersionFlag: opts.pcVersion });

@@ -64,6 +64,7 @@ type CatalogTag = "pc1" | "pc2" | "both";
 interface Operation {
   sdkAction: string;
   cliCommand: string;
+  legacyCliCommand?: string;
   method: string;
   jsonInput: boolean;
   hasId: boolean;
@@ -119,6 +120,9 @@ function deriveOpCatalog(opIdV2: string, opIdV1: string, key: string): CatalogTa
 }
 
 function camelToKebab(s: string): string {
+  return s.replace(/([a-z0-9])([A-Z])/g, "$1-$2").replace(/_/g, "-").toLowerCase();
+}
+function previousCommandName(s: string): string {
   return s.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
 }
 function camelToSnake(s: string): string {
@@ -237,6 +241,8 @@ async function loadEndpoints(): Promise<Resource[]> {
   for (const [sdkName, endpoints] of Object.entries(Endpoints)) {
     const ops: Operation[] = (endpoints as unknown[]).map((ep: unknown) => {
       const t = ep as [string, string, string, string | null, boolean, string | null, boolean];
+      const cliCommand = camelToKebab(t[0]);
+      const previousName = previousCommandName(t[0]);
       const urlPrefix = t[2];
       const urlSuffix = t[3] ?? "";
       const hasId = t[4] === true;
@@ -249,7 +255,8 @@ async function loadEndpoints(): Promise<Resource[]> {
 
       return {
         sdkAction: t[0],
-        cliCommand: camelToKebab(t[0]),
+        cliCommand,
+        legacyCliCommand: previousName === cliCommand ? undefined : previousName,
         method: t[1],
         jsonInput: t[6] === true,
         urlPrefix,
@@ -269,6 +276,15 @@ async function loadEndpoints(): Promise<Resource[]> {
     });
 
     ops.sort((a, b) => a.sdkAction.localeCompare(b.sdkAction));
+
+    const commandNames = new Set<string>();
+    for (const op of ops) {
+      for (const name of [op.cliCommand, op.legacyCliCommand]) {
+        if (!name) continue;
+        if (commandNames.has(name)) throw new Error(`Duplicate CLI command ${sdkName} ${name}`);
+        commandNames.add(name);
+      }
+    }
 
 
     // Schema-only SDK keys (token, contact, discount, …) have no operations.
@@ -386,6 +402,7 @@ function generateResourceFile(r: Resource): string {
 
     L.push(`  cmd`);
     L.push(`    .command("${op.cliCommand}")`);
+    if (op.legacyCliCommand) L.push(`    .alias("${op.legacyCliCommand}")`);
     if (op.hasId) L.push(`    .argument(${JSON.stringify(`[${argument.name}]`)}, ${JSON.stringify(argument.description)})`);
     L.push(`    .argument("[json]", "'-' reads a JSON object from stdin.")`);
     const summary = r.cliName === "subscription" && op.cliCommand === "create-with-items"
