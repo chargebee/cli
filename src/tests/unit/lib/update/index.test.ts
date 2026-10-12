@@ -107,8 +107,10 @@ describe("githubAssetName", () => {
   it("matches the release asset naming used by install.sh / install.ps1", () => {
     expect(githubAssetName("darwin", "arm64")).toBe("chargebee-cli-darwin-arm64");
     expect(githubAssetName("darwin", "x64")).toBe("chargebee-cli-darwin-x64");
-    expect(githubAssetName("linux", "x64")).toBe("chargebee-cli-linux-x64");
-    expect(githubAssetName("linux", "arm64")).toBe("chargebee-cli-linux-arm64");
+    expect(githubAssetName("linux", "x64", "glibc")).toBe("chargebee-cli-linux-x64");
+    expect(githubAssetName("linux", "arm64", "glibc")).toBe("chargebee-cli-linux-arm64");
+    expect(githubAssetName("linux", "x64", "musl")).toBe("chargebee-cli-linux-x64-musl");
+    expect(githubAssetName("linux", "arm64", "musl")).toBe("chargebee-cli-linux-arm64-musl");
     expect(githubAssetName("win32", "x64")).toBe("chargebee-cli-windows-x64.exe");
   });
 });
@@ -469,6 +471,8 @@ describe("update action (mocked spawn + fetch)", () => {
     "chargebee-cli-darwin-x64",
     "chargebee-cli-linux-arm64",
     "chargebee-cli-linux-x64",
+    "chargebee-cli-linux-arm64-musl",
+    "chargebee-cli-linux-x64-musl",
     "chargebee-cli-windows-x64.exe",
   ]
     .map((name) => `${ASSET_HASH}  ${name}`)
@@ -803,6 +807,20 @@ describe("update action (mocked spawn + fetch)", () => {
       expect(logs.join("\n")).toContain("Updating via GitHub Releases");
       expect(logs.join("\n")).toContain("Updated: 1.2.8 →");
       expect(readInstallMethod()).toBe("github");
+    });
+
+    it("keeps a musl installation on the musl release asset", async () => {
+      const previousLibc = process.env.CHARGEBEE_CLI_LIBC;
+      process.env.CHARGEBEE_CLI_LIBC = "musl";
+      try {
+        await runUpdate();
+        const assetReq = fetched.find((f) => f.url.includes("/releases/download/"));
+        expect(assetReq?.url).toContain(`chargebee-cli-linux-${process.arch}-musl`);
+        expect(readFileSync(execPath, "utf8")).toBe(ASSET_BYTES);
+      } finally {
+        if (previousLibc === undefined) delete process.env.CHARGEBEE_CLI_LIBC;
+        else process.env.CHARGEBEE_CLI_LIBC = previousLibc;
+      }
     });
 
     it("prefers the release's API asset URL (works for private repos) with an octet-stream Accept", async () => {

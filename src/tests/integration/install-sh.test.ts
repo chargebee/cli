@@ -198,6 +198,34 @@ main "$@"
 });
 
 describe.skipIf(process.platform === "win32")("install.sh snapshot mode", () => {
+  it("rejects a candidate that cannot start and preserves the installed binary", () => {
+    const root = mkdtempSync(join(tmpdir(), "cb-install-sh-invalid-"));
+    try {
+      const binDir = join(root, "bin");
+      const configDir = join(root, "config");
+      mkdirSync(binDir, { recursive: true });
+      const installed = join(binDir, "chargebee");
+      writeFileSync(installed, "#!/bin/sh\necho 1.0.0\n", { mode: 0o755 });
+      const invalid = join(root, "invalid-binary");
+      writeFileSync(invalid, "not an executable binary\n");
+
+      const result = runInstall({
+        CHARGEBEE_CLI_INSTALL_FILE: invalid,
+        CHARGEBEE_CLI_BIN_DIR: binDir,
+        CHARGEBEE_CONFIG_DIR: configDir,
+        HOME: root,
+        PATH: `${binDir}:${SYSTEM_PATH}`,
+      });
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr).toContain("cannot start on this system");
+      expect(result.stdout).not.toContain("Updated:");
+      expect(readFileSync(installed, "utf8")).toContain("echo 1.0.0");
+      expect(existsSync(join(configDir, "install-method"))).toBe(false);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it("copies CHARGEBEE_CLI_INSTALL_FILE into CHARGEBEE_CLI_BIN_DIR and writes github marker", () => {
     const root = mkdtempSync(join(tmpdir(), "cb-install-sh-"));
     try {
@@ -484,6 +512,122 @@ printf '200'
       });
       expect(result.exitCode).not.toBe(0);
       expect(`${result.stdout}${result.stderr}`).toContain("CHARGEBEE_CLI_INSTALL_FILE");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+});
+
+describe.skipIf(process.platform === "win32")("install.sh Linux libc selection", () => {
+  function fakeLinux(
+    root: string,
+    withLibraries: boolean,
+    lddVersion = "musl libc",
+    hasMuslLoader = false,
+  ): { bin: string; log: string } {
+    const bin = join(root, "fake-bin");
+    const log = join(root, "curl.log");
+    mkdirSync(bin);
+    writeFakeCurl(bin, log, '{"tag_name":"v9.9.9"}');
+    writeFileSync(join(bin, "uname"), "#!/bin/sh\nif [ \"$1\" = -s ]; then echo Linux; else echo x86_64; fi\n", { mode: 0o755 });
+    writeFileSync(join(bin, "ldd"), `#!/bin/sh\necho '${lddVersion}'\n`, { mode: 0o755 });
+    if (hasMuslLoader) {
+      writeFileSync(join(bin, "ls"), "#!/bin/sh\necho /lib/ld-musl-x86_64.so.1\n", { mode: 0o755 });
+    }
+    writeFileSync(join(bin, "find"), withLibraries
+      ? "#!/bin/sh\necho /usr/lib/$4\n"
+      : "#!/bin/sh\nexit 0\n", { mode: 0o755 });
+    return { bin, log };
+  }
+
+  it("downloads the musl asset when Linux uses musl", () => {
+    const root = mkdtempSync(join(tmpdir(), "cb-install-musl-"));
+    try {
+      const { bin, log } = fakeLinux(root, true);
+      const result = runInstall({
+        PATH: `${bin}:${SYSTEM_PATH}`,
+        HOME: root,
+        CHARGEBEE_CLI_BIN_DIR: join(root, "bin"),
+        CHARGEBEE_CONFIG_DIR: join(root, "config"),
+        CHARGEBEE_CLI_SKIP_CHECKSUM: "1",
+      });
+      expect(result.exitCode).toBe(0);
+      expect(readFileSync(log, "utf8")).toContain("chargebee-cli-linux-x64-musl");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("honors the glibc override", () => {
+    const root = mkdtempSync(join(tmpdir(), "cb-install-glibc-"));
+    try {
+      const { bin, log } = fakeLinux(root, false);
+      const result = runInstall({
+        PATH: `${bin}:${SYSTEM_PATH}`,
+        HOME: root,
+        CHARGEBEE_CLI_BIN_DIR: join(root, "bin"),
+        CHARGEBEE_CONFIG_DIR: join(root, "config"),
+        CHARGEBEE_CLI_SKIP_CHECKSUM: "1",
+        CHARGEBEE_CLI_LIBC: "glibc",
+      });
+      expect(result.exitCode).toBe(0);
+      expect(readFileSync(log, "utf8")).toContain("chargebee-cli-linux-x64");
+      expect(readFileSync(log, "utf8")).not.toContain("chargebee-cli-linux-x64-musl");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("selects glibc when ldd reports glibc despite an installed musl loader", () => {
+    const root = mkdtempSync(join(tmpdir(), "cb-install-glibc-with-musl-"));
+    try {
+      const { bin, log } = fakeLinux(root, false, "ldd (GNU libc) 2.39", true);
+      const result = runInstall({
+        PATH: `${bin}:${SYSTEM_PATH}`,
+        HOME: root,
+        CHARGEBEE_CLI_BIN_DIR: join(root, "bin"),
+        CHARGEBEE_CONFIG_DIR: join(root, "config"),
+        CHARGEBEE_CLI_SKIP_CHECKSUM: "1",
+      });
+      expect(result.exitCode).toBe(0);
+      expect(readFileSync(log, "utf8")).toContain("chargebee-cli-linux-x64");
+      expect(readFileSync(log, "utf8")).not.toContain("chargebee-cli-linux-x64-musl");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("uses the musl loader when ldd cannot identify the active libc", () => {
+    const root = mkdtempSync(join(tmpdir(), "cb-install-unknown-libc-"));
+    try {
+      const { bin, log } = fakeLinux(root, true, "unknown libc", true);
+      const result = runInstall({
+        PATH: `${bin}:${SYSTEM_PATH}`,
+        HOME: root,
+        CHARGEBEE_CLI_BIN_DIR: join(root, "bin"),
+        CHARGEBEE_CONFIG_DIR: join(root, "config"),
+        CHARGEBEE_CLI_SKIP_CHECKSUM: "1",
+      });
+      expect(result.exitCode).toBe(0);
+      expect(readFileSync(log, "utf8")).toContain("chargebee-cli-linux-x64-musl");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("explains missing Alpine runtime libraries before downloading", () => {
+    const root = mkdtempSync(join(tmpdir(), "cb-install-musl-missing-"));
+    try {
+      const { bin, log } = fakeLinux(root, false);
+      const result = runInstall({
+        PATH: `${bin}:${SYSTEM_PATH}`,
+        HOME: root,
+        CHARGEBEE_CLI_BIN_DIR: join(root, "bin"),
+        CHARGEBEE_CONFIG_DIR: join(root, "config"),
+      });
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr).toContain("apk add --no-cache libstdc++ libgcc");
+      expect(existsSync(log)).toBe(false);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
