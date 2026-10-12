@@ -115,6 +115,27 @@ describe("CLI command documentation lookup", () => {
     expect(await fetchOperation("customer", "create-a-customer")).toMatchObject({ ok: true });
   });
 
+  it("does not guess a PC2-only command's page for a PC1 profile", async () => {
+    const sitemap = SITEMAP.replace(
+      "</urlset>",
+      "<url><loc>https://apidocs.chargebee.com/docs/api/alerts/list-alerts</loc></url></urlset>",
+    );
+    globalThis.fetch = (async (url: string) =>
+      new Response(String(url).endsWith("sitemap.xml") ? sitemap : "# Doc")) as typeof fetch;
+    mkdirSync(join(home, "profiles"));
+    writeFileSync(join(home, "config"), "CHARGEBEE_ACTIVE_PROFILE=pc1\n");
+    writeFileSync(join(home, "profiles", "pc1.json"), JSON.stringify({ product_catalog_version: "v1" }));
+
+    expect(await fetchOperation("alert", "list")).toMatchObject({ ok: false, reason: "not_found" });
+    expect(await fetchOperation("alerts", "list-alerts")).toMatchObject({ ok: true });
+
+    writeFileSync(join(home, "profiles", "pc1.json"), JSON.stringify({ product_catalog_version: "v2" }));
+    expect(await fetchOperation("alert", "list")).toMatchObject({
+      ok: true,
+      url: "https://apidocs.chargebee.com/docs/api/alerts/list-alerts.md",
+    });
+  });
+
   it("finds a known operation when Docs groups it under another resource", async () => {
     const regrouped = SITEMAP.replace(
       "/docs/api/customers/add-contacts-to-a-customer",
