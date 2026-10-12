@@ -519,13 +519,21 @@ printf '200'
 });
 
 describe.skipIf(process.platform === "win32")("install.sh Linux libc selection", () => {
-  function fakeLinux(root: string, withLibraries: boolean): { bin: string; log: string } {
+  function fakeLinux(
+    root: string,
+    withLibraries: boolean,
+    lddVersion = "musl libc",
+    hasMuslLoader = false,
+  ): { bin: string; log: string } {
     const bin = join(root, "fake-bin");
     const log = join(root, "curl.log");
     mkdirSync(bin);
     writeFakeCurl(bin, log, '{"tag_name":"v9.9.9"}');
     writeFileSync(join(bin, "uname"), "#!/bin/sh\nif [ \"$1\" = -s ]; then echo Linux; else echo x86_64; fi\n", { mode: 0o755 });
-    writeFileSync(join(bin, "ldd"), "#!/bin/sh\necho musl libc\n", { mode: 0o755 });
+    writeFileSync(join(bin, "ldd"), `#!/bin/sh\necho '${lddVersion}'\n`, { mode: 0o755 });
+    if (hasMuslLoader) {
+      writeFileSync(join(bin, "ls"), "#!/bin/sh\necho /lib/ld-musl-x86_64.so.1\n", { mode: 0o755 });
+    }
     writeFileSync(join(bin, "find"), withLibraries
       ? "#!/bin/sh\necho /usr/lib/$4\n"
       : "#!/bin/sh\nexit 0\n", { mode: 0o755 });
@@ -565,6 +573,43 @@ describe.skipIf(process.platform === "win32")("install.sh Linux libc selection",
       expect(result.exitCode).toBe(0);
       expect(readFileSync(log, "utf8")).toContain("chargebee-cli-linux-x64");
       expect(readFileSync(log, "utf8")).not.toContain("chargebee-cli-linux-x64-musl");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("selects glibc when ldd reports glibc despite an installed musl loader", () => {
+    const root = mkdtempSync(join(tmpdir(), "cb-install-glibc-with-musl-"));
+    try {
+      const { bin, log } = fakeLinux(root, false, "ldd (GNU libc) 2.39", true);
+      const result = runInstall({
+        PATH: `${bin}:${SYSTEM_PATH}`,
+        HOME: root,
+        CHARGEBEE_CLI_BIN_DIR: join(root, "bin"),
+        CHARGEBEE_CONFIG_DIR: join(root, "config"),
+        CHARGEBEE_CLI_SKIP_CHECKSUM: "1",
+      });
+      expect(result.exitCode).toBe(0);
+      expect(readFileSync(log, "utf8")).toContain("chargebee-cli-linux-x64");
+      expect(readFileSync(log, "utf8")).not.toContain("chargebee-cli-linux-x64-musl");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("uses the musl loader when ldd cannot identify the active libc", () => {
+    const root = mkdtempSync(join(tmpdir(), "cb-install-unknown-libc-"));
+    try {
+      const { bin, log } = fakeLinux(root, true, "unknown libc", true);
+      const result = runInstall({
+        PATH: `${bin}:${SYSTEM_PATH}`,
+        HOME: root,
+        CHARGEBEE_CLI_BIN_DIR: join(root, "bin"),
+        CHARGEBEE_CONFIG_DIR: join(root, "config"),
+        CHARGEBEE_CLI_SKIP_CHECKSUM: "1",
+      });
+      expect(result.exitCode).toBe(0);
+      expect(readFileSync(log, "utf8")).toContain("chargebee-cli-linux-x64-musl");
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
