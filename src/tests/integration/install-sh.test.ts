@@ -518,6 +518,77 @@ printf '200'
   });
 });
 
+describe.skipIf(process.platform === "win32")("install.sh Linux libc selection", () => {
+  function fakeLinux(root: string, withLibraries: boolean): { bin: string; log: string } {
+    const bin = join(root, "fake-bin");
+    const log = join(root, "curl.log");
+    mkdirSync(bin);
+    writeFakeCurl(bin, log, '{"tag_name":"v9.9.9"}');
+    writeFileSync(join(bin, "uname"), "#!/bin/sh\nif [ \"$1\" = -s ]; then echo Linux; else echo x86_64; fi\n", { mode: 0o755 });
+    writeFileSync(join(bin, "ldd"), "#!/bin/sh\necho musl libc\n", { mode: 0o755 });
+    writeFileSync(join(bin, "find"), withLibraries
+      ? "#!/bin/sh\necho /usr/lib/$4\n"
+      : "#!/bin/sh\nexit 0\n", { mode: 0o755 });
+    return { bin, log };
+  }
+
+  it("downloads the musl asset when Linux uses musl", () => {
+    const root = mkdtempSync(join(tmpdir(), "cb-install-musl-"));
+    try {
+      const { bin, log } = fakeLinux(root, true);
+      const result = runInstall({
+        PATH: `${bin}:${SYSTEM_PATH}`,
+        HOME: root,
+        CHARGEBEE_CLI_BIN_DIR: join(root, "bin"),
+        CHARGEBEE_CONFIG_DIR: join(root, "config"),
+        CHARGEBEE_CLI_SKIP_CHECKSUM: "1",
+      });
+      expect(result.exitCode).toBe(0);
+      expect(readFileSync(log, "utf8")).toContain("chargebee-cli-linux-x64-musl");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("honors the glibc override", () => {
+    const root = mkdtempSync(join(tmpdir(), "cb-install-glibc-"));
+    try {
+      const { bin, log } = fakeLinux(root, false);
+      const result = runInstall({
+        PATH: `${bin}:${SYSTEM_PATH}`,
+        HOME: root,
+        CHARGEBEE_CLI_BIN_DIR: join(root, "bin"),
+        CHARGEBEE_CONFIG_DIR: join(root, "config"),
+        CHARGEBEE_CLI_SKIP_CHECKSUM: "1",
+        CHARGEBEE_CLI_LIBC: "glibc",
+      });
+      expect(result.exitCode).toBe(0);
+      expect(readFileSync(log, "utf8")).toContain("chargebee-cli-linux-x64");
+      expect(readFileSync(log, "utf8")).not.toContain("chargebee-cli-linux-x64-musl");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("explains missing Alpine runtime libraries before downloading", () => {
+    const root = mkdtempSync(join(tmpdir(), "cb-install-musl-missing-"));
+    try {
+      const { bin, log } = fakeLinux(root, false);
+      const result = runInstall({
+        PATH: `${bin}:${SYSTEM_PATH}`,
+        HOME: root,
+        CHARGEBEE_CLI_BIN_DIR: join(root, "bin"),
+        CHARGEBEE_CONFIG_DIR: join(root, "config"),
+      });
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr).toContain("apk add --no-cache libstdc++ libgcc");
+      expect(existsSync(log)).toBe(false);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+});
+
 describe.skipIf(process.platform === "win32")("install.sh checksum verification", () => {
   function setup(): { root: string; fakeBin: string; binDir: string; configDir: string; log: string } {
     const root = mkdtempSync(join(tmpdir(), "cb-install-sh-checksum-"));

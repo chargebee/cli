@@ -18,6 +18,8 @@ The Chargebee CLI is available for macOS, Linux, and Windows.
 curl -fsSL https://raw.githubusercontent.com/chargebee/cli/main/install.sh | bash
 ```
 
+On Alpine Linux, install the runtime libraries first: `apk add --no-cache libstdc++ libgcc`. The installer then selects the musl build automatically. Other Linux distributions use the standard Linux build.
+
 If you accept the skill installation prompt, the installer adds the skill for every detected coding agent. To choose agents yourself, answer No and then run `chargebee skills add --global --agent cursor` (repeat `--agent` for other agents).
 
 **Windows** (PowerShell)
