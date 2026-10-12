@@ -55,6 +55,10 @@ export function registerDocsCommand(program: Command): void {
       if (!op.ok) {
         if (op.reason === "offline") {
           diagnostic(OFFLINE_MSG);
+        } else if (op.reason === "ambiguous") {
+          diagnostic(
+            `Multiple documentation pages match "${resource} ${operation}": ${op.matches?.join(", ")}. Use an exact Docs slug.`
+          );
         } else if (op.operations) {
           diagnostic(
             `Unknown operation "${operation}" for resource "${resource}". Available: ${formatOpHint(op.operations)}`

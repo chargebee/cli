@@ -2,6 +2,7 @@ import { describe, expect, it } from "bun:test";
 
 import { buildProgram } from "../../program.js";
 import { runCli } from "../../lib/test-support/_helpers.js";
+import { docsOperationIds } from "../../commands/generated/docs-operations.js";
 
 const previousNames: Record<string, Record<string, string>> = {
   alert: {
@@ -22,6 +23,23 @@ const previousNames: Record<string, Record<string, string>> = {
 };
 
 describe("generated API operation names", () => {
+  it("maps every generated command and alias to its OpenAPI operation IDs", () => {
+    const program = buildProgram("test");
+    const resources = program.commands.filter((command) =>
+      command.commands.some((operation) => operation.options.some((option) => option.long === "--data"))
+    );
+    for (const resource of resources) {
+      const mapped = docsOperationIds[resource.name()];
+      expect(mapped).toBeDefined();
+      for (const operation of resource.commands) {
+        expect(mapped[operation.name()]).toBeDefined();
+        for (const alias of operation.aliases()) {
+          expect(mapped[alias]).toEqual(mapped[operation.name()]);
+        }
+      }
+    }
+  });
+
   it("uses kebab case for every operation and retains published mixed-name aliases", () => {
     const program = buildProgram("test");
     const resources = program.commands.filter((command) =>

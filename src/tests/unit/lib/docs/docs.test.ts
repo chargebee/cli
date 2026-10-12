@@ -20,6 +20,8 @@ const SITEMAP = `<?xml version="1.0" encoding="UTF-8"?>
   <url><loc>https://apidocs.chargebee.com/docs/api/customers/create-a-customer</loc></url>
   <url><loc>https://apidocs.chargebee.com/docs/api/customers/list-customers</loc></url>
   <url><loc>https://apidocs.chargebee.com/docs/api/customers/change-billing-date</loc></url>
+  <url><loc>https://apidocs.chargebee.com/docs/api/customers/add-contacts-to-a-customer</loc></url>
+  <url><loc>https://apidocs.chargebee.com/docs/api/item_prices/create-an-item-price</loc></url>
   <url><loc>https://apidocs.chargebee.com/docs/api/item_prices/retrieve-an-item-price</loc></url>
   <url><loc>https://apidocs.chargebee.com/docs/api/hosted_pages/checkout-charge-items-and-one-time-charges</loc></url>
   <url><loc>https://apidocs.chargebee.com/docs/api/v1/customers/create-a-customer</loc></url>
@@ -36,7 +38,7 @@ describe("parseSitemap", () => {
       "hosted_pages",
       "item_prices",
     ]);
-    expect(idx.resources.get("customers")!.size).toBe(3);
+    expect(idx.resources.get("customers")!.size).toBe(4);
   });
 
   it("ignores landing pages and non-api urls", () => {
@@ -63,6 +65,7 @@ describe("resolveSegment", () => {
   it("maps singular CLI names to the plural sitemap segment", () => {
     expect(resolveSegment(idx, "customer")).toBe("customers");
     expect(resolveSegment(idx, "item_price")).toBe("item_prices");
+    expect(resolveSegment(idx, "item-price")).toBe("item_prices");
   });
 
   it("accepts the exact segment too", () => {
@@ -71,6 +74,71 @@ describe("resolveSegment", () => {
 
   it("returns null for unknown resources", () => {
     expect(resolveSegment(idx, "nonexistent")).toBeNull();
+  });
+});
+
+describe("CLI command documentation lookup", () => {
+  const originalFetch = globalThis.fetch;
+  const prevConfig = process.env.CHARGEBEE_CONFIG_DIR;
+  let home: string;
+
+  beforeEach(() => {
+    home = mkdtempSync(join(tmpdir(), "cb-docs-identity-"));
+    process.env.CHARGEBEE_CONFIG_DIR = home;
+    __resetDocsMemoForTest();
+    globalThis.fetch = (async (url: string) => {
+      if (String(url).endsWith("sitemap.xml")) return new Response(SITEMAP);
+      return new Response(`# ${url}`);
+    }) as unknown as typeof fetch;
+  });
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+    __resetDocsMemoForTest();
+    rmSync(home, { recursive: true, force: true });
+    if (prevConfig === undefined) delete process.env.CHARGEBEE_CONFIG_DIR;
+    else process.env.CHARGEBEE_CONFIG_DIR = prevConfig;
+  });
+
+  it("resolves advertised kebab-case resource and action names by operation ID", async () => {
+    expect(await fetchOperation("item-price", "create")).toMatchObject({
+      ok: true,
+      url: "https://apidocs.chargebee.com/docs/api/item_prices/create-an-item-price.md",
+    });
+    expect(await fetchOperation("customer", "add-contact")).toMatchObject({
+      ok: true,
+      url: "https://apidocs.chargebee.com/docs/api/customers/add-contacts-to-a-customer.md",
+    });
+  });
+
+  it("keeps exact Docs slugs working", async () => {
+    expect(await fetchOperation("customer", "create-a-customer")).toMatchObject({ ok: true });
+  });
+
+  it("finds a known operation when Docs groups it under another resource", async () => {
+    const regrouped = SITEMAP.replace(
+      "/docs/api/customers/add-contacts-to-a-customer",
+      "/docs/api/contacts/add-contacts-to-a-customer",
+    );
+    globalThis.fetch = (async (url: string) => new Response(String(url).endsWith("sitemap.xml") ? regrouped : "# Doc")) as typeof fetch;
+    expect(await fetchOperation("customer", "add-contact")).toMatchObject({
+      ok: true,
+      url: "https://apidocs.chargebee.com/docs/api/contacts/add-contacts-to-a-customer.md",
+    });
+  });
+
+  it("reports an ambiguous operation ID instead of choosing a page", async () => {
+    const duplicate = SITEMAP.replace("</urlset>",
+      "<url><loc>https://apidocs.chargebee.com/docs/api/other/add-contacts-to-a-customer</loc></url></urlset>");
+    globalThis.fetch = (async (url: string) => new Response(String(url).endsWith("sitemap.xml") ? duplicate : "# Doc")) as typeof fetch;
+    expect(await fetchOperation("customer", "add-contact")).toMatchObject({
+      ok: false,
+      reason: "ambiguous",
+      matches: [
+        "/docs/api/customers/add-contacts-to-a-customer",
+        "/docs/api/other/add-contacts-to-a-customer",
+      ],
+    });
   });
 });
 
