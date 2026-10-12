@@ -111,8 +111,8 @@ describe("JSON stdin", () => {
     const listedResult = await runCli(["customer", "list", "-"]);
     expect(listedResult.exitCode).toBe(0);
     expect(listed).toEqual({
-      email: { is: "ada@example.com" },
-      status: { in: ["active", "paused"] },
+      "email[is]": "ada@example.com",
+      "status[in]": '["active","paused"]',
     });
 
     pipe(JSON.stringify({ "customer[email][is]": "ada@example.com" }));

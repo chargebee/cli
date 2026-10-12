@@ -9,6 +9,8 @@ import { assertResourceId, handleCodeSample } from "../../lib/api/generated-comm
 import { warnBareListFilters } from "../../lib/codesample/index.js";
 import { loadOperationParams, takeResourceId, readJsonMarker, warnBareJsonFilters } from "../../lib/api/stdin-params.js";
 
+import { toSdkParams } from "../../lib/api/params.js";
+
 export function registerUnbilledCharge(parent: Command): void {
   const cmd = parent
     .command("unbilled-charge")
@@ -25,7 +27,7 @@ export function registerUnbilledCharge(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs unbilled-charge create\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_unbilled_charges_for_item_subscription", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "unbilled-charge create");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_unbilled_charges_for_item_subscription", opIdV1: "", method: "POST", uri: "/unbilled_charges", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
@@ -46,7 +48,7 @@ export function registerUnbilledCharge(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs unbilled-charge create-unbilled-charge\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "", opIdV1: "create_unbilled_charges_for_a_subscription", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc1", "unbilled-charge create-unbilled-charge");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "", opIdV1: "create_unbilled_charges_for_a_subscription", method: "POST", uri: "/unbilled_charges/create", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
@@ -68,7 +70,7 @@ export function registerUnbilledCharge(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs unbilled-charge delete\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "delete_an_unbilled_charge", opIdV1: "delete_an_unbilled_charge", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "delete_an_unbilled_charge", opIdV1: "delete_an_unbilled_charge", method: "POST", uri: "/unbilled_charges/{id}/delete", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "unbilled-charge-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'unbilled-charge-id'");
       assertResourceId(resource.id, command);
@@ -90,7 +92,7 @@ export function registerUnbilledCharge(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs unbilled-charge invoice-now-estimate\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_an_estimate_for_unbilled_charges", opIdV1: "create_an_estimate_for_unbilled_charges", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_an_estimate_for_unbilled_charges", opIdV1: "create_an_estimate_for_unbilled_charges", method: "POST", uri: "/unbilled_charges/invoice_now_estimate", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
       try {
@@ -110,7 +112,7 @@ export function registerUnbilledCharge(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs unbilled-charge invoice-unbilled-charges\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_an_invoice_for_unbilled_charges", opIdV1: "create_an_invoice_for_unbilled_charges", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_an_invoice_for_unbilled_charges", opIdV1: "create_an_invoice_for_unbilled_charges", method: "POST", uri: "/unbilled_charges/invoice_unbilled_charges", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
       try {
@@ -131,13 +133,13 @@ export function registerUnbilledCharge(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs unbilled-charge list\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "list_unbilled_charges", opIdV1: "list_unbilled_charges", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "list_unbilled_charges", opIdV1: "list_unbilled_charges", method: "GET", uri: "/unbilled_charges", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       if (fromStdin) warnBareJsonFilters(params, "unbilled-charge");
       else warnBareListFilters(opts.data ?? [], "unbilled-charge");
       try {
         const client = await getClient();
-        const result = await (client as any).unbilledCharge.list(params);
+        const result = await (client as any).unbilledCharge.list(toSdkParams(params, "GET", true));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });

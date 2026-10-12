@@ -9,6 +9,8 @@ import { assertResourceId, handleCodeSample } from "../../lib/api/generated-comm
 import { warnBareListFilters } from "../../lib/codesample/index.js";
 import { loadOperationParams, takeResourceId, readJsonMarker, warnBareJsonFilters } from "../../lib/api/stdin-params.js";
 
+import { toSdkParams } from "../../lib/api/params.js";
+
 export function registerCreditNote(parent: Command): void {
   const cmd = parent
     .command("credit-note")
@@ -25,7 +27,7 @@ export function registerCreditNote(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs credit-note create\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_credit_note", opIdV1: "create_credit_note", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_credit_note", opIdV1: "create_credit_note", method: "POST", uri: "/credit_notes", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
       try {
@@ -46,13 +48,13 @@ export function registerCreditNote(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs credit-note credit-notes-for-customer\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "", opIdV1: "", method: "GET", uri: "/customers/{id}/credit_notes", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: undefined, pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'id'");
       assertResourceId(resource.id, command);
       try {
         const client = await getClient();
-        const result = await (client as any).creditNote.creditNotesForCustomer(resource.id, params);
+        const result = await (client as any).creditNote.creditNotesForCustomer(resource.id, toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -68,7 +70,7 @@ export function registerCreditNote(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs credit-note delete\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "delete_a_credit_note", opIdV1: "delete_a_credit_note", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "delete_a_credit_note", opIdV1: "delete_a_credit_note", method: "POST", uri: "/credit_notes/{id}/delete", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "credit-note-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'credit-note-id'");
       assertResourceId(resource.id, command);
@@ -91,13 +93,13 @@ export function registerCreditNote(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs credit-note download-einvoice\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "download_e-invoice_for_credit_note", opIdV1: "download_e-invoice_for_credit_note", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "download_e-invoice_for_credit_note", opIdV1: "download_e-invoice_for_credit_note", method: "GET", uri: "/credit_notes/{id}/download_einvoice", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "credit-note-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'credit-note-id'");
       assertResourceId(resource.id, command);
       try {
         const client = await getClient();
-        const result = await (client as any).creditNote.downloadEinvoice(resource.id, params);
+        const result = await (client as any).creditNote.downloadEinvoice(resource.id, toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -112,7 +114,7 @@ export function registerCreditNote(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs credit-note import-credit-note\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "import_credit_note", opIdV1: "import_credit_note", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "import_credit_note", opIdV1: "import_credit_note", method: "POST", uri: "/credit_notes/import_credit_note", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
       try {
@@ -133,13 +135,13 @@ export function registerCreditNote(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs credit-note list\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "list_credit_notes", opIdV1: "list_credit_notes", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "list_credit_notes", opIdV1: "list_credit_notes", method: "GET", uri: "/credit_notes", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       if (fromStdin) warnBareJsonFilters(params, "credit-note");
       else warnBareListFilters(opts.data ?? [], "credit-note");
       try {
         const client = await getClient();
-        const result = await (client as any).creditNote.list(params);
+        const result = await (client as any).creditNote.list(toSdkParams(params, "GET", true));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -155,7 +157,7 @@ export function registerCreditNote(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs credit-note pdf\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "retrieve_credit_note_as_pdf", opIdV1: "retrieve_credit_note_as_pdf", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "retrieve_credit_note_as_pdf", opIdV1: "retrieve_credit_note_as_pdf", method: "POST", uri: "/credit_notes/{id}/pdf", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "credit-note-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'credit-note-id'");
       assertResourceId(resource.id, command);
@@ -178,7 +180,7 @@ export function registerCreditNote(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs credit-note record-refund\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "record_refund_for_a_credit_note", opIdV1: "record_refund_for_a_credit_note", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "record_refund_for_a_credit_note", opIdV1: "record_refund_for_a_credit_note", method: "POST", uri: "/credit_notes/{id}/record_refund", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "credit-note-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'credit-note-id'");
       assertResourceId(resource.id, command);
@@ -201,7 +203,7 @@ export function registerCreditNote(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs credit-note refund\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "refund_a_credit_note", opIdV1: "refund_a_credit_note", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "refund_a_credit_note", opIdV1: "refund_a_credit_note", method: "POST", uri: "/credit_notes/{id}/refund", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "credit-note-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'credit-note-id'");
       assertResourceId(resource.id, command);
@@ -224,7 +226,7 @@ export function registerCreditNote(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs credit-note remove-tax-withheld-refund\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "remove_tax_withheld_refunds_from_a_credit_note", opIdV1: "remove_tax_withheld_refunds_from_a_credit_note", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "remove_tax_withheld_refunds_from_a_credit_note", opIdV1: "remove_tax_withheld_refunds_from_a_credit_note", method: "POST", uri: "/credit_notes/{id}/remove_tax_withheld_refund", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "credit-note-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'credit-note-id'");
       assertResourceId(resource.id, command);
@@ -247,7 +249,7 @@ export function registerCreditNote(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs credit-note resend-einvoice\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "resend_failed_einvoice_in_credit_notes", opIdV1: "resend_failed_einvoice_in_credit_notes", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "resend_failed_einvoice_in_credit_notes", opIdV1: "resend_failed_einvoice_in_credit_notes", method: "POST", uri: "/credit_notes/{id}/resend_einvoice", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "credit-note-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'credit-note-id'");
       assertResourceId(resource.id, command);
@@ -270,13 +272,13 @@ export function registerCreditNote(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs credit-note retrieve\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "retrieve_a_credit_note", opIdV1: "retrieve_a_credit_note", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "retrieve_a_credit_note", opIdV1: "retrieve_a_credit_note", method: "GET", uri: "/credit_notes/{id}", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "credit-note-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'credit-note-id'");
       assertResourceId(resource.id, command);
       try {
         const client = await getClient();
-        const result = await (client as any).creditNote.retrieve(resource.id, params);
+        const result = await (client as any).creditNote.retrieve(resource.id, toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -292,7 +294,7 @@ export function registerCreditNote(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs credit-note send-einvoice\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "send_an_einvoice_for_credit_notes", opIdV1: "send_an_einvoice_for_credit_notes", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "send_an_einvoice_for_credit_notes", opIdV1: "send_an_einvoice_for_credit_notes", method: "POST", uri: "/credit_notes/{id}/send_einvoice", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "credit-note-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'credit-note-id'");
       assertResourceId(resource.id, command);
@@ -315,7 +317,7 @@ export function registerCreditNote(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs credit-note send-email\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "send_credit_note_email", opIdV1: "send_credit_note_email", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "send_credit_note_email", opIdV1: "send_credit_note_email", method: "POST", uri: "/credit_notes/{id}/send_email", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "credit-note-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'credit-note-id'");
       assertResourceId(resource.id, command);
@@ -338,7 +340,7 @@ export function registerCreditNote(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs credit-note update\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "update_credit_note_details", opIdV1: "update_credit_note_details", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "update_credit_note_details", opIdV1: "update_credit_note_details", method: "POST", uri: "/credit_notes/{id}/update", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "credit-note-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'credit-note-id'");
       assertResourceId(resource.id, command);
@@ -361,7 +363,7 @@ export function registerCreditNote(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs credit-note void-credit-note\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "void_a_credit_note", opIdV1: "void_a_credit_note", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "void_a_credit_note", opIdV1: "void_a_credit_note", method: "POST", uri: "/credit_notes/{id}/void", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "credit-note-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'credit-note-id'");
       assertResourceId(resource.id, command);

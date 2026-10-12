@@ -8,6 +8,8 @@ import { handleSdkError, printResult } from "../../lib/api/print.js";
 import { assertResourceId, handleCodeSample } from "../../lib/api/generated-command.js";
 import { loadOperationParams, takeResourceId, readJsonMarker } from "../../lib/api/stdin-params.js";
 
+import { toSdkParams } from "../../lib/api/params.js";
+
 export function registerExport(parent: Command): void {
   const cmd = parent
     .command("export")
@@ -23,7 +25,7 @@ export function registerExport(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs export addons\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "", opIdV1: "export_addons", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc1", "export addons");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "", opIdV1: "export_addons", method: "POST", uri: "/exports/addons", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       try {
@@ -43,7 +45,7 @@ export function registerExport(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs export attached-items\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "export_attached_items", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "export attached-items");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "export_attached_items", opIdV1: "", method: "POST", uri: "/exports/attached_items", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       try {
@@ -63,7 +65,7 @@ export function registerExport(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs export coupons\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "export_coupons", opIdV1: "export_coupons", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "export_coupons", opIdV1: "export_coupons", method: "POST", uri: "/exports/coupons", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       try {
         const client = await getClient();
@@ -82,7 +84,7 @@ export function registerExport(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs export credit-notes\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "export_credit_notes", opIdV1: "export_credit_notes", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "export_credit_notes", opIdV1: "export_credit_notes", method: "POST", uri: "/exports/credit_notes", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       try {
         const client = await getClient();
@@ -101,7 +103,7 @@ export function registerExport(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs export customers\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "export_customers", opIdV1: "export_customers", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "export_customers", opIdV1: "export_customers", method: "POST", uri: "/exports/customers", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       try {
         const client = await getClient();
@@ -120,7 +122,7 @@ export function registerExport(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs export deferred-revenue\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "export_deferred_revenue_reports", opIdV1: "export_deferred_revenue_reports", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "export_deferred_revenue_reports", opIdV1: "export_deferred_revenue_reports", method: "POST", uri: "/exports/deferred_revenue", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       try {
         const client = await getClient();
@@ -139,7 +141,7 @@ export function registerExport(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs export differential-prices\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "export_differential_price", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "export differential-prices");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "export_differential_price", opIdV1: "", method: "POST", uri: "/exports/differential_prices", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       try {
@@ -159,7 +161,7 @@ export function registerExport(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs export invoices\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "export_invoices", opIdV1: "export_invoices", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "export_invoices", opIdV1: "export_invoices", method: "POST", uri: "/exports/invoices", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       try {
         const client = await getClient();
@@ -178,7 +180,7 @@ export function registerExport(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs export item-families\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "export_item_families", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "export item-families");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "export_item_families", opIdV1: "", method: "POST", uri: "/exports/item_families", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       try {
@@ -198,7 +200,7 @@ export function registerExport(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs export item-prices\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "export_item_prices", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "export item-prices");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "export_item_prices", opIdV1: "", method: "POST", uri: "/exports/item_prices", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       try {
@@ -218,7 +220,7 @@ export function registerExport(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs export items\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "export_items", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "export items");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "export_items", opIdV1: "", method: "POST", uri: "/exports/items", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       try {
@@ -238,7 +240,7 @@ export function registerExport(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs export orders\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "export_orders", opIdV1: "export_orders", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "export_orders", opIdV1: "export_orders", method: "POST", uri: "/exports/orders", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       try {
         const client = await getClient();
@@ -257,7 +259,7 @@ export function registerExport(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs export plans\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "", opIdV1: "export_plans", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc1", "export plans");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "", opIdV1: "export_plans", method: "POST", uri: "/exports/plans", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       try {
@@ -277,7 +279,7 @@ export function registerExport(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs export price-variants\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "export_price_variants", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "export price-variants");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "export_price_variants", opIdV1: "", method: "POST", uri: "/exports/price_variants", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       try {
@@ -297,7 +299,7 @@ export function registerExport(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs export ramps\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "export_subscription_ramps", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "export ramps");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "export_subscription_ramps", opIdV1: "", method: "POST", uri: "/exports/ramps", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       try {
@@ -318,13 +320,13 @@ export function registerExport(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs export retrieve\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "retrieve_an_export", opIdV1: "retrieve_an_export", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "retrieve_an_export", opIdV1: "retrieve_an_export", method: "GET", uri: "/exports/{id}", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "export-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'export-id'");
       assertResourceId(resource.id, command);
       try {
         const client = await getClient();
-        const result = await (client as any).export.retrieve(resource.id, params);
+        const result = await (client as any).export.retrieve(resource.id, toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -339,7 +341,7 @@ export function registerExport(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs export revenue-recognition\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "export_revenue_recognition_reports", opIdV1: "export_revenue_recognition_reports", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "export_revenue_recognition_reports", opIdV1: "export_revenue_recognition_reports", method: "POST", uri: "/exports/revenue_recognition", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       try {
         const client = await getClient();
@@ -358,7 +360,7 @@ export function registerExport(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs export subscriptions\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "export_subscriptions", opIdV1: "export_subscriptions", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "export_subscriptions", opIdV1: "export_subscriptions", method: "POST", uri: "/exports/subscriptions", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       try {
         const client = await getClient();
@@ -377,7 +379,7 @@ export function registerExport(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs export transactions\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "export_transactions", opIdV1: "export_transactions", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "export_transactions", opIdV1: "export_transactions", method: "POST", uri: "/exports/transactions", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       try {
         const client = await getClient();

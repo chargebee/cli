@@ -9,6 +9,8 @@ import { assertResourceId, handleCodeSample } from "../../lib/api/generated-comm
 import { warnBareListFilters } from "../../lib/codesample/index.js";
 import { loadOperationParams, takeResourceId, readJsonMarker, warnBareJsonFilters } from "../../lib/api/stdin-params.js";
 
+import { toSdkParams } from "../../lib/api/params.js";
+
 export function registerCurrency(parent: Command): void {
   const cmd = parent
     .command("currency")
@@ -25,7 +27,7 @@ export function registerCurrency(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs currency add-schedule\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "add_schedule", opIdV1: "add_schedule", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "add_schedule", opIdV1: "add_schedule", method: "POST", uri: "/currencies/{id}/add_schedule", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "site-currency-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'site-currency-id'");
       assertResourceId(resource.id, command);
@@ -47,7 +49,7 @@ export function registerCurrency(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs currency create\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "add_a_new_currency", opIdV1: "add_a_new_currency", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "add_a_new_currency", opIdV1: "add_a_new_currency", method: "POST", uri: "/currencies", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
       try {
@@ -68,13 +70,13 @@ export function registerCurrency(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs currency list\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "list_currencies", opIdV1: "list_currencies", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "list_currencies", opIdV1: "list_currencies", method: "GET", uri: "/currencies/list", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       if (fromStdin) warnBareJsonFilters(params, "currency");
       else warnBareListFilters(opts.data ?? [], "currency");
       try {
         const client = await getClient();
-        const result = await (client as any).currency.list(params);
+        const result = await (client as any).currency.list(toSdkParams(params, "GET", true));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -90,7 +92,7 @@ export function registerCurrency(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs currency remove-schedule\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "remove_schedule", opIdV1: "remove_schedule", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "remove_schedule", opIdV1: "remove_schedule", method: "POST", uri: "/currencies/{id}/remove_schedule", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "site-currency-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'site-currency-id'");
       assertResourceId(resource.id, command);
@@ -113,13 +115,13 @@ export function registerCurrency(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs currency retrieve\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "retrieve_a_currency", opIdV1: "retrieve_a_currency", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "retrieve_a_currency", opIdV1: "retrieve_a_currency", method: "GET", uri: "/currencies/{id}", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "site-currency-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'site-currency-id'");
       assertResourceId(resource.id, command);
       try {
         const client = await getClient();
-        const result = await (client as any).currency.retrieve(resource.id, params);
+        const result = await (client as any).currency.retrieve(resource.id, toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -135,7 +137,7 @@ export function registerCurrency(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs currency update\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "update_a_currency", opIdV1: "update_a_currency", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "update_a_currency", opIdV1: "update_a_currency", method: "POST", uri: "/currencies/{id}", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "site-currency-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'site-currency-id'");
       assertResourceId(resource.id, command);

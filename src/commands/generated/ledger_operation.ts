@@ -8,6 +8,8 @@ import { handleSdkError, printResult } from "../../lib/api/print.js";
 import { assertResourceId, handleCodeSample } from "../../lib/api/generated-command.js";
 import { loadOperationParams, takeResourceId, readJsonMarker } from "../../lib/api/stdin-params.js";
 
+import { toSdkParams } from "../../lib/api/params.js";
+
 export function registerLedgerOperation(parent: Command): void {
   const cmd = parent
     .command("ledger-operation")
@@ -24,7 +26,7 @@ export function registerLedgerOperation(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs ledger-operation allocate\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: true, opIdV2: "allocate", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "ledger-operation allocate");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "allocate", opIdV1: "", method: "POST", uri: "/ledger_operations/allocate", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
@@ -45,7 +47,7 @@ export function registerLedgerOperation(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs ledger-operation authorize\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: true, opIdV2: "authorize", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "ledger-operation authorize");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "authorize", opIdV1: "", method: "POST", uri: "/ledger_operations/authorize", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
@@ -66,7 +68,7 @@ export function registerLedgerOperation(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs ledger-operation capture\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: true, opIdV2: "capture", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "ledger-operation capture");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "capture", opIdV1: "", method: "POST", uri: "/ledger_operations/capture", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
@@ -87,7 +89,7 @@ export function registerLedgerOperation(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs ledger-operation capture-authorization\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: true, opIdV2: "capture_authorization", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "ledger-operation capture-authorization");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "capture_authorization", opIdV1: "", method: "POST", uri: "/ledger_operations/capture_authorization", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
@@ -108,12 +110,12 @@ export function registerLedgerOperation(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs ledger-operation list-ledger-operations\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "list_ledger_operations", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "ledger-operation list-ledger-operations");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "list_ledger_operations", opIdV1: "", method: "GET", uri: "/ledger_operations", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       try {
         const client = await getClient();
-        const result = await (client as any).ledgerOperation.listLedgerOperations(params);
+        const result = await (client as any).ledgerOperation.listLedgerOperations(toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -128,7 +130,7 @@ export function registerLedgerOperation(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs ledger-operation release-authorization\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: true, opIdV2: "release_authorization", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "ledger-operation release-authorization");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "release_authorization", opIdV1: "", method: "POST", uri: "/ledger_operations/release_authorization", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
@@ -150,14 +152,14 @@ export function registerLedgerOperation(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs ledger-operation retrieve-ledger-operation\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "retrieve_ledger_operation", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "ledger-operation retrieve-ledger-operation");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "retrieve_ledger_operation", opIdV1: "", method: "GET", uri: "/ledger_operations/{id}", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "ledger-operation-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'ledger-operation-id'");
       assertResourceId(resource.id, command);
       try {
         const client = await getClient();
-        const result = await (client as any).ledgerOperation.retrieveLedgerOperation(resource.id, params);
+        const result = await (client as any).ledgerOperation.retrieveLedgerOperation(resource.id, toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });

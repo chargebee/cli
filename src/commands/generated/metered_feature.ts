@@ -25,7 +25,7 @@ export function registerMeteredFeature(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs metered-feature archive\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "archive_a_metered_feature", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "metered-feature archive");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "archive_a_metered_feature", opIdV1: "", method: "POST", uri: "/metered_features/{id}/archive_command", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "metered-feature-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'metered-feature-id'");
@@ -48,7 +48,7 @@ export function registerMeteredFeature(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs metered-feature create\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_a_metered_feature", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "metered-feature create");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_a_metered_feature", opIdV1: "", method: "POST", uri: "/metered_features", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
@@ -70,7 +70,7 @@ export function registerMeteredFeature(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs metered-feature delete\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "delete_a_metered_feature", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "metered-feature delete");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "delete_a_metered_feature", opIdV1: "", method: "POST", uri: "/metered_features/{id}/delete", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "metered-feature-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'metered-feature-id'");
@@ -94,7 +94,7 @@ export function registerMeteredFeature(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs metered-feature reactivate\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "reactivate_a_metered_feature", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "metered-feature reactivate");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "reactivate_a_metered_feature", opIdV1: "", method: "POST", uri: "/metered_features/{id}/reactivate_command", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "metered-feature-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'metered-feature-id'");

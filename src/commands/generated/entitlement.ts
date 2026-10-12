@@ -9,6 +9,8 @@ import { handleCodeSample } from "../../lib/api/generated-command.js";
 import { warnBareListFilters } from "../../lib/codesample/index.js";
 import { loadOperationParams, readJsonMarker, warnBareJsonFilters } from "../../lib/api/stdin-params.js";
 
+import { toSdkParams } from "../../lib/api/params.js";
+
 export function registerEntitlement(parent: Command): void {
   const cmd = parent
     .command("entitlement")
@@ -24,7 +26,7 @@ export function registerEntitlement(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs entitlement create\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "upsert_or_remove_entitlements_for_a_feature", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "entitlement create");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "upsert_or_remove_entitlements_for_a_feature", opIdV1: "", method: "POST", uri: "/entitlements", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
@@ -46,14 +48,14 @@ export function registerEntitlement(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs entitlement list\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "list_all_entitlements", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "entitlement list");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "list_all_entitlements", opIdV1: "", method: "GET", uri: "/entitlements", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       if (fromStdin) warnBareJsonFilters(params, "entitlement");
       else warnBareListFilters(opts.data ?? [], "entitlement");
       try {
         const client = await getClient();
-        const result = await (client as any).entitlement.list(params);
+        const result = await (client as any).entitlement.list(toSdkParams(params, "GET", true));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });

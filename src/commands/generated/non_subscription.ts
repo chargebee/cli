@@ -25,7 +25,7 @@ export function registerNonSubscription(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs non-subscription process-receipt\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "one_time_purchase", opIdV1: "one_time_purchase", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "one_time_purchase", opIdV1: "one_time_purchase", method: "POST", uri: "/non_subscriptions/{id}/one_time_purchase", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "non-subscription-app-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'non-subscription-app-id'");
       assertResourceId(resource.id, command);

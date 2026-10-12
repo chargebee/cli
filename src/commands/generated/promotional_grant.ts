@@ -24,7 +24,7 @@ export function registerPromotionalGrant(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs promotional-grant promotional-grants\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: true, opIdV2: "create_promotional_grant", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "promotional-grant promotional-grants");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_promotional_grant", opIdV1: "", method: "POST", uri: "/promotional_grants", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");

@@ -9,6 +9,8 @@ import { assertResourceId, handleCodeSample } from "../../lib/api/generated-comm
 import { warnBareListFilters } from "../../lib/codesample/index.js";
 import { loadOperationParams, takeResourceId, readJsonMarker, warnBareJsonFilters } from "../../lib/api/stdin-params.js";
 
+import { toSdkParams } from "../../lib/api/params.js";
+
 export function registerOrder(parent: Command): void {
   const cmd = parent
     .command("order")
@@ -25,7 +27,7 @@ export function registerOrder(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs order assign-order-number\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "assign_order_number", opIdV1: "assign_order_number", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "assign_order_number", opIdV1: "assign_order_number", method: "POST", uri: "/orders/{id}/assign_order_number", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "order-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'order-id'");
       assertResourceId(resource.id, command);
@@ -48,7 +50,7 @@ export function registerOrder(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs order cancel\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "cancel_an_order", opIdV1: "cancel_an_order", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "cancel_an_order", opIdV1: "cancel_an_order", method: "POST", uri: "/orders/{id}/cancel", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "order-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'order-id'");
       assertResourceId(resource.id, command);
@@ -70,7 +72,7 @@ export function registerOrder(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs order create\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_an_order", opIdV1: "create_an_order", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_an_order", opIdV1: "create_an_order", method: "POST", uri: "/orders", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
       try {
@@ -91,7 +93,7 @@ export function registerOrder(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs order create-refundable-credit-note\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_a_refundable_credit_note", opIdV1: "create_a_refundable_credit_note", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_a_refundable_credit_note", opIdV1: "create_a_refundable_credit_note", method: "POST", uri: "/orders/{id}/create_refundable_credit_note", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "order-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'order-id'");
       assertResourceId(resource.id, command);
@@ -114,7 +116,7 @@ export function registerOrder(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs order delete\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "delete_an_imported_order", opIdV1: "delete_an_imported_order", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "delete_an_imported_order", opIdV1: "delete_an_imported_order", method: "POST", uri: "/orders/{id}/delete", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "order-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'order-id'");
       assertResourceId(resource.id, command);
@@ -136,7 +138,7 @@ export function registerOrder(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs order import-order\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "import_an_order", opIdV1: "import_an_order", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "import_an_order", opIdV1: "import_an_order", method: "POST", uri: "/orders/import_order", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
       try {
@@ -157,13 +159,13 @@ export function registerOrder(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs order list\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "list_orders", opIdV1: "list_orders", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "list_orders", opIdV1: "list_orders", method: "GET", uri: "/orders", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       if (fromStdin) warnBareJsonFilters(params, "order");
       else warnBareListFilters(opts.data ?? [], "order");
       try {
         const client = await getClient();
-        const result = await (client as any).order.list(params);
+        const result = await (client as any).order.list(toSdkParams(params, "GET", true));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -179,13 +181,13 @@ export function registerOrder(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs order orders-for-invoice\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "", opIdV1: "", method: "GET", uri: "/invoices/{id}/orders", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: undefined, pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'id'");
       assertResourceId(resource.id, command);
       try {
         const client = await getClient();
-        const result = await (client as any).order.ordersForInvoice(resource.id, params);
+        const result = await (client as any).order.ordersForInvoice(resource.id, toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -201,7 +203,7 @@ export function registerOrder(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs order reopen\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "reopen_a_cancelled_order", opIdV1: "reopen_a_cancelled_order", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "reopen_a_cancelled_order", opIdV1: "reopen_a_cancelled_order", method: "POST", uri: "/orders/{id}/reopen", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "order-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'order-id'");
       assertResourceId(resource.id, command);
@@ -224,7 +226,7 @@ export function registerOrder(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs order resend\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "resend_an_order", opIdV1: "resend_an_order", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "resend_an_order", opIdV1: "resend_an_order", method: "POST", uri: "/orders/{id}/resend", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "order-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'order-id'");
       assertResourceId(resource.id, command);
@@ -247,13 +249,13 @@ export function registerOrder(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs order retrieve\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "retrieve_an_order", opIdV1: "retrieve_an_order", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "retrieve_an_order", opIdV1: "retrieve_an_order", method: "GET", uri: "/orders/{id}", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "order-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'order-id'");
       assertResourceId(resource.id, command);
       try {
         const client = await getClient();
-        const result = await (client as any).order.retrieve(resource.id, params);
+        const result = await (client as any).order.retrieve(resource.id, toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -269,7 +271,7 @@ export function registerOrder(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs order update\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "update_an_order", opIdV1: "update_an_order", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "update_an_order", opIdV1: "update_an_order", method: "POST", uri: "/orders/{id}", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "order-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'order-id'");
       assertResourceId(resource.id, command);

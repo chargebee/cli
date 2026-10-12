@@ -9,6 +9,8 @@ import { assertResourceId, handleCodeSample } from "../../lib/api/generated-comm
 import { warnBareListFilters } from "../../lib/codesample/index.js";
 import { loadOperationParams, takeResourceId, readJsonMarker, warnBareJsonFilters } from "../../lib/api/stdin-params.js";
 
+import { toSdkParams } from "../../lib/api/params.js";
+
 export function registerPaymentSource(parent: Command): void {
   const cmd = parent
     .command("payment-source")
@@ -25,7 +27,7 @@ export function registerPaymentSource(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs payment-source create-bank-account\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_a_bank_account_payment_source", opIdV1: "create_a_bank_account_payment_source", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_a_bank_account_payment_source", opIdV1: "create_a_bank_account_payment_source", method: "POST", uri: "/payment_sources/create_bank_account", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
       try {
@@ -45,7 +47,7 @@ export function registerPaymentSource(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs payment-source create-card\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_a_card_payment_source", opIdV1: "create_a_card_payment_source", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_a_card_payment_source", opIdV1: "create_a_card_payment_source", method: "POST", uri: "/payment_sources/create_card", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
       try {
@@ -65,7 +67,7 @@ export function registerPaymentSource(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs payment-source create-using-payment-intent\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_using_payment_intent", opIdV1: "create_using_payment_intent", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_using_payment_intent", opIdV1: "create_using_payment_intent", method: "POST", uri: "/payment_sources/create_using_payment_intent", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
       try {
@@ -85,7 +87,7 @@ export function registerPaymentSource(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs payment-source create-using-permanent-token\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_using_permanent_token", opIdV1: "create_using_permanent_token", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_using_permanent_token", opIdV1: "create_using_permanent_token", method: "POST", uri: "/payment_sources/create_using_permanent_token", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
       try {
@@ -105,7 +107,7 @@ export function registerPaymentSource(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs payment-source create-using-temp-token\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_using_gateway_temporary_token", opIdV1: "create_using_gateway_temporary_token", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_using_gateway_temporary_token", opIdV1: "create_using_gateway_temporary_token", method: "POST", uri: "/payment_sources/create_using_temp_token", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
       try {
@@ -125,7 +127,7 @@ export function registerPaymentSource(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs payment-source create-using-token\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_using_chargebee_token", opIdV1: "create_using_chargebee_token", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_using_chargebee_token", opIdV1: "create_using_chargebee_token", method: "POST", uri: "/payment_sources/create_using_token", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
       try {
@@ -145,7 +147,7 @@ export function registerPaymentSource(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs payment-source create-voucher-payment-source\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_a_voucher_payment_method", opIdV1: "create_a_voucher_payment_method", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_a_voucher_payment_method", opIdV1: "create_a_voucher_payment_method", method: "POST", uri: "/payment_sources/create_voucher_payment_source", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
       try {
@@ -166,7 +168,7 @@ export function registerPaymentSource(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs payment-source delete\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "delete_a_payment_source", opIdV1: "delete_a_payment_source", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "delete_a_payment_source", opIdV1: "delete_a_payment_source", method: "POST", uri: "/payment_sources/{id}/delete", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "cust-payment-source-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'cust-payment-source-id'");
       assertResourceId(resource.id, command);
@@ -189,7 +191,7 @@ export function registerPaymentSource(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs payment-source delete-local\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "local_delete_a_payment_source", opIdV1: "local_delete_a_payment_source", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "local_delete_a_payment_source", opIdV1: "local_delete_a_payment_source", method: "POST", uri: "/payment_sources/{id}/delete_local", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "cust-payment-source-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'cust-payment-source-id'");
       assertResourceId(resource.id, command);
@@ -212,7 +214,7 @@ export function registerPaymentSource(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs payment-source export-payment-source\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "export_payment_source", opIdV1: "export_payment_source", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "export_payment_source", opIdV1: "export_payment_source", method: "POST", uri: "/payment_sources/{id}/export_payment_source", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "cust-payment-source-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'cust-payment-source-id'");
       assertResourceId(resource.id, command);
@@ -235,13 +237,13 @@ export function registerPaymentSource(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs payment-source list\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "list_payment_sources", opIdV1: "list_payment_sources", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "list_payment_sources", opIdV1: "list_payment_sources", method: "GET", uri: "/payment_sources", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       if (fromStdin) warnBareJsonFilters(params, "payment-source");
       else warnBareListFilters(opts.data ?? [], "payment-source");
       try {
         const client = await getClient();
-        const result = await (client as any).paymentSource.list(params);
+        const result = await (client as any).paymentSource.list(toSdkParams(params, "GET", true));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -257,13 +259,13 @@ export function registerPaymentSource(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs payment-source list-gateway-tokens-for-payment-source\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "list_gateway_payment_method_tokens_for_a_payment_source", opIdV1: "list_gateway_payment_method_tokens_for_a_payment_source", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "list_gateway_payment_method_tokens_for_a_payment_source", opIdV1: "list_gateway_payment_method_tokens_for_a_payment_source", method: "GET", uri: "/payment_sources/{id}/gateway_payment_method_tokens", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "cust-payment-source-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'cust-payment-source-id'");
       assertResourceId(resource.id, command);
       try {
         const client = await getClient();
-        const result = await (client as any).paymentSource.listGatewayTokensForPaymentSource(resource.id, params);
+        const result = await (client as any).paymentSource.listGatewayTokensForPaymentSource(resource.id, toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -279,13 +281,13 @@ export function registerPaymentSource(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs payment-source retrieve\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "retrieve_a_payment_source", opIdV1: "retrieve_a_payment_source", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "retrieve_a_payment_source", opIdV1: "retrieve_a_payment_source", method: "GET", uri: "/payment_sources/{id}", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "cust-payment-source-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'cust-payment-source-id'");
       assertResourceId(resource.id, command);
       try {
         const client = await getClient();
-        const result = await (client as any).paymentSource.retrieve(resource.id, params);
+        const result = await (client as any).paymentSource.retrieve(resource.id, toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -301,7 +303,7 @@ export function registerPaymentSource(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs payment-source switch-gateway-account\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "switch_gateway_account", opIdV1: "switch_gateway_account", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "switch_gateway_account", opIdV1: "switch_gateway_account", method: "POST", uri: "/payment_sources/{id}/switch_gateway_account", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "cust-payment-source-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'cust-payment-source-id'");
       assertResourceId(resource.id, command);
@@ -324,7 +326,7 @@ export function registerPaymentSource(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs payment-source update-bank-account\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "update_a_bank_account_payment_source", opIdV1: "update_a_bank_account_payment_source", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "update_a_bank_account_payment_source", opIdV1: "update_a_bank_account_payment_source", method: "POST", uri: "/payment_sources/{id}/update_bank_account", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "cust-payment-source-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'cust-payment-source-id'");
       assertResourceId(resource.id, command);
@@ -347,7 +349,7 @@ export function registerPaymentSource(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs payment-source update-card\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "update_a_card_payment_source", opIdV1: "update_a_card_payment_source", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "update_a_card_payment_source", opIdV1: "update_a_card_payment_source", method: "POST", uri: "/payment_sources/{id}/update_card", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "cust-payment-source-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'cust-payment-source-id'");
       assertResourceId(resource.id, command);
@@ -370,7 +372,7 @@ export function registerPaymentSource(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs payment-source verify-bank-account\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "verify_bank_account_payment_source", opIdV1: "verify_bank_account_payment_source", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "verify_bank_account_payment_source", opIdV1: "verify_bank_account_payment_source", method: "POST", uri: "/payment_sources/{id}/verify_bank_account", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "cust-payment-source-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'cust-payment-source-id'");
       assertResourceId(resource.id, command);

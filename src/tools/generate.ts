@@ -65,6 +65,7 @@ interface Operation {
   sdkAction: string;
   cliCommand: string;
   method: string;
+  jsonInput: boolean;
   hasId: boolean;
   urlPrefix: string;
   urlSuffix: string;
@@ -235,7 +236,7 @@ async function loadEndpoints(): Promise<Resource[]> {
 
   for (const [sdkName, endpoints] of Object.entries(Endpoints)) {
     const ops: Operation[] = (endpoints as unknown[]).map((ep: unknown) => {
-      const t = ep as [string, string, string, string | null, boolean];
+      const t = ep as [string, string, string, string | null, boolean, string | null, boolean];
       const urlPrefix = t[2];
       const urlSuffix = t[3] ?? "";
       const hasId = t[4] === true;
@@ -250,6 +251,7 @@ async function loadEndpoints(): Promise<Resource[]> {
         sdkAction: t[0],
         cliCommand: camelToKebab(t[0]),
         method: t[1],
+        jsonInput: t[6] === true,
         urlPrefix,
         urlSuffix,
         hasId,
@@ -341,6 +343,9 @@ function generateResourceFile(r: Resource): string {
     L.push(`import { warnBareListFilters } from "../../lib/codesample/index.js";`);
   }
   L.push(`import { ${stdinFns.join(", ")} } from "../../lib/api/stdin-params.js";\n`);
+  if (r.operations.some((op) => op.method.toUpperCase() === "GET")) {
+    L.push(`import { toSdkParams } from "../../lib/api/params.js";\n`);
+  }
 
   L.push(`export function register${toPascal(r.sdkName)}(parent: Command): void {`);
   L.push(`  const cmd = parent`);
@@ -361,6 +366,10 @@ function generateResourceFile(r: Resource): string {
       ? `, resourceId: resource.id, pathParamName: ${op.argument ? JSON.stringify(op.argument.name) : "undefined"}`
       : "";
     const csArgs = `{ lang: opts.codeSample, opIdV2: "${esc(op.operationIdV2)}", opIdV1: "${esc(op.operationIdV1)}", method: "${op.method}", uri: "${esc(uri)}", dataFlags: opts.data ?? [], params${csPathArgs}, pcVersionFlag: opts.pcVersion }`;
+    const paramOpts = `{ method: "${op.method}", jsonInput: ${op.jsonInput}, opIdV2: "${esc(op.operationIdV2)}", opIdV1: "${esc(op.operationIdV1)}", pcVersionFlag: opts.pcVersion }`;
+    const sdkParams = op.method.toUpperCase() === "GET"
+      ? `toSdkParams(params, "GET", ${op.sdkAction === "list"})`
+      : "params";
     const isWrite =
       op.method.toUpperCase() !== "GET" && !isReadOnlyOperation(`${r.sdkName}.${op.sdkAction}`);
     const list = isListOp(op.cliCommand);
@@ -404,7 +413,7 @@ function generateResourceFile(r: Resource): string {
     if (op.hasId) {
       L.push(`    .action(async (id: string | undefined, json: string | undefined, opts: ${optsType}, command: Command) => {`);
       L.push(`      const resource = takeResourceId(id, json, command);`);
-      L.push(`      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);`);
+      L.push(`      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, ${paramOpts});`);
       emitCatalogThenSample();
       if (list) {
         L.push(`      if (resource.fromStdin) warnBareJsonFilters(params, "${r.cliName}");`);
@@ -415,14 +424,14 @@ function generateResourceFile(r: Resource): string {
       if (isWrite) L.push(`      await ensureWriteAllowed("${op.method}");`);
       L.push(`      try {`);
       L.push(`        const client = await getClient();`);
-      L.push(`        const result = await (client as any).${r.sdkName}.${op.sdkAction}(resource.id, params);`);
+      L.push(`        const result = await (client as any).${r.sdkName}.${op.sdkAction}(resource.id, ${sdkParams});`);
       L.push(`        printResult(result);`);
       L.push(`      } catch (e) { handleSdkError(e); }`);
       L.push(`    });\n`);
     } else {
       L.push(`    .action(async (json: string | undefined, opts: ${optsType}, command: Command) => {`);
       L.push(`      const fromStdin = readJsonMarker(json, command);`);
-      L.push(`      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);`);
+      L.push(`      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, ${paramOpts});`);
       emitCatalogThenSample();
       if (list) {
         L.push(`      if (fromStdin) warnBareJsonFilters(params, "${r.cliName}");`);
@@ -431,7 +440,7 @@ function generateResourceFile(r: Resource): string {
       if (isWrite) L.push(`      await ensureWriteAllowed("${op.method}");`);
       L.push(`      try {`);
       L.push(`        const client = await getClient();`);
-      L.push(`        const result = await (client as any).${r.sdkName}.${op.sdkAction}(params);`);
+      L.push(`        const result = await (client as any).${r.sdkName}.${op.sdkAction}(${sdkParams});`);
       L.push(`        printResult(result);`);
       L.push(`      } catch (e) { handleSdkError(e); }`);
       L.push(`    });\n`);

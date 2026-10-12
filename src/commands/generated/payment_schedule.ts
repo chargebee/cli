@@ -9,6 +9,8 @@ import { handleCodeSample } from "../../lib/api/generated-command.js";
 import { warnBareListFilters } from "../../lib/codesample/index.js";
 import { loadOperationParams, readJsonMarker, warnBareJsonFilters } from "../../lib/api/stdin-params.js";
 
+import { toSdkParams } from "../../lib/api/params.js";
+
 export function registerPaymentSchedule(parent: Command): void {
   const cmd = parent
     .command("payment-schedule")
@@ -26,14 +28,14 @@ export function registerPaymentSchedule(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs payment-schedule list\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "list_payment_schedules", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "payment-schedule list");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "list_payment_schedules", opIdV1: "", method: "GET", uri: "/payment_schedules", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       if (fromStdin) warnBareJsonFilters(params, "payment-schedule");
       else warnBareListFilters(opts.data ?? [], "payment-schedule");
       try {
         const client = await getClient();
-        const result = await (client as any).paymentSchedule.list(params);
+        const result = await (client as any).paymentSchedule.list(toSdkParams(params, "GET", true));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });

@@ -8,6 +8,8 @@ import { handleSdkError, printResult } from "../../lib/api/print.js";
 import { handleCodeSample } from "../../lib/api/generated-command.js";
 import { loadOperationParams, readJsonMarker } from "../../lib/api/stdin-params.js";
 
+import { toSdkParams } from "../../lib/api/params.js";
+
 export function registerResourceMigration(parent: Command): void {
   const cmd = parent
     .command("resource-migration")
@@ -24,11 +26,11 @@ export function registerResourceMigration(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs resource-migration retrieve-latest\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "retrieve_latest_migration_details", opIdV1: "retrieve_latest_migration_details", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "retrieve_latest_migration_details", opIdV1: "retrieve_latest_migration_details", method: "GET", uri: "/resource_migrations/retrieve_latest", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       try {
         const client = await getClient();
-        const result = await (client as any).resourceMigration.retrieveLatest(params);
+        const result = await (client as any).resourceMigration.retrieveLatest(toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });

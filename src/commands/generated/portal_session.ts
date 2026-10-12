@@ -8,6 +8,8 @@ import { handleSdkError, printResult } from "../../lib/api/print.js";
 import { assertResourceId, handleCodeSample } from "../../lib/api/generated-command.js";
 import { loadOperationParams, takeResourceId, readJsonMarker } from "../../lib/api/stdin-params.js";
 
+import { toSdkParams } from "../../lib/api/params.js";
+
 export function registerPortalSession(parent: Command): void {
   const cmd = parent
     .command("portal-session")
@@ -25,7 +27,7 @@ export function registerPortalSession(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs portal-session activate\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "activate_a_portal_session", opIdV1: "activate_a_portal_session", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "activate_a_portal_session", opIdV1: "activate_a_portal_session", method: "POST", uri: "/portal_sessions/{id}/activate", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "portal-session-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'portal-session-id'");
       assertResourceId(resource.id, command);
@@ -47,7 +49,7 @@ export function registerPortalSession(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs portal-session create\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_a_portal_session", opIdV1: "create_a_portal_session", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_a_portal_session", opIdV1: "create_a_portal_session", method: "POST", uri: "/portal_sessions", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       try {
         const client = await getClient();
@@ -67,7 +69,7 @@ export function registerPortalSession(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs portal-session logout\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "logout_a_portal_session", opIdV1: "logout_a_portal_session", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "logout_a_portal_session", opIdV1: "logout_a_portal_session", method: "POST", uri: "/portal_sessions/{id}/logout", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "portal-session-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'portal-session-id'");
       assertResourceId(resource.id, command);
@@ -90,13 +92,13 @@ export function registerPortalSession(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs portal-session retrieve\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "retrieve_a_portal_session", opIdV1: "retrieve_a_portal_session", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "retrieve_a_portal_session", opIdV1: "retrieve_a_portal_session", method: "GET", uri: "/portal_sessions/{id}", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "portal-session-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'portal-session-id'");
       assertResourceId(resource.id, command);
       try {
         const client = await getClient();
-        const result = await (client as any).portalSession.retrieve(resource.id, params);
+        const result = await (client as any).portalSession.retrieve(resource.id, toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });

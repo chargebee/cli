@@ -9,6 +9,8 @@ import { assertResourceId, handleCodeSample } from "../../lib/api/generated-comm
 import { warnBareListFilters } from "../../lib/codesample/index.js";
 import { loadOperationParams, takeResourceId, readJsonMarker, warnBareJsonFilters } from "../../lib/api/stdin-params.js";
 
+import { toSdkParams } from "../../lib/api/params.js";
+
 export function registerItem(parent: Command): void {
   const cmd = parent
     .command("item")
@@ -24,7 +26,7 @@ export function registerItem(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs item create\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_an_item", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "item create");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_an_item", opIdV1: "", method: "POST", uri: "/items", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
@@ -46,7 +48,7 @@ export function registerItem(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs item delete\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "delete_an_item", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "item delete");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "delete_an_item", opIdV1: "", method: "POST", uri: "/items/{id}/delete", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "item-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'item-id'");
@@ -70,14 +72,14 @@ export function registerItem(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mEXAMPLE\u001b[0m\n  chargebee item list \\\n    -d limit=10\n\n\u001b[1mGENERATE SDK CODE\u001b[0m\n  Add --code-sample python to the example above.\n\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs item list\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "list_items", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "item list");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "list_items", opIdV1: "", method: "GET", uri: "/items", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       if (fromStdin) warnBareJsonFilters(params, "item");
       else warnBareListFilters(opts.data ?? [], "item");
       try {
         const client = await getClient();
-        const result = await (client as any).item.list(params);
+        const result = await (client as any).item.list(toSdkParams(params, "GET", true));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -93,14 +95,14 @@ export function registerItem(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mEXAMPLE\u001b[0m\n  chargebee item retrieve '<item-id>'\n\n\u001b[1mGENERATE SDK CODE\u001b[0m\n  Add --code-sample python to the example above.\n\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs item retrieve\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "retrieve_an_item", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "item retrieve");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "retrieve_an_item", opIdV1: "", method: "GET", uri: "/items/{id}", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "item-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'item-id'");
       assertResourceId(resource.id, command);
       try {
         const client = await getClient();
-        const result = await (client as any).item.retrieve(resource.id, params);
+        const result = await (client as any).item.retrieve(resource.id, toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -116,7 +118,7 @@ export function registerItem(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs item update\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "update_an_item", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "item update");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "update_an_item", opIdV1: "", method: "POST", uri: "/items/{id}", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "item-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'item-id'");

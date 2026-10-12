@@ -9,6 +9,8 @@ import { assertResourceId, handleCodeSample } from "../../lib/api/generated-comm
 import { warnBareListFilters } from "../../lib/codesample/index.js";
 import { loadOperationParams, takeResourceId, readJsonMarker, warnBareJsonFilters } from "../../lib/api/stdin-params.js";
 
+import { toSdkParams } from "../../lib/api/params.js";
+
 export function registerTransaction(parent: Command): void {
   const cmd = parent
     .command("transaction")
@@ -24,7 +26,7 @@ export function registerTransaction(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs transaction create-authorization\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_an_authorization_payment", opIdV1: "create_an_authorization_payment", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_an_authorization_payment", opIdV1: "create_an_authorization_payment", method: "POST", uri: "/transactions/create_authorization", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
       try {
@@ -45,7 +47,7 @@ export function registerTransaction(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs transaction delete-offline-transaction\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "delete_an_offline_transaction", opIdV1: "delete_an_offline_transaction", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "delete_an_offline_transaction", opIdV1: "delete_an_offline_transaction", method: "POST", uri: "/transactions/{id}/delete_offline_transaction", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "transaction-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'transaction-id'");
       assertResourceId(resource.id, command);
@@ -68,13 +70,13 @@ export function registerTransaction(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs transaction list\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "list_transactions", opIdV1: "list_transactions", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "list_transactions", opIdV1: "list_transactions", method: "GET", uri: "/transactions", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       if (fromStdin) warnBareJsonFilters(params, "transaction");
       else warnBareListFilters(opts.data ?? [], "transaction");
       try {
         const client = await getClient();
-        const result = await (client as any).transaction.list(params);
+        const result = await (client as any).transaction.list(toSdkParams(params, "GET", true));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -90,13 +92,13 @@ export function registerTransaction(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs transaction payments-for-invoice\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "list_payments_for_an_invoice", opIdV1: "list_payments_for_an_invoice", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "list_payments_for_an_invoice", opIdV1: "list_payments_for_an_invoice", method: "GET", uri: "/invoices/{id}/payments", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "invoice-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'invoice-id'");
       assertResourceId(resource.id, command);
       try {
         const client = await getClient();
-        const result = await (client as any).transaction.paymentsForInvoice(resource.id, params);
+        const result = await (client as any).transaction.paymentsForInvoice(resource.id, toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -112,7 +114,7 @@ export function registerTransaction(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs transaction reconcile\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "reconcile_transaction", opIdV1: "reconcile_transaction", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "reconcile_transaction", opIdV1: "reconcile_transaction", method: "POST", uri: "/transactions/{id}/reconcile", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "transaction-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'transaction-id'");
       assertResourceId(resource.id, command);
@@ -135,7 +137,7 @@ export function registerTransaction(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs transaction record-refund\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "record_an_offline_refund", opIdV1: "record_an_offline_refund", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "record_an_offline_refund", opIdV1: "record_an_offline_refund", method: "POST", uri: "/transactions/{id}/record_refund", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "transaction-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'transaction-id'");
       assertResourceId(resource.id, command);
@@ -158,7 +160,7 @@ export function registerTransaction(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs transaction refund\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "refund_a_payment", opIdV1: "refund_a_payment", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "refund_a_payment", opIdV1: "refund_a_payment", method: "POST", uri: "/transactions/{id}/refund", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "transaction-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'transaction-id'");
       assertResourceId(resource.id, command);
@@ -181,13 +183,13 @@ export function registerTransaction(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs transaction retrieve\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "retrieve_a_transaction", opIdV1: "retrieve_a_transaction", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "retrieve_a_transaction", opIdV1: "retrieve_a_transaction", method: "GET", uri: "/transactions/{id}", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "transaction-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'transaction-id'");
       assertResourceId(resource.id, command);
       try {
         const client = await getClient();
-        const result = await (client as any).transaction.retrieve(resource.id, params);
+        const result = await (client as any).transaction.retrieve(resource.id, toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -203,13 +205,13 @@ export function registerTransaction(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs transaction transactions-for-customer\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "", opIdV1: "", method: "GET", uri: "/customers/{id}/transactions", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: undefined, pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'id'");
       assertResourceId(resource.id, command);
       try {
         const client = await getClient();
-        const result = await (client as any).transaction.transactionsForCustomer(resource.id, params);
+        const result = await (client as any).transaction.transactionsForCustomer(resource.id, toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -225,13 +227,13 @@ export function registerTransaction(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs transaction transactions-for-subscription\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "", opIdV1: "", method: "GET", uri: "/subscriptions/{id}/transactions", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: undefined, pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'id'");
       assertResourceId(resource.id, command);
       try {
         const client = await getClient();
-        const result = await (client as any).transaction.transactionsForSubscription(resource.id, params);
+        const result = await (client as any).transaction.transactionsForSubscription(resource.id, toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -247,7 +249,7 @@ export function registerTransaction(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs transaction void-transaction\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "void_an_authorization_transaction", opIdV1: "void_an_authorization_transaction", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "void_an_authorization_transaction", opIdV1: "void_an_authorization_transaction", method: "POST", uri: "/transactions/{id}/void", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "transaction-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'transaction-id'");
       assertResourceId(resource.id, command);

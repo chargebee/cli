@@ -9,6 +9,8 @@ import { assertResourceId, handleCodeSample } from "../../lib/api/generated-comm
 import { warnBareListFilters } from "../../lib/codesample/index.js";
 import { loadOperationParams, takeResourceId, readJsonMarker, warnBareJsonFilters } from "../../lib/api/stdin-params.js";
 
+import { toSdkParams } from "../../lib/api/params.js";
+
 export function registerWebhookEndpoint(parent: Command): void {
   const cmd = parent
     .command("webhook-endpoint")
@@ -25,7 +27,7 @@ export function registerWebhookEndpoint(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs webhook-endpoint create\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_a_webhook_endpoint", opIdV1: "create_a_webhook_endpoint", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_a_webhook_endpoint", opIdV1: "create_a_webhook_endpoint", method: "POST", uri: "/webhook_endpoints", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       await ensureWriteAllowed("POST");
       try {
@@ -46,7 +48,7 @@ export function registerWebhookEndpoint(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs webhook-endpoint delete\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "delete_a_webhook_endpoint", opIdV1: "delete_a_webhook_endpoint", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "delete_a_webhook_endpoint", opIdV1: "delete_a_webhook_endpoint", method: "POST", uri: "/webhook_endpoints/{id}/delete", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "webhook-endpoint-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'webhook-endpoint-id'");
       assertResourceId(resource.id, command);
@@ -69,13 +71,13 @@ export function registerWebhookEndpoint(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs webhook-endpoint list\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "list_webhook_endpoints", opIdV1: "list_webhook_endpoints", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "list_webhook_endpoints", opIdV1: "list_webhook_endpoints", method: "GET", uri: "/webhook_endpoints", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       if (fromStdin) warnBareJsonFilters(params, "webhook-endpoint");
       else warnBareListFilters(opts.data ?? [], "webhook-endpoint");
       try {
         const client = await getClient();
-        const result = await (client as any).webhookEndpoint.list(params);
+        const result = await (client as any).webhookEndpoint.list(toSdkParams(params, "GET", true));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -91,13 +93,13 @@ export function registerWebhookEndpoint(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs webhook-endpoint retrieve\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "retrieve_a_webhook_endpoint", opIdV1: "retrieve_a_webhook_endpoint", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "retrieve_a_webhook_endpoint", opIdV1: "retrieve_a_webhook_endpoint", method: "GET", uri: "/webhook_endpoints/{id}", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "webhook-endpoint-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'webhook-endpoint-id'");
       assertResourceId(resource.id, command);
       try {
         const client = await getClient();
-        const result = await (client as any).webhookEndpoint.retrieve(resource.id, params);
+        const result = await (client as any).webhookEndpoint.retrieve(resource.id, toSdkParams(params, "GET", false));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
@@ -113,7 +115,7 @@ export function registerWebhookEndpoint(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs webhook-endpoint update\n")
     .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
-      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "update_a_webhook_endpoint", opIdV1: "update_a_webhook_endpoint", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "update_a_webhook_endpoint", opIdV1: "update_a_webhook_endpoint", method: "POST", uri: "/webhook_endpoints/{id}", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "webhook-endpoint-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'webhook-endpoint-id'");
       assertResourceId(resource.id, command);

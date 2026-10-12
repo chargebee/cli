@@ -9,6 +9,8 @@ import { handleCodeSample } from "../../lib/api/generated-command.js";
 import { warnBareListFilters } from "../../lib/codesample/index.js";
 import { loadOperationParams, readJsonMarker, warnBareJsonFilters } from "../../lib/api/stdin-params.js";
 
+import { toSdkParams } from "../../lib/api/params.js";
+
 export function registerSiteMigrationDetail(parent: Command): void {
   const cmd = parent
     .command("site-migration-detail")
@@ -26,13 +28,13 @@ export function registerSiteMigrationDetail(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs site-migration-detail list\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "list_site_migration_details", opIdV1: "list_site_migration_details", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "list_site_migration_details", opIdV1: "list_site_migration_details", method: "GET", uri: "/site_migration_details", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       if (fromStdin) warnBareJsonFilters(params, "site-migration-detail");
       else warnBareListFilters(opts.data ?? [], "site-migration-detail");
       try {
         const client = await getClient();
-        const result = await (client as any).siteMigrationDetail.list(params);
+        const result = await (client as any).siteMigrationDetail.list(toSdkParams(params, "GET", true));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });

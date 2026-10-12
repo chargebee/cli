@@ -9,6 +9,8 @@ import { handleCodeSample } from "../../lib/api/generated-command.js";
 import { warnBareListFilters } from "../../lib/codesample/index.js";
 import { loadOperationParams, readJsonMarker, warnBareJsonFilters } from "../../lib/api/stdin-params.js";
 
+import { toSdkParams } from "../../lib/api/params.js";
+
 export function registerMeter(parent: Command): void {
   const cmd = parent
     .command("meter")
@@ -25,14 +27,14 @@ export function registerMeter(parent: Command): void {
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs meter list\n")
     .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
-      const params = await loadOperationParams(opts.data ?? [], fromStdin, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "list_all_available_meters", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "meter list");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "list_all_available_meters", opIdV1: "", method: "GET", uri: "/meters", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
       if (fromStdin) warnBareJsonFilters(params, "meter");
       else warnBareListFilters(opts.data ?? [], "meter");
       try {
         const client = await getClient();
-        const result = await (client as any).meter.list(params);
+        const result = await (client as any).meter.list(toSdkParams(params, "GET", true));
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });
