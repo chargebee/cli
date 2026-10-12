@@ -75,6 +75,8 @@ jobs:
           - bun-darwin-x64
           - bun-linux-arm64
           - bun-linux-x64
+          - bun-linux-arm64-musl
+          - bun-linux-x64-musl
           - bun-windows-x64
         include:
           - target: bun-darwin-arm64
@@ -85,6 +87,10 @@ jobs:
             outfile: chargebee-cli-linux-arm64
           - target: bun-linux-x64
             outfile: chargebee-cli-linux-x64
+          - target: bun-linux-arm64-musl
+            outfile: chargebee-cli-linux-arm64-musl
+          - target: bun-linux-x64-musl
+            outfile: chargebee-cli-linux-x64-musl
           - target: bun-windows-x64
             outfile: chargebee-cli-windows-x64.exe
     steps:
