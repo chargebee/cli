@@ -198,6 +198,34 @@ main "$@"
 });
 
 describe.skipIf(process.platform === "win32")("install.sh snapshot mode", () => {
+  it("rejects a candidate that cannot start and preserves the installed binary", () => {
+    const root = mkdtempSync(join(tmpdir(), "cb-install-sh-invalid-"));
+    try {
+      const binDir = join(root, "bin");
+      const configDir = join(root, "config");
+      mkdirSync(binDir, { recursive: true });
+      const installed = join(binDir, "chargebee");
+      writeFileSync(installed, "#!/bin/sh\necho 1.0.0\n", { mode: 0o755 });
+      const invalid = join(root, "invalid-binary");
+      writeFileSync(invalid, "not an executable binary\n");
+
+      const result = runInstall({
+        CHARGEBEE_CLI_INSTALL_FILE: invalid,
+        CHARGEBEE_CLI_BIN_DIR: binDir,
+        CHARGEBEE_CONFIG_DIR: configDir,
+        HOME: root,
+        PATH: `${binDir}:${SYSTEM_PATH}`,
+      });
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr).toContain("cannot start on this system");
+      expect(result.stdout).not.toContain("Updated:");
+      expect(readFileSync(installed, "utf8")).toContain("echo 1.0.0");
+      expect(existsSync(join(configDir, "install-method"))).toBe(false);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it("copies CHARGEBEE_CLI_INSTALL_FILE into CHARGEBEE_CLI_BIN_DIR and writes github marker", () => {
     const root = mkdtempSync(join(tmpdir(), "cb-install-sh-"));
     try {

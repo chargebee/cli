@@ -254,8 +254,20 @@ main() {
     verify_checksum "$TMP" "$ASSET" "$SUMS_URL"
   fi
 
-  chmod 0755 "$TMP"
-  mv "$TMP" "$BIN_DIR/$BIN_NAME"
+  # Probe the candidate from the destination filesystem before replacing an
+  # existing installation. A downloaded binary can have a valid checksum yet
+  # fail to start on this host (for example, a libc mismatch).
+  local STAGED NEW_VERSION
+  STAGED=$(mktemp "$BIN_DIR/.chargebee.XXXXXX")
+  trap 'rm -f "$TMP" "${STAGED:-}"' EXIT
+  cp "$TMP" "$STAGED"
+  chmod 0755 "$STAGED"
+  if ! NEW_VERSION=$("$STAGED" --version 2>/dev/null) || [[ -z "${NEW_VERSION//[[:space:]]/}" ]]; then
+    echo "Error: downloaded $ASSET cannot start on this system" >&2
+    exit 1
+  fi
+  NEW_VERSION=${NEW_VERSION%%$'\n'*}
+  mv -f "$STAGED" "$BIN_DIR/$BIN_NAME"
 
   local TARGET_HOME
   TARGET_HOME=$(target_home)
@@ -273,13 +285,10 @@ main() {
   (mkdir -p -m 0700 "$MARKER_DIR" && printf 'github\n' > "$MARKER_DIR/install-method") || true
   own_as_target_user "$MARKER_ROOT"
 
-  local NEW_VERSION
-  NEW_VERSION=$("$BIN_DIR/$BIN_NAME" --version 2>/dev/null | head -1 || true)
-
   if [[ -n "$PREV_VERSION" ]]; then
-    echo "Updated: ${PREV_VERSION} → ${NEW_VERSION:-done}"
+    echo "Updated: ${PREV_VERSION} → ${NEW_VERSION}"
   else
-    echo "Installed: ${NEW_VERSION:-chargebee} → $BIN_DIR/$BIN_NAME"
+    echo "Installed: ${NEW_VERSION} → $BIN_DIR/$BIN_NAME"
   fi
 
   # Warn if BIN_DIR isn't in PATH
