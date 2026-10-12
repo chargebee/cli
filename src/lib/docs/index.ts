@@ -1,6 +1,8 @@
 import { join } from "node:path";
 import { readFile, stat } from "node:fs/promises";
 import { configDir } from "../config/store.js";
+import { resolveCatalogVersion } from "../api/sdk.js";
+import { docsOperationIds } from "../../commands/generated/docs-operations.js";
 
 const DEFAULT_HOST = "https://apidocs.chargebee.com";
 const API_PREFIX = "/docs/api";
@@ -58,7 +60,7 @@ interface SitemapIndex {
 
 export type DocResult =
   | { ok: true; url: string; body: string }
-  | { ok: false; reason: "offline" | "not_found"; operations?: string[] };
+  | { ok: false; reason: "offline" | "not_found" | "ambiguous"; operations?: string[]; matches?: string[] };
 
 /** Strip control characters that could inject terminal escape sequences, keeping the whitespace a reader actually wants. */
 export function stripControlChars(s: string): string {
@@ -221,15 +223,28 @@ function deserialize(json: string): SitemapIndex {
 /** Map a CLI resource name (often singular, e.g. "customer") to a sitemap segment. @internal */
 export function resolveSegment(idx: SitemapIndex, name: string): string | null {
   const r = idx.resources;
+  const normalized = name.replace(/-/g, "_");
   if (r.has(name)) return name;
-  for (const cand of [`${name}s`, name.replace(/y$/, "ies"), `${name}es`]) {
+  if (r.has(normalized)) return normalized;
+  for (const cand of [`${normalized}s`, normalized.replace(/y$/, "ies"), `${normalized}es`]) {
     if (r.has(cand)) return cand;
   }
-  const want = singular(name);
+  const want = singular(normalized);
   for (const seg of r.keys()) {
     if (singular(seg) === want) return seg;
   }
   return null;
+}
+
+/** Find a docs page by the OpenAPI operation ID, without guessing its resource. */
+function pathsForOperationId(idx: SitemapIndex, id: string): string[] {
+  const slug = id.replace(/_/g, "-");
+  const paths: string[] = [];
+  for (const ops of idx.resources.values()) {
+    const path = ops.get(slug);
+    if (path) paths.push(path);
+  }
+  return paths;
 }
 
 /**
@@ -313,13 +328,28 @@ export async function fetchOperation(name: string, op: string): Promise<DocResul
   const idx = await loadIndex();
   if (!idx) return { ok: false, reason: "offline" };
   const seg = resolveSegment(idx, name);
-  if (!seg) return { ok: false, reason: "not_found" };
-  const ops = idx.resources.get(seg)!;
-  const opPath = resolveOp(ops, op);
-  if (!opPath) {
-    return { ok: false, reason: "not_found", operations: [...ops.keys()].sort() };
+  const ops = seg ? idx.resources.get(seg)! : undefined;
+  const exactDocPath = ops?.get(op);
+  const cliResource = name.replace(/_/g, "-");
+  const ids = docsOperationIds[cliResource]?.[op];
+  const catalog = ids ? (await resolveCatalogVersion()) ?? "v2" : "v2";
+  const id = catalog === "v1" ? ids?.v1 : ids?.v2;
+  let path = exactDocPath;
+  if (!path && id) {
+    const matches = pathsForOperationId(idx, id);
+    if (matches.length > 1) return { ok: false, reason: "ambiguous", matches };
+    if (matches.length === 0) {
+      return { ok: false, reason: "not_found", operations: ops ? [...ops.keys()].sort() : [] };
+    }
+    path = matches[0];
   }
-  const path = ops.get(opPath)!;
+  if (!path && ops && !id) {
+    const opPath = resolveOp(ops, op);
+    if (opPath) path = ops.get(opPath);
+  }
+  if (!path) {
+    return { ok: false, reason: "not_found", operations: ops ? [...ops.keys()].sort() : undefined };
+  }
   const body = await fetchMarkdown(path);
   if (body === null) return { ok: false, reason: "offline" };
   return { ok: true, url: `${resolveHost()}${path}.md`, body };

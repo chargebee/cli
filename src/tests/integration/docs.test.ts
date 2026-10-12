@@ -10,6 +10,8 @@ const SITEMAP = `<?xml version="1.0"?>
 <urlset>
   <loc>https://apidocs.chargebee.com/docs/api/customers/create-a-customer</loc>
   <loc>https://apidocs.chargebee.com/docs/api/customers/list-customers</loc>
+  <loc>https://apidocs.chargebee.com/docs/api/customers/add-contacts-to-a-customer</loc>
+  <loc>https://apidocs.chargebee.com/docs/api/item_prices/create-an-item-price</loc>
 </urlset>
 `;
 
@@ -65,6 +67,16 @@ describe("docs command (mocked fetch)", () => {
     expect(exitCode).toBe(0);
     expect(stdout).toContain("Doc for");
     expect(stdout).toContain("Source:");
+  });
+
+  it("opens pages named differently from the generated CLI commands", async () => {
+    const item = await runCli(["docs", "item-price", "create"]);
+    expect(item.exitCode).toBe(0);
+    expect(item.stdout).toContain("item_prices/create-an-item-price.md");
+
+    const customer = await runCli(["docs", "customer", "add-contact"]);
+    expect(customer.exitCode).toBe(0);
+    expect(customer.stdout).toContain("customers/add-contacts-to-a-customer.md");
   });
 
   it("strips control characters from printed pages but caches the raw body", async () => {
