@@ -343,7 +343,7 @@ export async function fetchOperation(name: string, op: string): Promise<DocResul
     }
     path = matches[0];
   }
-  if (!path && ops && !id) {
+  if (!path && ops && !ids) {
     const opPath = resolveOp(ops, op);
     if (opPath) path = ops.get(opPath);
   }
