@@ -71,11 +71,16 @@ describe("auditDescriptorCompatibility", () => {
   ];
 
   it("reports every mapped operation absent from the installed descriptors", () => {
-    const installed = new Set(["v2-pcv1:list_customers", "v2-pcv2:create_a_customer"]);
+    const installed = new Set(["v2-pcv1:list_customers"]);
     const hasDescriptor = (version: DescriptorVersion, operationId: string) =>
       installed.has(`${version}:${operationId}`);
 
     expect(auditDescriptorCompatibility(resources, hasDescriptor).missing).toEqual([
+      {
+        command: "customer.create",
+        version: "v2-pcv2",
+        operationId: "create_a_customer",
+      },
       {
         command: "customer.list",
         version: "v2-pcv2",
