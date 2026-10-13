@@ -1,0 +1,202 @@
+name: Reconcile OpenAPI commands
+
+# Both upstream inputs converge through one fixed-branch PR:
+# - a public-spec event can update generated commands immediately when the
+#   installed generator already covers every operation;
+# - a generator-package event retries the same reconciliation after npm publish.
+# The compatibility gate prevents a CLI release with unsupported operation IDs.
+
+on:
+  repository_dispatch:
+    types: [openapi-spec-published, code-sample-generator-released]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: reconcile-openapi-commands
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  reconcile:
+    name: Reconcile dependency and commands
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: "1.4.2"
+
+      - name: Resolve immutable inputs
+        id: inputs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_TYPE: ${{ github.event.action }}
+          DISPATCH_SOURCE_REPO: ${{ github.event.client_payload.source_repo }}
+          DISPATCH_SOURCE_SHA: ${{ github.event.client_payload.source_sha }}
+          DISPATCH_PACKAGE: ${{ github.event.client_payload.package }}
+          DISPATCH_PACKAGE_VERSION: ${{ github.event.client_payload.version }}
+        run: |
+          if [ "$EVENT_NAME" = "repository_dispatch" ] && [ "$EVENT_TYPE" = "openapi-spec-published" ]; then
+            if [ "$DISPATCH_SOURCE_REPO" != "chargebee/openapi" ]; then
+              echo "::error::Unexpected OpenAPI dispatch source: ${DISPATCH_SOURCE_REPO:-<empty>}"
+              exit 1
+            fi
+            if [[ ! "$DISPATCH_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+              echo "::error::Invalid dispatched OpenAPI SHA: ${DISPATCH_SOURCE_SHA:-<empty>}"
+              exit 1
+            fi
+            gh api "repos/chargebee/openapi/commits/${DISPATCH_SOURCE_SHA}" --jq '.sha' >/dev/null
+          fi
+
+          if [ "$EVENT_NAME" = "repository_dispatch" ] && [ "$EVENT_TYPE" = "code-sample-generator-released" ]; then
+            if [ "$DISPATCH_PACKAGE" != "@chargebee/code-sample-generator" ]; then
+              echo "::error::Unexpected package dispatch: ${DISPATCH_PACKAGE:-<empty>}"
+              exit 1
+            fi
+            if [[ ! "$DISPATCH_PACKAGE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([+-][0-9A-Za-z.-]+)?$ ]]; then
+              echo "::error::Invalid dispatched package version: ${DISPATCH_PACKAGE_VERSION:-<empty>}"
+              exit 1
+            fi
+            PUBLISHED_VERSION=$(npm view "@chargebee/code-sample-generator@${DISPATCH_PACKAGE_VERSION}" version 2>/dev/null || true)
+            if [ "$PUBLISHED_VERSION" != "$DISPATCH_PACKAGE_VERSION" ]; then
+              echo "::error::Dispatched package version is not available from npm: ${DISPATCH_PACKAGE_VERSION}"
+              exit 1
+            fi
+          fi
+
+          SPEC_SHA=$(gh api --method GET repos/chargebee/openapi/commits -f path=spec -f per_page=1 --jq '.[0].sha')
+          if [[ ! "$SPEC_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error::Could not resolve the latest chargebee/openapi spec commit"
+            exit 1
+          fi
+          if [ -n "$DISPATCH_SOURCE_SHA" ] && [ "$DISPATCH_SOURCE_SHA" != "$SPEC_SHA" ]; then
+            echo "::warning::Dispatch carried ${DISPATCH_SOURCE_SHA}; reconciling to newer spec commit ${SPEC_SHA}."
+          fi
+
+          GENERATOR_VERSION=$(npm view @chargebee/code-sample-generator@latest version)
+          if [[ ! "$GENERATOR_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([+-][0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::Could not resolve the latest code-sample-generator version"
+            exit 1
+          fi
+          if [ -n "$DISPATCH_PACKAGE_VERSION" ] && [ "$DISPATCH_PACKAGE_VERSION" != "$GENERATOR_VERSION" ]; then
+            echo "::warning::Dispatch carried package ${DISPATCH_PACKAGE_VERSION}; reconciling to npm latest ${GENERATOR_VERSION}."
+          fi
+
+          echo "spec_sha=${SPEC_SHA}" >> "$GITHUB_OUTPUT"
+          echo "generator_version=${GENERATOR_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Using chargebee/openapi@${SPEC_SHA} and @chargebee/code-sample-generator@${GENERATOR_VERSION}"
+
+      - name: Install current dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Update code-sample generator
+        env:
+          GENERATOR_VERSION: ${{ steps.inputs.outputs.generator_version }}
+        run: |
+          bun add --dev --exact "@chargebee/code-sample-generator@${GENERATOR_VERSION}"
+          cp node_modules/@chargebee/code-sample-generator/LICENSE licenses/code-sample-generator.txt
+
+      - name: Regenerate commands from immutable public specs
+        env:
+          SPEC_SHA: ${{ steps.inputs.outputs.spec_sha }}
+        run: bun run src/tools/generate.ts --refresh --source-sha "$SPEC_SHA"
+
+      - name: Refresh and verify third-party notices
+        run: |
+          bun run build:notices
+          bun run src/tools/third-party-notices.ts --check
+
+      - name: Verify deterministic generation and compatibility
+        env:
+          SPEC_SHA: ${{ steps.inputs.outputs.spec_sha }}
+        run: |
+          FIRST_HASH=$(find src/commands/generated -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum | cut -d ' ' -f 1)
+          bun run src/tools/generate.ts --offline --source-sha "$SPEC_SHA"
+          SECOND_HASH=$(find src/commands/generated -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum | cut -d ' ' -f 1)
+          if [ "$FIRST_HASH" != "$SECOND_HASH" ]; then
+            echo "::error::CLI command generation is not deterministic"
+            exit 1
+          fi
+          test "$(cat src/commands/generated/.openapi-source-sha)" = "$SPEC_SHA"
+          bun test src/tests/unit/tools/audit-operation-ids.test.ts src/tests/integration/generated-operation-names.test.ts
+          bun run typecheck
+
+      - name: Validate proposed changes
+        id: changes
+        run: |
+          git diff --check
+          UNEXPECTED=$(git status --porcelain --untracked-files=all | awk '
+            $2 != "package.json" &&
+            $2 != "bun.lock" &&
+            $2 != "THIRD_PARTY_NOTICES.txt" &&
+            $2 != "licenses/code-sample-generator.txt" &&
+            $2 !~ /^src\/commands\/generated\// { print }
+          ')
+          if [ -n "$UNEXPECTED" ]; then
+            echo "::error::Reconciliation changed files outside the approved dependency and generated-command paths"
+            echo "$UNEXPECTED"
+            exit 1
+          fi
+
+          if [ -n "$(git status --porcelain --untracked-files=all)" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            git status --short
+            git diff --stat
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "CLI already matches the latest public spec and generator package."
+          fi
+
+      - name: Create pull-request token
+        if: steps.changes.outputs.changed == 'true'
+        id: app-token
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2
+        with:
+          app-id: ${{ secrets.CLI_AUTOMATION_APP_ID }}
+          private-key: ${{ secrets.CLI_AUTOMATION_APP_PRIVATE_KEY }}
+          owner: chargebee
+          repositories: cli
+
+      - name: Create or update reconciliation PR
+        if: steps.changes.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          base: main
+          branch: automation/reconcile-openapi
+          delete-branch: true
+          add-paths: |
+            package.json
+            bun.lock
+            THIRD_PARTY_NOTICES.txt
+            licenses/code-sample-generator.txt
+            src/commands/generated
+          commit-message: "fix(cli): reconcile OpenAPI commands and code-sample generator"
+          title: "fix(cli): reconcile OpenAPI commands and code-sample generator"
+          body: |
+            ## Summary
+
+            Reconciles the generated API commands and embedded code-sample generator as one compatible unit.
+
+            - Public spec: [`chargebee/openapi@${{ steps.inputs.outputs.spec_sha }}`](https://github.com/chargebee/openapi/commit/${{ steps.inputs.outputs.spec_sha }})
+            - Generator package: `@chargebee/code-sample-generator@${{ steps.inputs.outputs.generator_version }}`
+            - Verified every non-empty generated operation ID exists in the installed generator
+            - Verified deterministic command generation, focused tests, type checking, licenses, and notices
+
+            Nothing is auto-merged. Review the generated command diff before merging; the existing Release Please workflow handles the CLI release afterward.
+
+            > Generated by [run ${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).

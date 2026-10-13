@@ -1312,8 +1312,8 @@ export const docsOperationIds: Record<string, Record<string, { v1: string; v2: s
   },
   "non-subscription": {
     "process-receipt": {
-      "v1": "one_time_purchase",
-      "v2": "one_time_purchase"
+      "v1": "",
+      "v2": ""
     }
   },
   "offer-event": {

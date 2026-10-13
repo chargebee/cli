@@ -17,6 +17,10 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    # OpenAPI reconciliation owns this bundled runtime dependency so its
+    # version, generated commands, license, and notices move in one PR.
+    ignore:
+      - dependency-name: "@chargebee/code-sample-generator"
     groups:
       dev-dependencies:
         dependency-type: development
