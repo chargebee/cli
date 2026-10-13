@@ -1,6 +1,11 @@
 import { describe, expect, it } from "bun:test";
 
-import { auditOperationIds, type AuditableResource } from "../../../tools/audit-operation-ids.js";
+import {
+  auditDescriptorCompatibility,
+  auditOperationIds,
+  type AuditableResource,
+  type DescriptorVersion,
+} from "../../../tools/audit-operation-ids.js";
 
 function op(sdkAction: string, v2: string, v1: string) {
   return { sdkAction, operationIdV2: v2, operationIdV1: v1 };
@@ -50,5 +55,37 @@ describe("auditOperationIds (spec-driven, no allowlist)", () => {
       "quote.createSignature",
       "quote.updateSignature",
     ]);
+  });
+});
+
+describe("auditDescriptorCompatibility", () => {
+  const resources: AuditableResource[] = [
+    {
+      sdkName: "customer",
+      operations: [
+        op("list", "list_customers", "list_customers"),
+        op("create", "create_a_customer", ""),
+        op("unmapped", "", ""),
+      ],
+    },
+  ];
+
+  it("reports every mapped operation absent from the installed descriptors", () => {
+    const installed = new Set(["v2-pcv1:list_customers", "v2-pcv2:create_a_customer"]);
+    const hasDescriptor = (version: DescriptorVersion, operationId: string) =>
+      installed.has(`${version}:${operationId}`);
+
+    expect(auditDescriptorCompatibility(resources, hasDescriptor).missing).toEqual([
+      {
+        command: "customer.list",
+        version: "v2-pcv2",
+        operationId: "list_customers",
+      },
+    ]);
+  });
+
+  it("ignores empty ids because that catalog has no code sample", () => {
+    const hasDescriptor = () => true;
+    expect(auditDescriptorCompatibility(resources, hasDescriptor).missing).toEqual([]);
   });
 });

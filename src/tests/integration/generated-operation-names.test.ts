@@ -62,6 +62,13 @@ describe("generated API operation names", () => {
     }
   });
 
+  it("does not advertise code samples for generator-unsupported SDK resources", () => {
+    expect(docsOperationIds["non-subscription"]?.["process-receipt"]).toEqual({
+      v1: "",
+      v2: "",
+    });
+  });
+
   it("runs each command through its canonical and previous name", async () => {
     for (const [resource, names] of Object.entries(previousNames)) {
       for (const [canonicalName, previousName] of Object.entries(names)) {

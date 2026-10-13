@@ -19,6 +19,8 @@
  *   --spec-url-v1 <url>    Override the PC1 OpenAPI spec URL
  *   --spec-file-v2 <path>  Use a local PC2 spec file instead of fetching
  *   --spec-file-v1 <path>  Use a local PC1 spec file instead of fetching
+ *   --source-sha <sha>      Pin default spec URLs and generated marker to this
+ *                           chargebee/openapi commit (default: newest spec commit)
  *   --offline              Use cached specs only; fail if cache is missing
  *   --refresh              Force re-fetch even if a cached copy exists
  *   --strict               Accepted for backwards compatibility; no longer gates on
@@ -29,7 +31,12 @@
 import { readFileSync, writeFileSync, mkdirSync, rmSync, existsSync } from "node:fs";
 import { join, resolve } from "node:path";
 
-import { auditOperationIds } from "./audit-operation-ids.js";
+import { getOperation } from "@chargebee/code-sample-generator/node";
+
+import {
+  auditDescriptorCompatibility,
+  auditOperationIds,
+} from "./audit-operation-ids.js";
 import { sectionTitle } from "../lib/help-style.js";
 import { specArgument, specExample, operationHelp, type ArgumentHelp } from "./command-help.js";
 import { isReadOnlyOperation } from "../lib/api/write-gate.js";
@@ -49,13 +56,40 @@ function has(name: string): boolean {
 
 const outDir = resolve(flag("--out") ?? "src/commands/generated");
 const cacheDir = resolve(".cache/specs");
+const sourceMarker = join(outDir, ".openapi-source-sha");
+
+async function resolveSourceSha(): Promise<string> {
+  const requested = flag("--source-sha");
+  if (requested) return requested;
+
+  const response = await fetch(
+    "https://api.github.com/repos/chargebee/openapi/commits?path=spec&per_page=1",
+    { headers: { Accept: "application/vnd.github+json" } },
+  );
+  if (!response.ok) {
+    throw new Error(`Unable to resolve the latest public spec commit: HTTP ${response.status}`);
+  }
+  const commits = (await response.json()) as Array<{ sha?: string }>;
+  if (!commits[0]?.sha) throw new Error("chargebee/openapi returned no commits touching spec/");
+  return commits[0].sha;
+}
+
+const SOURCE_SHA = await resolveSourceSha();
+if (!/^[0-9a-f]{40}$/.test(SOURCE_SHA)) {
+  throw new Error(`Invalid chargebee/openapi source SHA: ${SOURCE_SHA}`);
+}
+
+const previousSourceSha = existsSync(sourceMarker)
+  ? readFileSync(sourceMarker, "utf-8").trim()
+  : undefined;
+const DEFAULT_SPEC_BASE = `https://raw.githubusercontent.com/chargebee/openapi/${SOURCE_SHA}/spec`;
 
 const SPEC_V2_URL =
   flag("--spec-url-v2") ??
-  "https://raw.githubusercontent.com/chargebee/openapi/refs/heads/main/spec/chargebee_api_v2_pc_v2_spec.json";
+  `${DEFAULT_SPEC_BASE}/chargebee_api_v2_pc_v2_spec.json`;
 const SPEC_V1_URL =
   flag("--spec-url-v1") ??
-  "https://raw.githubusercontent.com/chargebee/openapi/refs/heads/main/spec/chargebee_api_v2_pc_v1_spec.json";
+  `${DEFAULT_SPEC_BASE}/chargebee_api_v2_pc_v1_spec.json`;
 
 const SPEC_FETCH_TIMEOUT_MS = 120_000;
 
@@ -95,6 +129,14 @@ interface Resource {
  * operation directly from the specs.
  */
 const FORCE_BOTH = new Set<string>([]);
+
+/**
+ * Resources intentionally omitted from code-sample-generator because their
+ * operations are not supported consistently across Chargebee SDK languages.
+ * The CLI command remains usable through the Node SDK, but must not advertise
+ * a code-sample operation that the installed generator cannot resolve.
+ */
+const CODE_SAMPLE_UNSUPPORTED_SDK_RESOURCES = new Set(["nonSubscription"]);
 
 /**
  * Sanity assertions: core operations whose catalog must classify as expected.
@@ -174,7 +216,7 @@ async function loadSpec(label: string, url: string, fileOverride: string | undef
   const cachePath = join(cacheDir, cacheName);
   const cached = existsSync(cachePath);
 
-  if (cached && !has("--refresh")) {
+  if (cached && !has("--refresh") && previousSourceSha === SOURCE_SHA) {
     console.log(`[${label}] using cached spec ${cachePath}`);
     return JSON.parse(readFileSync(cachePath, "utf-8"));
   }
@@ -250,8 +292,9 @@ async function loadEndpoints(): Promise<Resource[]> {
       const key = `${t[1]}:${normPath(fullPath)}`;
       const specV2Op = v2Map.get(key);
       const specV1Op = v1Map.get(key);
-      const operationIdV2 = specV2Op?.operationId ?? "";
-      const operationIdV1 = specV1Op?.operationId ?? "";
+      const supportsCodeSamples = !CODE_SAMPLE_UNSUPPORTED_SDK_RESOURCES.has(sdkName);
+      const operationIdV2 = supportsCodeSamples ? (specV2Op?.operationId ?? "") : "";
+      const operationIdV1 = supportsCodeSamples ? (specV1Op?.operationId ?? "") : "";
 
       return {
         sdkAction: t[0],
@@ -521,6 +564,21 @@ if (unmapped.length > 0) {
   for (const id of unmapped) console.log(`    ${id}`);
 }
 
+const { missing } = auditDescriptorCompatibility(
+  resources,
+  (version, operationId) => getOperation(version, operationId) !== undefined,
+);
+if (missing.length > 0) {
+  throw new Error(
+    `The installed @chargebee/code-sample-generator does not contain ${missing.length} ` +
+      `operation descriptor(s) required by chargebee/openapi@${SOURCE_SHA}:\n  ` +
+      missing
+        .map(({ command, version, operationId }) => `${command}: ${version}/${operationId}`)
+        .join("\n  ") +
+      "\nPublish and install a compatible @chargebee/code-sample-generator version before releasing these commands.",
+  );
+}
+
 const allOps = resources.flatMap((r) => r.operations.map((op) => ({ name: `${r.cliName} ${op.cliCommand}`, catalog: op.catalog })));
 const pc1Ops = allOps.filter((o) => o.catalog === "pc1");
 const pc2Ops = allOps.filter((o) => o.catalog === "pc2");
@@ -539,6 +597,7 @@ for (const r of resources) {
 
 writeFileSync(join(outDir, "registry.ts"), generateRegistry(resources));
 writeFileSync(join(outDir, "docs-operations.ts"), generateDocsOperations(resources));
+writeFileSync(join(outDir, ".openapi-source-sha"), `${SOURCE_SHA}\n`);
 const withSamples = totalOps - unmapped.length;
 console.log(`Done. Generated ${resources.length} resource files + registry.ts + docs-operations.ts`);
 console.log(`Code samples available for ~${withSamples}/${totalOps} operations (${unmapped.length} unmapped in specs).`);
