@@ -78,14 +78,12 @@ jobs:
 
       - run: bun install --frozen-lockfile
 
-      # Regenerates API commands from the public OpenAPI specs. This job has
-      # no .cache/specs/, so it always fetches. Locally, bun run generate
-      # reuses that cache unless --refresh is passed. Missing operationIds are
-      # not a failure (an empty id just means no code sample for that op); the
-      # real gate is the drift check below.
+      # Regenerates API commands from one immutable public-spec commit. The
+      # generator also verifies that every mapped operation exists in the
+      # installed code-sample-generator package.
       - name: Regenerate API commands
         run: |
-          echo "Fetching the public OpenAPI specs. Locally, 'bun run generate' reuses .cache/specs/ unless you pass --refresh."
+          echo "Resolving and fetching one immutable public OpenAPI revision."
           bun run src/tools/generate.ts
 
       # Fails if the committed generated files drift from the specs.

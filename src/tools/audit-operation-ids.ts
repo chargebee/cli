@@ -22,6 +22,14 @@ export interface AuditableResource {
   operations: AuditableOperation[];
 }
 
+export type DescriptorVersion = "v2-pcv1" | "v2-pcv2";
+
+export interface MissingDescriptor {
+  command: string;
+  version: DescriptorVersion;
+  operationId: string;
+}
+
 /**
  * Return the sorted list of `<sdkName>.<sdkAction>` keys whose operationId is
  * absent from both specs. Purely informational: callers must not treat a
@@ -40,4 +48,39 @@ export function auditOperationIds(resources: AuditableResource[]): {
   }
   unmapped.sort();
   return { unmapped };
+}
+
+/**
+ * Verify that every non-empty operationId generated from the public specs is
+ * present in the installed code-sample-generator package. An absent id would
+ * produce a CLI command whose `--code-sample` path fails at runtime.
+ */
+export function auditDescriptorCompatibility(
+  resources: AuditableResource[],
+  hasDescriptor: (version: DescriptorVersion, operationId: string) => boolean,
+): { missing: MissingDescriptor[] } {
+  const missing: MissingDescriptor[] = [];
+
+  for (const resource of resources) {
+    for (const operation of resource.operations) {
+      const command = `${resource.sdkName}.${operation.sdkAction}`;
+      const ids: Array<[DescriptorVersion, string]> = [
+        ["v2-pcv1", operation.operationIdV1],
+        ["v2-pcv2", operation.operationIdV2],
+      ];
+
+      for (const [version, operationId] of ids) {
+        if (operationId && !hasDescriptor(version, operationId)) {
+          missing.push({ command, version, operationId });
+        }
+      }
+    }
+  }
+
+  missing.sort((a, b) =>
+    `${a.command}:${a.version}:${a.operationId}`.localeCompare(
+      `${b.command}:${b.version}:${b.operationId}`,
+    ),
+  );
+  return { missing };
 }
