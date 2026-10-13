@@ -163,23 +163,19 @@ jobs:
             echo "CLI already matches the latest public spec and generator package."
           fi
 
-      - name: Create pull-request token
+      - name: Get GitHub App installation token
         if: steps.changes.outputs.changed == 'true'
         id: app-token
-        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2
+        uses: chargebee/cb-cicd-pipelines/.github/actions/get-github-app-installation-access-token@v4.45.0
         with:
-          app-id: ${{ secrets.CLI_AUTOMATION_APP_ID }}
-          private-key: ${{ secrets.CLI_AUTOMATION_APP_PRIVATE_KEY }}
-          owner: chargebee
-          repositories: cli
-          permission-contents: write
-          permission-pull-requests: write
+          GH_APP_CREDENTIALS_TOKEN: ${{ secrets.DISTRIBUTED_GITFLOW_GH_APP_CREDENTIALS_TOKEN }}
+          REPOSITORY_NAME: ${{ github.event.repository.name }}
 
       - name: Create or update reconciliation PR
         if: steps.changes.outputs.changed == 'true'
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
         with:
-          token: ${{ steps.app-token.outputs.token }}
+          token: ${{ steps.app-token.outputs.INSTALLATION_ACCESS_TOKEN }}
           base: main
           branch: automation/reconcile-openapi
           delete-branch: true
