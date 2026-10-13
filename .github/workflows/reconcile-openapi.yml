@@ -125,7 +125,9 @@ jobs:
           SPEC_SHA: ${{ steps.inputs.outputs.spec_sha }}
         run: |
           FIRST_HASH=$(find src/commands/generated -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum | cut -d ' ' -f 1)
-          bun run src/tools/generate.ts --offline --source-sha "$SPEC_SHA"
+          # Omit --source-sha deliberately: offline generation must resolve the
+          # immutable revision from the cache provenance written above.
+          bun run src/tools/generate.ts --offline
           SECOND_HASH=$(find src/commands/generated -type f -print0 | sort -z | xargs -0 sha256sum | sha256sum | cut -d ' ' -f 1)
           if [ "$FIRST_HASH" != "$SECOND_HASH" ]; then
             echo "::error::CLI command generation is not deterministic"
@@ -170,6 +172,8 @@ jobs:
           private-key: ${{ secrets.CLI_AUTOMATION_APP_PRIVATE_KEY }}
           owner: chargebee
           repositories: cli
+          permission-contents: write
+          permission-pull-requests: write
 
       - name: Create or update reconciliation PR
         if: steps.changes.outputs.changed == 'true'
