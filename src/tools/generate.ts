@@ -57,10 +57,26 @@ function has(name: string): boolean {
 const outDir = resolve(flag("--out") ?? "src/commands/generated");
 const cacheDir = resolve(".cache/specs");
 const sourceMarker = join(outDir, ".openapi-source-sha");
+const cacheSourceMarker = join(cacheDir, ".openapi-source-sha");
+
+function readSourceMarker(path: string): string | undefined {
+  if (!existsSync(path)) return undefined;
+  const value = readFileSync(path, "utf-8").trim();
+  return /^[0-9a-f]{40}$/.test(value) ? value : undefined;
+}
+
+const cachedSourceSha = readSourceMarker(cacheSourceMarker);
 
 async function resolveSourceSha(): Promise<string> {
   const requested = flag("--source-sha");
   if (requested) return requested;
+
+  if (has("--offline")) {
+    if (cachedSourceSha) return cachedSourceSha;
+    throw new Error(
+      "--offline requires --source-sha or a cached spec revision. Run once online to populate .cache/specs/.",
+    );
+  }
 
   const response = await fetch(
     "https://api.github.com/repos/chargebee/openapi/commits?path=spec&per_page=1",
@@ -79,16 +95,15 @@ if (!/^[0-9a-f]{40}$/.test(SOURCE_SHA)) {
   throw new Error(`Invalid chargebee/openapi source SHA: ${SOURCE_SHA}`);
 }
 
-const previousSourceSha = existsSync(sourceMarker)
-  ? readFileSync(sourceMarker, "utf-8").trim()
-  : undefined;
 const DEFAULT_SPEC_BASE = `https://raw.githubusercontent.com/chargebee/openapi/${SOURCE_SHA}/spec`;
 
+const specUrlV2Override = flag("--spec-url-v2");
+const specUrlV1Override = flag("--spec-url-v1");
 const SPEC_V2_URL =
-  flag("--spec-url-v2") ??
+  specUrlV2Override ??
   `${DEFAULT_SPEC_BASE}/chargebee_api_v2_pc_v2_spec.json`;
 const SPEC_V1_URL =
-  flag("--spec-url-v1") ??
+  specUrlV1Override ??
   `${DEFAULT_SPEC_BASE}/chargebee_api_v2_pc_v1_spec.json`;
 
 const SPEC_FETCH_TIMEOUT_MS = 120_000;
@@ -206,30 +221,59 @@ async function fetchText(url: string): Promise<string> {
   }
 }
 
-/** Load a spec from a file override, the cache, or the network (cached on fetch). */
-async function loadSpec(label: string, url: string, fileOverride: string | undefined, cacheName: string): Promise<Record<string, unknown>> {
+interface LoadedSpec {
+  spec: Record<string, unknown>;
+  fetchedToCache: boolean;
+}
+
+/** Load a spec from a file override, its revision-scoped cache, or the network. */
+async function loadSpec(
+  label: string,
+  url: string,
+  fileOverride: string | undefined,
+  cacheName: string,
+  useCanonicalCache: boolean,
+): Promise<LoadedSpec> {
   if (fileOverride) {
     console.log(`[${label}] using local file ${fileOverride}`);
-    return JSON.parse(readFileSync(resolve(fileOverride), "utf-8"));
+    return {
+      spec: JSON.parse(readFileSync(resolve(fileOverride), "utf-8")),
+      fetchedToCache: false,
+    };
   }
 
-  const cachePath = join(cacheDir, cacheName);
-  const cached = existsSync(cachePath);
+  // The revision directory is cache provenance: files from different immutable
+  // public commits can never be mistaken for each other after an interrupted run.
+  const cachePath = join(cacheDir, SOURCE_SHA, cacheName);
+  const cached = useCanonicalCache && existsSync(cachePath);
 
-  if (cached && !has("--refresh") && previousSourceSha === SOURCE_SHA) {
+  if (cached && !has("--refresh")) {
     console.log(`[${label}] using cached spec ${cachePath}`);
-    return JSON.parse(readFileSync(cachePath, "utf-8"));
+    return {
+      spec: JSON.parse(readFileSync(cachePath, "utf-8")),
+      fetchedToCache: false,
+    };
   }
 
   if (has("--offline")) {
-    throw new Error(`[${label}] --offline set but no cached spec at ${cachePath}. Run once online to populate the cache.`);
+    const provenance = cachedSourceSha ?? "unknown";
+    throw new Error(
+      `[${label}] --offline cannot use ${cachePath} for chargebee/openapi@${SOURCE_SHA} ` +
+        `(cached revision: ${provenance}). Run once online to populate that revision.`,
+    );
   }
 
   console.log(`[${label}] fetching ${url}`);
   const text = await fetchText(url);
-  mkdirSync(cacheDir, { recursive: true });
-  writeFileSync(cachePath, text);
-  return JSON.parse(text);
+  const spec = JSON.parse(text) as Record<string, unknown>;
+  if (useCanonicalCache) {
+    mkdirSync(join(cacheDir, SOURCE_SHA), { recursive: true });
+    writeFileSync(cachePath, text);
+  }
+  return {
+    spec,
+    fetchedToCache: useCanonicalCache,
+  };
 }
 
 interface SpecOp {
@@ -270,10 +314,40 @@ function humanizeAction(action: string): string {
 }
 
 async function loadEndpoints(): Promise<Resource[]> {
-  const [specV2, specV1] = await Promise.all([
-    loadSpec("v2-pc2", SPEC_V2_URL, flag("--spec-file-v2"), "chargebee_api_v2_pc_v2_spec.json"),
-    loadSpec("v2-pc1", SPEC_V1_URL, flag("--spec-file-v1"), "chargebee_api_v2_pc_v1_spec.json"),
+  const specFileV2 = flag("--spec-file-v2");
+  const specFileV1 = flag("--spec-file-v1");
+  const canonicalV2 = !specFileV2 && !specUrlV2Override;
+  const canonicalV1 = !specFileV1 && !specUrlV1Override;
+
+  const [loadedV2, loadedV1] = await Promise.all([
+    loadSpec(
+      "v2-pc2",
+      SPEC_V2_URL,
+      specFileV2,
+      "chargebee_api_v2_pc_v2_spec.json",
+      canonicalV2,
+    ),
+    loadSpec(
+      "v2-pc1",
+      SPEC_V1_URL,
+      specFileV1,
+      "chargebee_api_v2_pc_v1_spec.json",
+      canonicalV1,
+    ),
   ]);
+  if (
+    canonicalV2 &&
+    canonicalV1 &&
+    (loadedV2.fetchedToCache || loadedV1.fetchedToCache || cachedSourceSha !== SOURCE_SHA)
+  ) {
+    // Point offline-without-a-SHA at this revision only after both canonical
+    // specs loaded successfully. File and URL overrides never update it.
+    mkdirSync(cacheDir, { recursive: true });
+    writeFileSync(cacheSourceMarker, `${SOURCE_SHA}\n`);
+  }
+
+  const specV2 = loadedV2.spec;
+  const specV1 = loadedV1.spec;
   const v2Map = buildSpecMap(specV2);
   const v1Map = buildSpecMap(specV1);
   console.log(`Loaded operationIds: PC2=${v2Map.size}, PC1=${v1Map.size}`);
