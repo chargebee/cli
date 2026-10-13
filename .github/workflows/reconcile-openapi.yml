@@ -166,7 +166,7 @@ jobs:
       - name: Get GitHub App installation token
         if: steps.changes.outputs.changed == 'true'
         id: app-token
-        uses: chargebee/cb-cicd-pipelines/.github/actions/get-github-app-installation-access-token@v4.45.0
+        uses: chargebee/cb-cicd-pipelines/.github/actions/get-github-app-installation-access-token@fa354e0c48c2f6da74a892b1f4438cd0b5e78556 # v4.45.0
         with:
           GH_APP_CREDENTIALS_TOKEN: ${{ secrets.DISTRIBUTED_GITFLOW_GH_APP_CREDENTIALS_TOKEN }}
           REPOSITORY_NAME: ${{ github.event.repository.name }}
