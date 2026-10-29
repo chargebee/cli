@@ -1,6 +1,6 @@
 {
   "name": "@chargebee/cli",
-  "version": "1.4.2",
+  "version": "1.5.0",
   "description": "Chargebee CLI — Build with Chargebee from the terminal",
   "type": "module",
   "main": "dist/index.js",
