@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.1](https://github.com/chargebee/cli/compare/v1.5.0...v1.5.1) (2026-10-29)
+
+
+### Bug Fixes
+
+* pin release approval to validated commit ([29dc799](https://github.com/chargebee/cli/commit/29dc799f911177f9531349966fa0efa67a95b801))
+
 ## [1.5.0](https://github.com/chargebee/cli/compare/v1.4.2...v1.5.0) (2026-10-29)
 
 
