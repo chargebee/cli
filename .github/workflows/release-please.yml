@@ -132,10 +132,11 @@ jobs:
             exit 0
           fi
 
-          gh pr review "$PR_NUMBER" \
-            --repo "$GITHUB_REPOSITORY" \
-            --approve \
-            --body "Automated approval after Release Please identity, branch, and file-scope validation."
+          gh api --method POST \
+            "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews" \
+            -f commit_id="$HEAD_SHA" \
+            -f event=APPROVE \
+            -f body="Automated approval after Release Please identity, branch, and file-scope validation."
 
   build:
     needs: release-please
