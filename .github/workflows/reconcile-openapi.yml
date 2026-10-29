@@ -168,8 +168,8 @@ jobs:
         id: app-token
         uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2
         with:
-          app-id: ${{ secrets.CB_SDK_BOT_APP_ID }}
-          private-key: ${{ secrets.CB_SDK_BOT_PEM_KEY }}
+          app-id: ${{ secrets.CB_PUBLIC_APP_ID }}
+          private-key: ${{ secrets.CB_PUBLIC_PEM_KEY }}
           owner: chargebee
           repositories: cli
           permission-contents: write
