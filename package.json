@@ -64,7 +64,7 @@
   "devDependencies": {
     "@chargebee/code-sample-generator": "1.1.1",
     "@clack/prompts": "^1.8.1",
-    "@types/bun": "1.4.2",
+    "@types/bun": "1.4.4",
     "chargebee": "^3.34.0",
     "commander": "^15.0.0",
     "typescript": "^7.0.2"
