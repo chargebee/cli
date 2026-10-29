@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.5.0](https://github.com/chargebee/cli/compare/v1.4.2...v1.5.0) (2026-10-29)
+
+
+### Features
+
+* **openapi:** reconcile generated CLI commands ([f6214f9](https://github.com/chargebee/cli/commit/f6214f948322332c30d3446eb0adfa758861f39d))
+
+
+### Bug Fixes
+
+* **cli:** reconcile OpenAPI commands and code-sample generator ([e504aec](https://github.com/chargebee/cli/commit/e504aeca4ae24533ef943c96323f3e20853c67ec))
+* **openapi:** preserve cached spec provenance ([fdbfdd1](https://github.com/chargebee/cli/commit/fdbfdd1bc1c6da8258e0bb765b1da2c66612d87e))
+* **openapi:** use compatible code sample generator ([0af3def](https://github.com/chargebee/cli/commit/0af3def7a4f0e74819c48a8a70f89930aaa4dc77))
+
 ## [1.4.2](https://github.com/chargebee/cli/compare/v1.4.1...v1.4.2) (2026-10-12)
 
 
