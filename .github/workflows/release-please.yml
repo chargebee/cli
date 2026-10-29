@@ -62,6 +62,81 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      # Release Please intentionally uses GITHUB_TOKEN above so the release PR
+      # is authored by github-actions. A separate, narrowly scoped App identity
+      # can therefore provide the required last-push approval without allowing
+      # ordinary code PRs to bypass review.
+      - name: Create release PR approval token
+        if: steps.rp.outputs.release_created != 'true'
+        id: release-approval-token
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349  # v2
+        with:
+          app-id: ${{ secrets.CB_SDK_BOT_APP_ID }}
+          private-key: ${{ secrets.CB_SDK_BOT_PEM_KEY }}
+          owner: chargebee
+          repositories: cli
+          permission-contents: read
+          permission-pull-requests: write
+
+      - name: Approve the current Release Please PR
+        if: steps.rp.outputs.release_created != 'true'
+        env:
+          GH_TOKEN: ${{ steps.release-approval-token.outputs.token }}
+          RELEASE_BRANCH: release-please--branches--main--components--cli
+        run: |
+          PRS=$(gh pr list \
+            --repo "$GITHUB_REPOSITORY" \
+            --state open \
+            --base main \
+            --head "$RELEASE_BRANCH" \
+            --json number)
+          PR_COUNT=$(jq 'length' <<<"$PRS")
+
+          if [ "$PR_COUNT" -eq 0 ]; then
+            echo "No open Release Please PR needs approval."
+            exit 0
+          fi
+          if [ "$PR_COUNT" -ne 1 ]; then
+            echo "::error::Expected one Release Please PR, found $PR_COUNT"
+            exit 1
+          fi
+
+          PR_NUMBER=$(jq -r '.[0].number' <<<"$PRS")
+          PR=$(gh pr view "$PR_NUMBER" \
+            --repo "$GITHUB_REPOSITORY" \
+            --json author,baseRefName,headRefName,headRefOid,headRepositoryOwner,files)
+
+          test "$(jq -r '.author.login' <<<"$PR")" = "app/github-actions"
+          test "$(jq -r '.baseRefName' <<<"$PR")" = "main"
+          test "$(jq -r '.headRefName' <<<"$PR")" = "$RELEASE_BRANCH"
+          test "$(jq -r '.headRepositoryOwner.login' <<<"$PR")" = "chargebee"
+
+          UNEXPECTED_FILES=$(jq -r '.files[].path' <<<"$PR" | awk '
+            $0 != ".release-please-manifest.json" &&
+            $0 != "CHANGELOG.md" &&
+            $0 != "package.json" { print }
+          ')
+          if [ -n "$UNEXPECTED_FILES" ]; then
+            echo "::error::Release Please PR contains unexpected files"
+            echo "$UNEXPECTED_FILES"
+            exit 1
+          fi
+
+          HEAD_SHA=$(jq -r '.headRefOid' <<<"$PR")
+          APPROVED_SHA=$(gh api \
+            "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews" \
+            --paginate \
+            --jq '[.[] | select(.user.login == "chargebee-sdk-release-bot[bot]" and .state == "APPROVED")] | last | .commit_id // empty')
+          if [ "$APPROVED_SHA" = "$HEAD_SHA" ]; then
+            echo "Release Please PR #$PR_NUMBER is already approved at $HEAD_SHA."
+            exit 0
+          fi
+
+          gh pr review "$PR_NUMBER" \
+            --repo "$GITHUB_REPOSITORY" \
+            --approve \
+            --body "Automated approval after Release Please identity, branch, and file-scope validation."
+
   build:
     needs: release-please
     if: needs.release-please.outputs.release_created == 'true'
