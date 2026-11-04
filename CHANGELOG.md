@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.5.1](https://github.com/chargebee/cli/compare/v1.5.0...v1.5.1) (2026-11-04)
+
+
+### Bug Fixes
+
+* **cli:** confirm live-site writes instead of blocking them ([4491ef3](https://github.com/chargebee/cli/commit/4491ef3ea8577b689940545e287481b5e563d886))
+* **cli:** exempt PDF download-URL retrieval from the live-site write gate ([3b3878b](https://github.com/chargebee/cli/commit/3b3878b8d27e7771613868242e94e134c78ea901))
+* **cli:** treat CI runners as non-interactive for live-site writes ([e1e7a80](https://github.com/chargebee/cli/commit/e1e7a805ae98fa82fbf735c46039b9ed706b3502))
+* pin release approval to validated commit ([29dc799](https://github.com/chargebee/cli/commit/29dc799f911177f9531349966fa0efa67a95b801))
+
 ## [1.5.0](https://github.com/chargebee/cli/compare/v1.4.2...v1.5.0) (2026-10-29)
 
 
