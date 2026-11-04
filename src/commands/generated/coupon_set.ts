@@ -25,14 +25,15 @@ export function registerCouponSet(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs coupon-set add-coupon-codes\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "add_coupon_codes_to_coupon_set", opIdV1: "add_coupon_codes_to_coupon_set", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "add_coupon_codes_to_coupon_set", opIdV1: "add_coupon_codes_to_coupon_set", method: "POST", uri: "/coupon_sets/{id}/add_coupon_codes", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "coupon-set-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'coupon-set-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "coupon-set add-coupon-codes", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).couponSet.addCouponCodes(resource.id, params);
@@ -47,12 +48,13 @@ export function registerCouponSet(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs coupon-set create\n")
-    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
       const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_a_coupon_set", opIdV1: "create_a_coupon_set", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_a_coupon_set", opIdV1: "create_a_coupon_set", method: "POST", uri: "/coupon_sets", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "coupon-set create", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).couponSet.create(params);
@@ -68,14 +70,15 @@ export function registerCouponSet(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs coupon-set delete\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "delete_a_coupon_set", opIdV1: "delete_a_coupon_set", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "delete_a_coupon_set", opIdV1: "delete_a_coupon_set", method: "POST", uri: "/coupon_sets/{id}/delete", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "coupon-set-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'coupon-set-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "coupon-set delete", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).couponSet.delete(resource.id, params);
@@ -91,14 +94,15 @@ export function registerCouponSet(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs coupon-set delete-unused-coupon-codes\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "delete_unused_coupon_codes", opIdV1: "delete_unused_coupon_codes", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "delete_unused_coupon_codes", opIdV1: "delete_unused_coupon_codes", method: "POST", uri: "/coupon_sets/{id}/delete_unused_coupon_codes", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "coupon-set-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'coupon-set-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "coupon-set delete-unused-coupon-codes", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).couponSet.deleteUnusedCouponCodes(resource.id, params);
@@ -158,14 +162,15 @@ export function registerCouponSet(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs coupon-set update\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "update_a_coupon_set", opIdV1: "update_a_coupon_set", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "update_a_coupon_set", opIdV1: "update_a_coupon_set", method: "POST", uri: "/coupon_sets/{id}/update", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "coupon-set-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'coupon-set-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "coupon-set update", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).couponSet.update(resource.id, params);

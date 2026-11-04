@@ -24,15 +24,16 @@ export function registerFeature(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs feature activate\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "activate_a_feature", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "feature activate");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "activate_a_feature", opIdV1: "", method: "POST", uri: "/features/{id}/activate_command", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "feature-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'feature-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "feature activate", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).feature.activate(resource.id, params);
@@ -48,15 +49,16 @@ export function registerFeature(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs feature archive\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "archive_a_feature", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "feature archive");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "archive_a_feature", opIdV1: "", method: "POST", uri: "/features/{id}/archive_command", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "feature-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'feature-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "feature archive", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).feature.archive(resource.id, params);
@@ -71,13 +73,14 @@ export function registerFeature(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs feature create\n")
-    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
       const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_a_feature", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "feature create");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_a_feature", opIdV1: "", method: "POST", uri: "/features", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "feature create", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).feature.create(params);
@@ -93,15 +96,16 @@ export function registerFeature(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs feature delete\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "delete_a_feature", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "feature delete");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "delete_a_feature", opIdV1: "", method: "POST", uri: "/features/{id}/delete", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "feature-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'feature-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "feature delete", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).feature.delete(resource.id, params);
@@ -140,15 +144,16 @@ export function registerFeature(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs feature reactivate\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "reactivate_a_feature", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "feature reactivate");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "reactivate_a_feature", opIdV1: "", method: "POST", uri: "/features/{id}/reactivate_command", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "feature-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'feature-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "feature reactivate", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).feature.reactivate(resource.id, params);
@@ -187,15 +192,16 @@ export function registerFeature(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs feature update\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "update_a_feature", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "feature update");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "update_a_feature", opIdV1: "", method: "POST", uri: "/features/{id}", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "feature-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'feature-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "feature update", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).feature.update(resource.id, params);

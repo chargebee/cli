@@ -117,11 +117,11 @@ describe("sdk coverage gaps", () => {
   });
 
   it("ensureWriteAllowed is a no-op for GET", async () => {
-    await ensureWriteAllowed("GET");
+    await ensureWriteAllowed("GET", "customer list");
   });
 
   it("ensureWriteAllowed fails open when nothing is configured", async () => {
-    await ensureWriteAllowed("POST");
+    await ensureWriteAllowed("POST", "customer create");
   });
 
   it("ensureCatalogAllowed fails open when catalog metadata cannot be read", async () => {

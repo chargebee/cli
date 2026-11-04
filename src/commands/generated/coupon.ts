@@ -23,12 +23,13 @@ export function registerCoupon(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs coupon copy\n")
-    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
       const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "copy_a_coupon", opIdV1: "copy_a_coupon", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "copy_a_coupon", opIdV1: "copy_a_coupon", method: "POST", uri: "/coupons/copy", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "coupon copy", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).coupon.copy(params);
@@ -43,13 +44,14 @@ export function registerCoupon(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs coupon create\n")
-    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
       const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "", opIdV1: "create_a_coupon", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc1", "coupon create");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "", opIdV1: "create_a_coupon", method: "POST", uri: "/coupons", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "coupon create", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).coupon.create(params);
@@ -64,13 +66,14 @@ export function registerCoupon(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs coupon create-for-items\n")
-    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
       const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_a_coupon_for_items", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "coupon create-for-items");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_a_coupon_for_items", opIdV1: "", method: "POST", uri: "/coupons/create_for_items", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "coupon create-for-items", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).coupon.createForItems(params);
@@ -86,14 +89,15 @@ export function registerCoupon(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs coupon delete\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "delete_a_coupon", opIdV1: "delete_a_coupon", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "delete_a_coupon", opIdV1: "delete_a_coupon", method: "POST", uri: "/coupons/{id}/delete", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "coupon-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'coupon-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "coupon delete", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).coupon.delete(resource.id, params);
@@ -153,14 +157,15 @@ export function registerCoupon(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs coupon unarchive\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "unarchive_a_coupon", opIdV1: "unarchive_a_coupon", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "unarchive_a_coupon", opIdV1: "unarchive_a_coupon", method: "POST", uri: "/coupons/{id}/unarchive", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "coupon-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'coupon-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "coupon unarchive", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).coupon.unarchive(resource.id, params);
@@ -176,15 +181,16 @@ export function registerCoupon(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs coupon update\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "", opIdV1: "update_a_coupon", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc1", "coupon update");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "", opIdV1: "update_a_coupon", method: "POST", uri: "/coupons/{id}", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "coupon-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'coupon-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "coupon update", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).coupon.update(resource.id, params);
@@ -200,15 +206,16 @@ export function registerCoupon(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs coupon update-for-items\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "update_a_coupon_for_items", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "coupon update-for-items");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "update_a_coupon_for_items", opIdV1: "", method: "POST", uri: "/coupons/{id}/update_for_items", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "coupon-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'coupon-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "coupon update-for-items", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).coupon.updateForItems(resource.id, params);

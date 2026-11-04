@@ -24,14 +24,15 @@ export function registerQuote(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs quote convert\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "convert_a_quote", opIdV1: "convert_a_quote", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "convert_a_quote", opIdV1: "convert_a_quote", method: "POST", uri: "/quotes/{id}/convert", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "quote-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'quote-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "quote convert", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).quote.convert(resource.id, params);
@@ -46,13 +47,14 @@ export function registerQuote(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs quote create-for-charge-items-and-charges\n")
-    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
       const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_a_quote_for_charge_and_charge_items", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "quote create-for-charge-items-and-charges");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_a_quote_for_charge_and_charge_items", opIdV1: "", method: "POST", uri: "/quotes/create_for_charge_items_and_charges", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "quote create-for-charge-items-and-charges", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).quote.createForChargeItemsAndCharges(params);
@@ -67,13 +69,14 @@ export function registerQuote(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs quote create-for-onetime-charges\n")
-    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
       const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "", opIdV1: "create_quote_for_one-time_charges", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc1", "quote create-for-onetime-charges");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "", opIdV1: "create_quote_for_one-time_charges", method: "POST", uri: "/quotes/create_for_onetime_charges", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "quote create-for-onetime-charges", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).quote.createForOnetimeCharges(params);
@@ -89,14 +92,15 @@ export function registerQuote(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs quote create-signature\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "", opIdV1: "", method: "POST", uri: "/quotes/{id}/create_signature", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: undefined, pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "quote create-signature", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).quote.createSignature(resource.id, params);
@@ -112,15 +116,16 @@ export function registerQuote(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs quote create-sub-for-customer-quote\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "", opIdV1: "create_quote_for_a_new_subscription", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc1", "quote create-sub-for-customer-quote");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "", opIdV1: "create_quote_for_a_new_subscription", method: "POST", uri: "/customers/{id}/create_subscription_quote", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "customer-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'customer-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "quote create-sub-for-customer-quote", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).quote.createSubForCustomerQuote(resource.id, params);
@@ -136,15 +141,16 @@ export function registerQuote(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs quote create-sub-items-for-customer-quote\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_a_quote_for_a_new_subscription_items", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "quote create-sub-items-for-customer-quote");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_a_quote_for_a_new_subscription_items", opIdV1: "", method: "POST", uri: "/customers/{id}/create_subscription_quote_for_items", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "customer-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'customer-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "quote create-sub-items-for-customer-quote", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).quote.createSubItemsForCustomerQuote(resource.id, params);
@@ -160,14 +166,15 @@ export function registerQuote(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs quote delete\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "delete_a_quote", opIdV1: "delete_a_quote", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "delete_a_quote", opIdV1: "delete_a_quote", method: "POST", uri: "/quotes/{id}/delete", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "quote-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'quote-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "quote delete", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).quote.delete(resource.id, params);
@@ -183,15 +190,16 @@ export function registerQuote(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs quote edit-create-sub-customer-quote-for-items\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "edit_create_subscription_quote_for_items", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "quote edit-create-sub-customer-quote-for-items");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "edit_create_subscription_quote_for_items", opIdV1: "", method: "POST", uri: "/quotes/{id}/edit_create_subscription_quote_for_items", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "quote-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'quote-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "quote edit-create-sub-customer-quote-for-items", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).quote.editCreateSubCustomerQuoteForItems(resource.id, params);
@@ -207,15 +215,16 @@ export function registerQuote(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs quote edit-create-sub-for-customer-quote\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "", opIdV1: "edit_quote_for_a_new_subscription", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc1", "quote edit-create-sub-for-customer-quote");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "", opIdV1: "edit_quote_for_a_new_subscription", method: "POST", uri: "/quotes/{id}/edit_create_subscription_quote", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "quote-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'quote-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "quote edit-create-sub-for-customer-quote", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).quote.editCreateSubForCustomerQuote(resource.id, params);
@@ -231,15 +240,16 @@ export function registerQuote(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs quote edit-for-charge-items-and-charges\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "edit_quote_for_charge_items_and_charges", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "quote edit-for-charge-items-and-charges");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "edit_quote_for_charge_items_and_charges", opIdV1: "", method: "POST", uri: "/quotes/{id}/edit_for_charge_items_and_charges", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "quote-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'quote-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "quote edit-for-charge-items-and-charges", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).quote.editForChargeItemsAndCharges(resource.id, params);
@@ -255,15 +265,16 @@ export function registerQuote(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs quote edit-one-time-quote\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "", opIdV1: "edit_quote_for_one-time_charges", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc1", "quote edit-one-time-quote");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "", opIdV1: "edit_quote_for_one-time_charges", method: "POST", uri: "/quotes/{id}/edit_one_time_quote", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "quote-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'quote-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "quote edit-one-time-quote", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).quote.editOneTimeQuote(resource.id, params);
@@ -279,15 +290,16 @@ export function registerQuote(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs quote edit-update-subscription-quote\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "", opIdV1: "edit_quote_for_updating_a_subscription", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc1", "quote edit-update-subscription-quote");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "", opIdV1: "edit_quote_for_updating_a_subscription", method: "POST", uri: "/quotes/{id}/edit_update_subscription_quote", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "quote-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'quote-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "quote edit-update-subscription-quote", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).quote.editUpdateSubscriptionQuote(resource.id, params);
@@ -303,15 +315,16 @@ export function registerQuote(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs quote edit-update-subscription-quote-for-items\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "edit_update_subscription_quote_for_items", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "quote edit-update-subscription-quote-for-items");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "edit_update_subscription_quote_for_items", opIdV1: "", method: "POST", uri: "/quotes/{id}/edit_update_subscription_quote_for_items", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "quote-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'quote-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "quote edit-update-subscription-quote-for-items", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).quote.editUpdateSubscriptionQuoteForItems(resource.id, params);
@@ -327,14 +340,15 @@ export function registerQuote(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs quote extend-expiry-date\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "extend_expiry_date", opIdV1: "extend_expiry_date", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "extend_expiry_date", opIdV1: "extend_expiry_date", method: "POST", uri: "/quotes/{id}/extend_expiry_date", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "quote-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'quote-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "quote extend-expiry-date", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).quote.extendExpiryDate(resource.id, params);
@@ -372,14 +386,15 @@ export function registerQuote(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs quote pdf\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "retrieve_quote_as_pdf", opIdV1: "retrieve_quote_as_pdf", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "retrieve_quote_as_pdf", opIdV1: "retrieve_quote_as_pdf", method: "POST", uri: "/quotes/{id}/pdf", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "quote-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'quote-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "quote pdf", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).quote.pdf(resource.id, params);
@@ -417,14 +432,15 @@ export function registerQuote(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs quote refresh-signature-link\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "", opIdV1: "", method: "POST", uri: "/quotes/{id}/refresh_signature_link", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: undefined, pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "quote refresh-signature-link", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).quote.refreshSignatureLink(resource.id, params);
@@ -506,14 +522,15 @@ export function registerQuote(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs quote update-signature\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "", opIdV1: "", method: "POST", uri: "/quotes/{id}/update_signature", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: undefined, pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "quote update-signature", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).quote.updateSignature(resource.id, params);
@@ -529,14 +546,15 @@ export function registerQuote(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs quote update-signature-status\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "", opIdV1: "", method: "POST", uri: "/quotes/{id}/update_signature_status", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: undefined, pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "quote update-signature-status", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).quote.updateSignatureStatus(resource.id, params);
@@ -552,14 +570,15 @@ export function registerQuote(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs quote update-status\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "update_quote_status", opIdV1: "update_quote_status", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "update_quote_status", opIdV1: "update_quote_status", method: "POST", uri: "/quotes/{id}/update_status", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "quote-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'quote-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "quote update-status", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).quote.updateStatus(resource.id, params);
@@ -574,13 +593,14 @@ export function registerQuote(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs quote update-subscription-quote\n")
-    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
       const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "", opIdV1: "create_quote_for_updating_a_subscription", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc1", "quote update-subscription-quote");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "", opIdV1: "create_quote_for_updating_a_subscription", method: "POST", uri: "/quotes/update_subscription_quote", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "quote update-subscription-quote", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).quote.updateSubscriptionQuote(params);
@@ -595,13 +615,14 @@ export function registerQuote(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs quote update-subscription-quote-for-items\n")
-    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
       const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_a_quote_for_update_subscription_items", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "quote update-subscription-quote-for-items");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_a_quote_for_update_subscription_items", opIdV1: "", method: "POST", uri: "/quotes/update_subscription_quote_for_items", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "quote update-subscription-quote-for-items", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).quote.updateSubscriptionQuoteForItems(params);

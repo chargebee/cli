@@ -23,13 +23,14 @@ export function registerAddon(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs addon copy\n")
-    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
       const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "", opIdV1: "copy_an_addon", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc1", "addon copy");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "", opIdV1: "copy_an_addon", method: "POST", uri: "/addons/copy", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "addon copy", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).addon.copy(params);
@@ -44,13 +45,14 @@ export function registerAddon(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs addon create\n")
-    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
       const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "", opIdV1: "create_an_addon", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc1", "addon create");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "", opIdV1: "create_an_addon", method: "POST", uri: "/addons", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "addon create", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).addon.create(params);
@@ -66,15 +68,16 @@ export function registerAddon(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs addon delete\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "", opIdV1: "delete_an_addon", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc1", "addon delete");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "", opIdV1: "delete_an_addon", method: "POST", uri: "/addons/{id}/delete", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "addon-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'addon-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "addon delete", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).addon.delete(resource.id, params);
@@ -136,15 +139,16 @@ export function registerAddon(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs addon unarchive\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "", opIdV1: "unarchive_an_addon", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc1", "addon unarchive");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "", opIdV1: "unarchive_an_addon", method: "POST", uri: "/addons/{id}/unarchive", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "addon-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'addon-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "addon unarchive", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).addon.unarchive(resource.id, params);
@@ -160,15 +164,16 @@ export function registerAddon(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs addon update\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "", opIdV1: "update_an_addon", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc1", "addon update");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "", opIdV1: "update_an_addon", method: "POST", uri: "/addons/{id}", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "addon-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'addon-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "addon update", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).addon.update(resource.id, params);

@@ -240,7 +240,7 @@ If a project skill path resolves to a global installation, it is global only: pr
 | Not configured | Run `chargebee auth add` or set both authentication environment variables. |
 | Invalid API key | Verify the key belongs to the configured site. |
 | Catalog mismatch | Check `chargebee auth status` and use the operation for that catalog. |
-| Live-site write blocked | Switch to a test site. |
+| Live-site write refused | Ask the user whether to change the live site; add `--yes` only after they confirm, otherwise use a test site. |
 | Unknown command/resource | Run `chargebee resources` or `chargebee <resource> --help`. |
 | Code sample unavailable | Use `chargebee docs <resource> <operation>` for the API reference and construct the request from the documented parameters. |
 | Webhook listen blocked | Use a test site. |

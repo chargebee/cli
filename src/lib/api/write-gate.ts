@@ -1,8 +1,9 @@
 /**
- * Pure logic for the live-site read-only safety gate.
+ * Pure logic for the live-site write confirmation gate.
  *
- * Live (production) sites are read-only: only read operations (GET) are
- * permitted. This is a hard restriction with no override flag for now.
+ * Write operations on live (production) sites need explicit confirmation: an
+ * interactive yes/no prompt, or `--yes`. Without a terminal and without
+ * `--yes` the write is refused.
  *
  * Kept separate from `sdk.ts` (which imports the Chargebee SDK and is a common
  * mock target in tests) so this logic can be unit-tested in isolation.
@@ -34,7 +35,7 @@ export function siteMode(site: string, apiKey?: string): "test" | "live" {
   return isLiveSite(site, apiKey) ? "live" : "test";
 }
 
-/** HTTP methods that mutate data. Live sites permit only reads (GET). */
+/** HTTP methods that mutate data. Live sites need confirmation for these. */
 export function isWriteMethod(method: string): boolean {
   return method.toUpperCase() !== "GET";
 }
@@ -73,7 +74,7 @@ function hasReadOnlyActionPrefix(action: string): boolean {
  * `sdkName`/`sdkAction` pair used to call the SDK client) is read-only despite
  * using a non-GET HTTP method — e.g. `estimate.createSubscription`,
  * `portalSession.create`. Used by the generator to decide whether an
- * operation needs the live-site write gate at all.
+ * operation needs the live-site write confirmation at all.
  */
 export function isReadOnlyOperation(operationKey?: string): boolean {
   if (!operationKey) return false;
@@ -89,21 +90,42 @@ export function isReadOnlyOperation(operationKey?: string): boolean {
 }
 
 /**
- * Pure decision: should this operation be blocked?
- *
- * Live (production) sites are read-only — any write method is blocked. There is
- * intentionally no override; this is a hard restriction for now.
+ * How a write should proceed:
+ * - `allow`: not a write, or not a live site — run without ceremony.
+ * - `allow_live`: live-site write confirmed up front with `--yes`.
+ * - `confirm`: live-site write that must be confirmed at an interactive prompt.
+ * - `refuse`: live-site write with no `--yes` and no way to prompt.
  */
-export function shouldBlockWrite(opts: { method: string; site: string; apiKey?: string }): boolean {
-  if (!isWriteMethod(opts.method)) return false;
-  return isLiveSite(opts.site, opts.apiKey);
+export type WriteDecision = "allow" | "allow_live" | "confirm" | "refuse";
+
+export function liveWriteDecision(opts: {
+  method: string;
+  site: string;
+  apiKey?: string;
+  yes: boolean;
+  canPrompt: boolean;
+}): WriteDecision {
+  if (!isWriteMethod(opts.method) || !isLiveSite(opts.site, opts.apiKey)) return "allow";
+  if (opts.yes) return "allow_live";
+  return opts.canPrompt ? "confirm" : "refuse";
 }
 
-/** The message shown when a write is blocked on a live site. */
-export function blockedWriteMessage(site: string): string {
+/** The question asked before a write on a live site. */
+export function liveWritePrompt(site: string, commandName: string): string {
+  return `Run "${commandName}" on LIVE site "${site}"? This changes production data.`;
+}
+
+/** The stderr notice printed when a confirmed write runs on a live site. */
+export function liveWriteNotice(site: string): string {
+  return `${paint("33", "⚠")} Writing to live site "${site}".`;
+}
+
+/** The message shown when a live-site write cannot be confirmed. */
+export function unconfirmedWriteMessage(site: string, commandName: string): string {
   return (
-    `${paint("31", "✗")} Refusing to run a write operation on live site "${site}".\n\n` +
-    "  Live (production) sites are read-only — only read operations (list, retrieve) are allowed.\n" +
-    '  Use a test site (name ending in "-test", or a test_ API key) to create, update, or delete data.\n'
+    `${paint("31", "✗")} Refusing to run a write operation on live site "${site}" without confirmation.\n\n` +
+    `  "${commandName}" changes data on a live (production) site.\n` +
+    "  Re-run with --yes to confirm, or run it in a terminal to answer the prompt.\n" +
+    '  To experiment safely, use a test site (name ending in "-test", or a test_ API key).\n'
   );
 }

@@ -506,7 +506,10 @@ function generateResourceFile(r: Resource): string {
     const isWrite =
       op.method.toUpperCase() !== "GET" && !isReadOnlyOperation(`${r.sdkName}.${op.sdkAction}`);
     const list = isListOp(op.cliCommand);
-    const optsType = `{ data?: string[]; codeSample?: string; pcVersion?: string }`;
+    const optsType = isWrite
+      ? `{ data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }`
+      : `{ data?: string[]; codeSample?: string; pcVersion?: string }`;
+    const writeCheck = `      await ensureWriteAllowed("${op.method}", "${r.cliName} ${op.cliCommand}", opts.yes === true);`;
     const dataHelp = list
       ? "Parameters as key=value. List filters require an operator suffix (id[is]=…). Bare keys: limit, offset, include_deleted."
       : "Request parameters in key=value format; repeat for multiple fields";
@@ -531,6 +534,9 @@ function generateResourceFile(r: Resource): string {
     L.push(`    .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")`);
     // Preserve the existing override for scripts without foregrounding it in help.
     L.push(`    .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())`);
+    if (isWrite) {
+      L.push(`    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")`);
+    }
     if (list) {
       L.push(`    .addHelpText("after", "${listHelp}")`);
     }
@@ -555,7 +561,7 @@ function generateResourceFile(r: Resource): string {
       }
       L.push(`      if (!resource.id) command.error(${JSON.stringify(`error: missing required argument '${argument.name}'`)});`);
       L.push(`      assertResourceId(resource.id, command);`);
-      if (isWrite) L.push(`      await ensureWriteAllowed("${op.method}");`);
+      if (isWrite) L.push(writeCheck);
       L.push(`      try {`);
       L.push(`        const client = await getClient();`);
       L.push(`        const result = await (client as any).${r.sdkName}.${op.sdkAction}(resource.id, ${sdkParams});`);
@@ -571,7 +577,7 @@ function generateResourceFile(r: Resource): string {
         L.push(`      if (fromStdin) warnBareJsonFilters(params, "${r.cliName}");`);
         L.push(`      else warnBareListFilters(opts.data ?? [], "${r.cliName}");`);
       }
-      if (isWrite) L.push(`      await ensureWriteAllowed("${op.method}");`);
+      if (isWrite) L.push(writeCheck);
       L.push(`      try {`);
       L.push(`        const client = await getClient();`);
       L.push(`        const result = await (client as any).${r.sdkName}.${op.sdkAction}(${sdkParams});`);

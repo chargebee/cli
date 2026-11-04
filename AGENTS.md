@@ -111,7 +111,7 @@ Do not introduce additional credential storage paths without an explicit require
 
 Generated API commands enforce two protections:
 
-- **Write gate:** Write operations are blocked on live sites.
+- **Write gate:** Write operations on live sites require confirmation: an interactive yes/no prompt, or `-y/--yes`. Without a terminal (or in `--json` mode) and without `--yes`, the write is refused with exit code 6. Test sites, reads, and non-mutating POSTs (estimates, exports, hosted-page URLs) never prompt.
 - **Catalog gate:** Product Catalog-specific operations are blocked when they do not match the configured site's catalog version.
 
 For `--code-sample`, the **write gate does not apply** because no API request is executed. The **catalog gate still applies** so generated code matches the site's Product Catalog version.
@@ -146,7 +146,7 @@ Run live tests with:
 bun run test:live
 ```
 
-Never permit successful writes on live Chargebee sites in automated tests. Live-site customer-create tests must assert the CLI write gate refuses the operation; use a dedicated validation site and read-only key. Successful remote writes are limited to customer creation and cleanup deletion on test sites.
+Never permit successful writes on live Chargebee sites in automated tests, and never pass `--yes` to a live-site write in live tests. Live-site customer-create tests must assert the CLI write gate refuses the unconfirmed operation; use a dedicated validation site and read-only key. Successful remote writes are limited to customer creation and cleanup deletion on test sites.
 
 Shared test helpers belong in `src/lib/test-support/` and must never be imported by production entry points or commands.
 

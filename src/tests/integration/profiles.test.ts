@@ -5,7 +5,7 @@
  * live Chargebee site and skips without `CB_TEST_*`), this suite runs the real
  * Commander program in-process against a fake SDK client. It therefore runs on
  * every PR — including forks — and closes the "skipped = unverified" gap for the
- * credential-resolution flow and the read-only / catalog gates.
+ * credential-resolution flow and the live-site write / catalog gates.
  *
  * The fake client (see `src/lib/test-support/_helpers.ts`) records the resolved site/apiKey for each
  * call and returns canned responses whose ids embed the site, so we can assert
@@ -405,8 +405,8 @@ describe("site name validation (host allowlist)", () => {
   });
 });
 
-describe("read-only write gate", () => {
-  it("blocks a write on a live site", async () => {
+describe("live-site write gate", () => {
+  it("refuses an unconfirmed write on a live site", async () => {
     await configureProfile("live", SITE_LIVE, KEY_LIVE);
     const { stderr, exitCode } = await runCli([
       "customer",

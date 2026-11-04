@@ -223,14 +223,20 @@ chargebee customer create --code-sample list
 
 ### Live Sites
 
-Create, update, and delete operations are blocked on live sites.
+Create, update, delete, and other write operations on live sites need confirmation.
 
 A site is considered live unless:
 
 - the site name ends in `-test`, or
 - the API key starts with `test_`
 
-Reads and explicitly allowed non-mutating operations can run on live sites. There is no write override.
+On a live site:
+
+- In a terminal, the CLI asks `Run "<command>" on LIVE site "<site>"?` (default No).
+- `-y` / `--yes` skips the prompt and runs the write.
+- Without a terminal, in `--json` mode, or with a stdin JSON body, a write without `--yes` is refused with exit code `6` (`live_write_refused`). Declining the prompt also exits `6` (`live_write_declined`).
+
+Reads and explicitly allowed non-mutating operations (estimates, exports, hosted-page URLs) run on live sites without confirmation. Only pass `--yes` on a live site when the user has explicitly confirmed that write.
 
 ### Product Catalog
 

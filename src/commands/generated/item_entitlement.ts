@@ -24,15 +24,16 @@ export function registerItemEntitlement(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs item-entitlement add-item-entitlements\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "upsert_or_remove_item_entitlements_for_a_feature", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "item-entitlement add-item-entitlements");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "upsert_or_remove_item_entitlements_for_a_feature", opIdV1: "", method: "POST", uri: "/features/{id}/item_entitlements", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "feature-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'feature-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "item-entitlement add-item-entitlements", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).itemEntitlement.addItemEntitlements(resource.id, params);
@@ -94,15 +95,16 @@ export function registerItemEntitlement(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs item-entitlement upsert-or-remove-item-entitlements-for-item\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "upsert_or_remove_item_entitlements_for_an_item", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "item-entitlement upsert-or-remove-item-entitlements-for-item");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "upsert_or_remove_item_entitlements_for_an_item", opIdV1: "", method: "POST", uri: "/items/{id}/item_entitlements", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "item-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'item-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "item-entitlement upsert-or-remove-item-entitlements-for-item", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).itemEntitlement.upsertOrRemoveItemEntitlementsForItem(resource.id, params);

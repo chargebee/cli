@@ -38,7 +38,7 @@ describe("artifact command inventory", () => {
   }
 });
 
-it("blocks LIVE customer creation with the CLI's write-gate exit code", async () => {
+it("refuses unconfirmed LIVE customer creation with the CLI's write-gate exit code", async () => {
   const result = await spawnCli(["customer", "create", "-d", "id=cb-gate-must-not-exist"], {
     extraEnv: { CHARGEBEE_SITE: "cb-gate-validation", CHARGEBEE_API_KEY: "live_synthetic_invalid" },
   });

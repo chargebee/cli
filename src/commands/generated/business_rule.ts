@@ -25,15 +25,16 @@ export function registerBusinessRule(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs business-rule activate-rule\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "activate_a_business_rule", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "business-rule activate-rule");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "activate_a_business_rule", opIdV1: "", method: "POST", uri: "/business_rules/{id}/activate", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "business-rule-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'business-rule-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "business-rule activate-rule", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).businessRule.activateRule(resource.id, params);
@@ -48,13 +49,14 @@ export function registerBusinessRule(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs business-rule apply-rules\n")
-    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
       const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "apply_business_rules", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "business-rule apply-rules");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "apply_business_rules", opIdV1: "", method: "POST", uri: "/business_rules/apply_rules", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "business-rule apply-rules", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).businessRule.applyRules(params);
@@ -69,13 +71,14 @@ export function registerBusinessRule(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs business-rule create\n")
-    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
       const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_a_business_rule", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "business-rule create");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_a_business_rule", opIdV1: "", method: "POST", uri: "/business_rules", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "business-rule create", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).businessRule.create(params);
@@ -91,15 +94,16 @@ export function registerBusinessRule(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs business-rule deactivate-rule\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "deactivate_a_business_rule", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "business-rule deactivate-rule");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "deactivate_a_business_rule", opIdV1: "", method: "POST", uri: "/business_rules/{id}/deactivate", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "business-rule-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'business-rule-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "business-rule deactivate-rule", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).businessRule.deactivateRule(resource.id, params);
@@ -115,15 +119,16 @@ export function registerBusinessRule(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs business-rule delete\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "delete_a_business_rule", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "business-rule delete");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "delete_a_business_rule", opIdV1: "", method: "POST", uri: "/business_rules/{id}/delete", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "business-rule-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'business-rule-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "business-rule delete", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).businessRule.delete(resource.id, params);
@@ -139,15 +144,16 @@ export function registerBusinessRule(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs business-rule delete-draft\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "delete_a_business_rule_draft", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "business-rule delete-draft");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "delete_a_business_rule_draft", opIdV1: "", method: "POST", uri: "/business_rules/{id}/delete_draft", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "business-rule-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'business-rule-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "business-rule delete-draft", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).businessRule.deleteDraft(resource.id, params);
@@ -186,15 +192,16 @@ export function registerBusinessRule(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs business-rule release-rule\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "release_a_business_rule", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "business-rule release-rule");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "release_a_business_rule", opIdV1: "", method: "POST", uri: "/business_rules/{id}/release", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "business-rule-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'business-rule-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "business-rule release-rule", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).businessRule.releaseRule(resource.id, params);
@@ -256,15 +263,16 @@ export function registerBusinessRule(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs business-rule update-draft\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "update_a_business_rule_draft", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "business-rule update-draft");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "update_a_business_rule_draft", opIdV1: "", method: "POST", uri: "/business_rules/{id}/draft", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "business-rule-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'business-rule-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "business-rule update-draft", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).businessRule.updateDraft(resource.id, params);

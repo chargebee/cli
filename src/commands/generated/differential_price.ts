@@ -25,15 +25,16 @@ export function registerDifferentialPrice(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs differential-price create\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_a_differential_price", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "differential-price create");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_a_differential_price", opIdV1: "", method: "POST", uri: "/item_prices/{id}/differential_prices", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "item-price-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'item-price-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "differential-price create", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).differentialPrice.create(resource.id, params);
@@ -49,15 +50,16 @@ export function registerDifferentialPrice(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs differential-price delete\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "delete_a_differential_price", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "differential-price delete");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "delete_a_differential_price", opIdV1: "", method: "POST", uri: "/differential_prices/{id}/delete", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "differential-price-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'differential-price-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "differential-price delete", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).differentialPrice.delete(resource.id, params);
@@ -119,15 +121,16 @@ export function registerDifferentialPrice(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs differential-price update\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "update_a_differential_price", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "differential-price update");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "update_a_differential_price", opIdV1: "", method: "POST", uri: "/differential_prices/{id}", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "differential-price-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'differential-price-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "differential-price update", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).differentialPrice.update(resource.id, params);
