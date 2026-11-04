@@ -234,7 +234,7 @@ On a live site:
 
 - In a terminal, the CLI asks `Run "<command>" on LIVE site "<site>"?` (default No).
 - `-y` / `--yes` skips the prompt and runs the write.
-- Without a terminal, in `--json` mode, or with a stdin JSON body, a write without `--yes` is refused with exit code `6` (`live_write_refused`). Declining the prompt also exits `6` (`live_write_declined`).
+- Without a terminal, on a CI runner, in `--json` mode, or with a stdin JSON body, a write without `--yes` is refused with exit code `6` (`live_write_refused`). Declining the prompt also exits `6` (`live_write_declined`).
 
 Reads and explicitly allowed non-mutating operations (estimates, exports, hosted-page URLs) run on live sites without confirmation. Only pass `--yes` on a live site when the user has explicitly confirmed that write.
 
