@@ -22,14 +22,15 @@ export function registerInAppSubscription(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs in-app-subscription import-receipt\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "import_receipt", opIdV1: "import_receipt", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "import_receipt", opIdV1: "import_receipt", method: "POST", uri: "/in_app_subscriptions/{id}/import_receipt", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "in-app-subscription-app-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'in-app-subscription-app-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "in-app-subscription import-receipt", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).inAppSubscription.importReceipt(resource.id, params);
@@ -45,14 +46,15 @@ export function registerInAppSubscription(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs in-app-subscription import-subscription\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "import_subscription_without_receipt", opIdV1: "import_subscription_without_receipt", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "import_subscription_without_receipt", opIdV1: "import_subscription_without_receipt", method: "POST", uri: "/in_app_subscriptions/{id}/import_subscription", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "in-app-subscription-app-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'in-app-subscription-app-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "in-app-subscription import-subscription", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).inAppSubscription.importSubscription(resource.id, params);
@@ -68,14 +70,15 @@ export function registerInAppSubscription(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs in-app-subscription process-receipt\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "process_purchase_command", opIdV1: "process_purchase_command", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "process_purchase_command", opIdV1: "process_purchase_command", method: "POST", uri: "/in_app_subscriptions/{id}/process_purchase_command", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "in-app-subscription-app-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'in-app-subscription-app-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "in-app-subscription process-receipt", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).inAppSubscription.processReceipt(resource.id, params);

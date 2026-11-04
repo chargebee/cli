@@ -25,15 +25,16 @@ export function registerAttachedItem(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs attached-item create\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_an_attached_item", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "attached-item create");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_an_attached_item", opIdV1: "", method: "POST", uri: "/items/{id}/attached_items", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "item-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'item-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "attached-item create", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).attachedItem.create(resource.id, params);
@@ -49,15 +50,16 @@ export function registerAttachedItem(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs attached-item delete\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "delete_an_attached_item", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "attached-item delete");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "delete_an_attached_item", opIdV1: "", method: "POST", uri: "/attached_items/{id}/delete", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "attached-item-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'attached-item-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "attached-item delete", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).attachedItem.delete(resource.id, params);
@@ -122,15 +124,16 @@ export function registerAttachedItem(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs attached-item update\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "update_an_attached_item", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "attached-item update");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "update_an_attached_item", opIdV1: "", method: "POST", uri: "/attached_items/{id}", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "attached-item-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'attached-item-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "attached-item update", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).attachedItem.update(resource.id, params);

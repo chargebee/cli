@@ -81,7 +81,7 @@ export CHARGEBEE_API_KEY=test_xxxxxxxxxxxx
 
 Create API keys from **Settings → Configure Chargebee → API Keys** in the Chargebee Dashboard.
 
-> Write operations are blocked on live sites. Use a test site when building or testing integrations.
+> Write operations on live sites ask for confirmation before they run. In scripts, CI, or `--json` mode, add `--yes` to confirm; without it the command exits with code `6`. Use a test site when building or testing integrations.
 
 ## Quick Example
 

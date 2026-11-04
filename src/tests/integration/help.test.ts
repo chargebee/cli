@@ -130,7 +130,7 @@ describe("root help IA", () => {
 
   it("shows runnable examples and the live-site write gate", async () => {
     const { stdout } = await runCli(["--help"]);
-    expect(stdout).toContain("Write operations are blocked on live sites");
+    expect(stdout).toContain("Write operations on live sites ask for confirmation");
     expect(stdout).toContain('Run "chargebee <command> --help" for details.');
     const examples = stdout.split("\nEXAMPLES\n")[1]?.split("\n\n")[0]?.split("\n") ?? [];
     expect(examples.length).toBeGreaterThanOrEqual(3);

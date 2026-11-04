@@ -39,7 +39,7 @@ chargebee auth status
 
 Check the connected site's Product Catalog when the operation is catalog-specific.
 
-Use a **test site for writes**. Live sites are read-only.
+Prefer a **test site for writes**. Writes on a live site need confirmation (see Live-site safety).
 
 ### 3. Execute
 
@@ -68,9 +68,11 @@ For important changes, retrieve the resource afterward or inspect the command re
 
 ### Live-site safety
 
-Write operations are blocked on live sites. Never attempt to bypass this protection.
+Write operations on live (production) sites change real billing data and need confirmation. In a terminal the CLI asks yes/no; without one (as when an agent runs it) the command is refused with exit code `6` unless `--yes` is passed.
 
-Use a test site for create, update, and delete operations.
+- Use a test site for create, update, and delete operations unless the user explicitly asks to change the live site.
+- Never add `--yes` to a write on a live site on your own. Before running it, tell the user the site and the exact command, and get their explicit confirmation for that write.
+- If a live-site write is refused, report the refusal and ask the user; do not retry with `--yes` automatically.
 
 ### Product Catalog
 
@@ -78,7 +80,7 @@ Chargebee supports Product Catalog 1.0 and 2.0. Catalog-specific operations are 
 
 Do not bypass a catalog mismatch.
 
-`--code-sample` follows the same catalog gate. The write gate does not apply because code generation does not execute an API request.
+`--code-sample` follows the same catalog gate. The live-site write confirmation does not apply because code generation does not execute an API request.
 
 ### Code Samples
 

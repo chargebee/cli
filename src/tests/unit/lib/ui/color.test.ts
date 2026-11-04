@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 
 import { colorEnabled, paint } from "../../../../lib/ui/color.js";
-import { blockedWriteMessage } from "../../../../lib/api/write-gate.js";
+import { liveWriteNotice, unconfirmedWriteMessage } from "../../../../lib/api/write-gate.js";
 
 const tty: Parameters<typeof colorEnabled>[0] = {
   stdoutIsTTY: true,
@@ -45,7 +45,8 @@ describe("colorEnabled", () => {
     const prev = process.env.NO_COLOR;
     process.env.NO_COLOR = "1";
     try {
-      expect(blockedWriteMessage("acme")).not.toContain("\x1b");
+      expect(unconfirmedWriteMessage("acme", "customer create")).not.toContain("\x1b");
+      expect(liveWriteNotice("acme")).not.toContain("\x1b");
       expect(paint("31", "x")).toBe("x");
     } finally {
       if (prev === undefined) delete process.env.NO_COLOR;

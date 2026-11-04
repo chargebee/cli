@@ -11,7 +11,14 @@ import {
   type ApiHost,
 } from "../config/host.js";
 import { DEFAULT_REGION, parseRegion, type Region } from "../config/region.js";
-import { blockedWriteMessage, isWriteMethod, shouldBlockWrite } from "./write-gate.js";
+import {
+  isWriteMethod,
+  liveWriteDecision,
+  liveWriteNotice,
+  liveWritePrompt,
+  unconfirmedWriteMessage,
+} from "./write-gate.js";
+import { canPrompt, confirm, isCancel } from "../prompts.js";
 import { blockedCatalogMessage, shouldBlockCatalog, type CatalogTag } from "./catalog-gate.js";
 import { markUnconfigured, recordTelemetryError } from "../telemetry/error.js";
 import { maybeWarnUnproxiedNode } from "./proxy.js";
@@ -373,8 +380,11 @@ export async function ensureCatalogAllowed(opCatalog: CatalogTag, commandName: s
   exitCommand(EXIT_CODES.REFUSED, "catalog_refused");
 }
 
-/** Block writes on live sites. Unresolved credentials fail open so the API error surfaces. */
-export async function ensureWriteAllowed(method: string): Promise<void> {
+/**
+ * Require confirmation (prompt or `--yes`) for writes on live sites.
+ * Unresolved credentials fail open so the API error surfaces.
+ */
+export async function ensureWriteAllowed(method: string, commandName: string, yes = false): Promise<void> {
   if (!isWriteMethod(method)) return;
 
   let site: string;
@@ -385,11 +395,25 @@ export async function ensureWriteAllowed(method: string): Promise<void> {
     return; // let the real call produce the configuration error
   }
 
-  if (!shouldBlockWrite({ method, site, apiKey })) return;
+  const decision = liveWriteDecision({ method, site, apiKey, yes, canPrompt: canPrompt() });
+  if (decision === "allow") return;
 
-  recordTelemetryError("write_blocked");
-  diagnostic(blockedWriteMessage(site));
-  exitCommand(EXIT_CODES.REFUSED, "live_write_refused");
+  if (decision === "refuse") {
+    recordTelemetryError("write_blocked");
+    diagnostic(unconfirmedWriteMessage(site, commandName));
+    exitCommand(EXIT_CODES.REFUSED, "live_write_refused");
+  }
+
+  if (decision === "confirm") {
+    const ok = await confirm({ message: liveWritePrompt(site, commandName), initialValue: false });
+    if (isCancel(ok) || !ok) {
+      recordTelemetryError("write_declined");
+      diagnostic(`  Cancelled. Nothing was changed on live site "${site}".`);
+      exitCommand(EXIT_CODES.REFUSED, "live_write_declined");
+    }
+  }
+
+  diagnostic(liveWriteNotice(site));
 }
 
 /**

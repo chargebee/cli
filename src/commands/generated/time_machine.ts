@@ -46,14 +46,15 @@ export function registerTimeMachine(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs time-machine start-afresh\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "start_afresh", opIdV1: "start_afresh", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "start_afresh", opIdV1: "start_afresh", method: "POST", uri: "/time_machines/{id}/start_afresh", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "time-machine-name", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'time-machine-name'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "time-machine start-afresh", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).timeMachine.startAfresh(resource.id, params);
@@ -69,14 +70,15 @@ export function registerTimeMachine(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs time-machine travel-forward\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "travel_forward", opIdV1: "travel_forward", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "travel_forward", opIdV1: "travel_forward", method: "POST", uri: "/time_machines/{id}/travel_forward", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "time-machine-name", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'time-machine-name'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST");
+      await ensureWriteAllowed("POST", "time-machine travel-forward", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).timeMachine.travelForward(resource.id, params);

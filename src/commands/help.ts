@@ -80,7 +80,7 @@ export function renderHelp(program: Command, _version: string): string {
   lines.push(`  ${"CLI source".padEnd(nameW)} https://github.com/chargebee/cli`);
   lines.push("");
 
-  lines.push("Write operations are blocked on live sites; use a test site to change data.");
+  lines.push("Write operations on live sites ask for confirmation; scripts pass --yes.");
   lines.push('Run "chargebee <command> --help" for details.');
 
   return lines.join("\n");
