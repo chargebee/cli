@@ -12,6 +12,7 @@ import { join } from "node:path";
 
 import { __resetPromptsForTest, __setPromptsForTest } from "../../lib/prompts.js";
 import {
+  clearCiEnv,
   createEnvPatcher,
   installFakeClient,
   uninstallFakeClient,
@@ -36,7 +37,7 @@ function useSite(site: string, apiKey: string): void {
 }
 
 function useTerminal(answer: unknown): void {
-  restoreTTY.push(setStdinIsTTY(true), setStdoutIsTTY(true));
+  restoreTTY.push(setStdinIsTTY(true), setStdoutIsTTY(true), clearCiEnv());
   const cancelled = Symbol("cancel");
   __setPromptsForTest({
     confirm: async ({ message }: { message: string }) => {
@@ -166,6 +167,24 @@ describe("live site in a terminal", () => {
 
   it("skips the prompt with --yes", async () => {
     useTerminal(false);
+    const result = await runCli(["customer", "create", "-d", "first_name=Ada", "--yes"]);
+    expect(prompts).toHaveLength(0);
+    expect(result.exitCode).toBe(0);
+  });
+
+  it("refuses instead of prompting when a CI runner allocates a terminal", async () => {
+    useTerminal(true);
+    env.set("CI", "true");
+    const result = await runCli(["customer", "create", "-d", "first_name=Ada"]);
+    expect(prompts).toHaveLength(0);
+    expect(result.exitCode).toBe(6);
+    expect(result.stderr).toContain(REFUSAL);
+    expect(constructions).toHaveLength(0);
+  });
+
+  it("runs a write confirmed with --yes on a CI runner with a terminal", async () => {
+    useTerminal(false);
+    env.set("CI", "true");
     const result = await runCli(["customer", "create", "-d", "first_name=Ada", "--yes"]);
     expect(prompts).toHaveLength(0);
     expect(result.exitCode).toBe(0);

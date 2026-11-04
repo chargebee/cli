@@ -19,6 +19,7 @@ import {
   unconfirmedWriteMessage,
 } from "./write-gate.js";
 import { canPrompt, confirm, isCancel } from "../prompts.js";
+import { detectIsCi } from "../telemetry/metadata.js";
 import { blockedCatalogMessage, shouldBlockCatalog, type CatalogTag } from "./catalog-gate.js";
 import { markUnconfigured, recordTelemetryError } from "../telemetry/error.js";
 import { maybeWarnUnproxiedNode } from "./proxy.js";
@@ -395,7 +396,9 @@ export async function ensureWriteAllowed(method: string, commandName: string, ye
     return; // let the real call produce the configuration error
   }
 
-  const decision = liveWriteDecision({ method, site, apiKey, yes, canPrompt: canPrompt() });
+  // CI runners can allocate pseudo-terminals; nobody is there to answer the prompt.
+  const interactive = canPrompt() && !detectIsCi();
+  const decision = liveWriteDecision({ method, site, apiKey, yes, canPrompt: interactive });
   if (decision === "allow") return;
 
   if (decision === "refuse") {
