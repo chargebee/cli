@@ -19,7 +19,7 @@ export function registerDispute(parent: Command): void {
   cmd
     .command("list")
     .argument("[json]", "'-' reads a JSON object from stdin.")
-    .description("List disputes")
+    .description("List Disputes")
     .option("-d, --data <pairs...>", "Parameters as key=value. List filters require an operator suffix (id[is]=…). Bare keys: limit, offset, include_deleted.")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
@@ -40,9 +40,9 @@ export function registerDispute(parent: Command): void {
 
   cmd
     .command("retrieve")
-    .argument("[dispute-id]", "Dispute identifier.")
+    .argument("[dispute-id]", "Uniquely identifies the dispute.")
     .argument("[json]", "'-' reads a JSON object from stdin.")
-    .description("Retrieve a dispute")
+    .description("Retrieve A Dispute")
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
