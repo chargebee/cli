@@ -62,8 +62,10 @@ beforeEach(() => {
 afterEach(() => {
   uninstallFakeClient();
   __resetPromptsForTest();
-  for (const restore of restoreTTY.reverse()) restore();
+  // env.set() snapshots CI after clearCiEnv() removed it; undo env first so
+  // clearCiEnv()'s restore puts the original CI value back last.
   env.restore();
+  for (const restore of restoreTTY.reverse()) restore();
   rmSync(configDir, { recursive: true, force: true });
 });
 
@@ -127,6 +129,13 @@ describe("live site without a terminal", () => {
     expect(result.exitCode).toBe(0);
     expect(result.stderr).not.toContain(REFUSAL);
     expect(result.stdout).toContain("est_acme");
+  });
+
+  it("runs a POST PDF download-URL retrieval", async () => {
+    const result = await runCli(["invoice", "pdf", "inv_1"]);
+    expect(result.exitCode).toBe(0);
+    expect(result.stderr).not.toContain(REFUSAL);
+    expect(result.stdout).toContain("acme.pdf");
   });
 
   it("runs a POST export", async () => {
