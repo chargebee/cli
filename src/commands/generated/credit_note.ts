@@ -157,15 +157,13 @@ export function registerCreditNote(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs credit-note pdf\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "retrieve_credit_note_as_pdf", opIdV1: "retrieve_credit_note_as_pdf", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "retrieve_credit_note_as_pdf", opIdV1: "retrieve_credit_note_as_pdf", method: "POST", uri: "/credit_notes/{id}/pdf", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "credit-note-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'credit-note-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "credit-note pdf", opts.yes === true);
       try {
         const client = await getClient();
         const result = await (client as any).creditNote.pdf(resource.id, params);

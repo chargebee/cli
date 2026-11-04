@@ -111,7 +111,7 @@ Do not introduce additional credential storage paths without an explicit require
 
 Generated API commands enforce two protections:
 
-- **Write gate:** Write operations on live sites require confirmation: an interactive yes/no prompt, or `-y/--yes`. Without a terminal (or on a CI runner, or in `--json` mode) and without `--yes`, the write is refused with exit code 6. Test sites, reads, and non-mutating POSTs (estimates, exports, hosted-page URLs) never prompt.
+- **Write gate:** Write operations on live sites require confirmation: an interactive yes/no prompt, or `-y/--yes`. Without a terminal (or on a CI runner, or in `--json` mode) and without `--yes`, the write is refused with exit code 6. Test sites, reads, and non-mutating POSTs (estimates, exports, hosted-page URLs, PDF downloads) never prompt.
 - **Catalog gate:** Product Catalog-specific operations are blocked when they do not match the configured site's catalog version.
 
 For `--code-sample`, the **write gate does not apply** because no API request is executed. The **catalog gate still applies** so generated code matches the site's Product Catalog version.

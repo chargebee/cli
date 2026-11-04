@@ -86,6 +86,9 @@ export function installFakeClient(opts: FakeClientOptions): void {
       export: {
         customers: async () => sdkResult({ export: { id: `exp_${site}` } }),
       },
+      invoice: {
+        pdf: async () => sdkResult({ download: { download_url: `https://example.com/${site}.pdf` } }),
+      },
       plan: {
         list: async () => sdkResult({ list: [{ plan: { id: `plan_${site}` } }] }),
       },

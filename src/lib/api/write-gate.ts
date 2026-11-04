@@ -55,7 +55,13 @@ const READ_ONLY_RESOURCES = new Set(["estimate", "export", "hostedPage"]);
 const MUTATING_OPERATIONS = new Set(["hostedPage.acknowledge", "hostedPage.events"]);
 
 /** Individual `resource.action` operations that are read-only despite their method. */
-const READ_ONLY_OPERATIONS = new Set(["portalSession.create"]);
+const READ_ONLY_OPERATIONS = new Set([
+  "portalSession.create",
+  "invoice.pdf",
+  "quote.pdf",
+  "creditNote.pdf",
+  "usage.pdf",
+]);
 
 /** Action-name verbs (camelCase word boundary) that are read-only regardless of resource. */
 const READ_ONLY_ACTION_PREFIXES = ["retrieve", "list", "preview", "calculate", "check", "validate"];

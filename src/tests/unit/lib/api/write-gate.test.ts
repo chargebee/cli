@@ -110,6 +110,17 @@ describe("isReadOnlyOperation", () => {
     expect(isReadOnlyOperation("portalSession.logout")).toBe(false);
   });
 
+  it("allows PDF download-URL retrieval despite its POST method", () => {
+    for (const key of ["invoice.pdf", "quote.pdf", "creditNote.pdf", "usage.pdf"]) {
+      expect(isReadOnlyOperation(key)).toBe(true);
+    }
+  });
+
+  it("keeps POSTs with side effects gated even when their names read like lookups", () => {
+    expect(isReadOnlyOperation("paymentSource.exportPaymentSource")).toBe(false);
+    expect(isReadOnlyOperation("usageFile.uploadUrl")).toBe(false);
+  });
+
   it("allows actions whose name starts with a read-only verb", () => {
     expect(isReadOnlyOperation("inAppSubscription.retrieveStoreSubs")).toBe(true);
     expect(isReadOnlyOperation("quote.retrieveSignedPdf")).toBe(true);
