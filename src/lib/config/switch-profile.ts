@@ -2,6 +2,7 @@ import { humanLog, diagnostic, exitCommand, jsonResult } from "../output.js";
 import { assertValidProfileName, listProfiles, loadProfile } from "./profiles.js";
 import { readConfig, writeConfig } from "./store.js";
 import { siteMode } from "../api/write-gate.js";
+import { noteActiveSite } from "../telemetry/active-site.js";
 
 /** `auth switch`. `domain` is still written as `CHARGEBEE_DOMAIN`. */
 export async function switchProfileAction(name?: string): Promise<void> {
@@ -66,6 +67,7 @@ export async function switchProfileAction(name?: string): Promise<void> {
     domain: p.site,
     activeProfile: chosen,
   });
+  noteActiveSite(p.site);
 
   const mode = siteMode(p.site, p.api_key);
   jsonResult({ active_profile: chosen, site: p.site, mode });

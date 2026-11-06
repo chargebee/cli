@@ -1,3 +1,5 @@
+import type { Command } from "commander";
+
 import { buildProgram } from "../../program.js";
 import { __setClientFactory, __resetRuntimeState } from "../api/sdk.js";
 
@@ -130,9 +132,13 @@ export function createEnvPatcher(): {
 /**
  * Run the CLI in-process with the given args. Captures stdout/stderr (both
  * `console.*` and direct `process.std*.write`) and the exit code, restoring all
- * globals afterwards.
+ * globals afterwards. `configure` runs on the built program before parsing
+ * (e.g. to install the telemetry recorder, which `buildProgram` leaves out).
  */
-export async function runCli(args: string[]): Promise<RunResult> {
+export async function runCli(
+  args: string[],
+  opts: { configure?: (program: Command) => void } = {},
+): Promise<RunResult> {
   __resetRuntimeState();
 
   let stdout = "";
@@ -173,6 +179,7 @@ export async function runCli(args: string[]): Promise<RunResult> {
   let exitCode = 0;
   try {
     const program = buildProgram("0.0.0-test");
+    opts.configure?.(program);
     await program.parseAsync(args, { from: "user" });
     exitCode = Number(process.exitCode ?? 0);
   } catch (err) {
