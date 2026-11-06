@@ -16,6 +16,7 @@ import { setCommandGroup } from "./help.js";
 import { sectionTitle } from "../lib/help-style.js";
 import { switchProfileAction } from "../lib/config/switch-profile.js";
 import { EXIT_CODES } from "../lib/exit-codes.js";
+import { noteActiveSite } from "../lib/telemetry/active-site.js";
 
 const DEFAULT_PROFILE = "default";
 
@@ -192,6 +193,7 @@ export function registerAuthCommand(program: Command): void {
         ...(savedRegion === DEFAULT_REGION ? {} : { region: savedRegion }),
       });
       await writeConfig({ domain: site, activeProfile: profileName });
+      noteActiveSite(site);
       jsonResult({ configured: true, profile: profileName, site, region: savedRegion,
         host: persistableHost(apiHost), product_catalog_version: catalog.productCatalogVersion ?? null,
         chargebee_response_schema_type: catalog.responseSchemaType ?? null, key_storage: saved.backend });

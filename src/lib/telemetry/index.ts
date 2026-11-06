@@ -18,6 +18,7 @@ import {
 } from "./constants.js";
 import { buildMetadata, normalizeGeneratedResource } from "./metadata.js";
 import { recordTelemetryError, takeTelemetryError } from "./error.js";
+import { takeActiveSite } from "./active-site.js";
 import { wasInteractive } from "./interactive.js";
 import { isTelemetryDisabled, maybeShowFirstRunNotice } from "./optout.js";
 import { getVisitorId } from "./identity.js";
@@ -57,6 +58,7 @@ export function __resetTelemetryRecorderForTest(): void {
   finalized = false;
   listenLifecycleEmitted = false;
   _version = "0.0.0";
+  takeActiveSite();
   if (exitHandler) {
     process.removeListener("exit", exitHandler);
     exitHandler = null;
@@ -291,7 +293,7 @@ function finalize(exitCode: number): void {
 
     const record: SpoolRecord = {
       env: pending.env,
-      site_name: pending.siteName,
+      site_name: takeActiveSite() ?? pending.siteName,
       visitor_id: pending.visitorId,
       cli_version: _version,
       event: { name: pending.command, timestamp: new Date().toISOString(), metadata },
