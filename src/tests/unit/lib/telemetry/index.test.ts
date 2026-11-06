@@ -19,6 +19,7 @@ import { appendRecord } from "../../../../lib/telemetry/spool.js";
 import { setTelemetryEnabled } from "../../../../lib/telemetry/optout.js";
 import { readState, writeState } from "../../../../lib/telemetry/state.js";
 import { recordTelemetryError, takeTelemetryError } from "../../../../lib/telemetry/error.js";
+import { noteActiveSite, takeActiveSite } from "../../../../lib/telemetry/active-site.js";
 import type { SpoolRecord } from "../../../../lib/telemetry/types.js";
 import { __resetKeychainForTest, __setKeychainForTest, type KeychainStore } from "../../../../lib/config/keychain.js";
 import { saveProfile } from "../../../../lib/config/profiles.js";
@@ -587,6 +588,24 @@ describe("installTelemetry recorder", () => {
       process.env.CHARGEBEE_API_KEY = "live_env_secret";
       const rec = await recordOneCommand();
       expect(rec.site_name).toBe("env-test");
+    });
+
+    it("prefers a site the command noted as newly active", async () => {
+      const program = new Command();
+      program.exitOverride();
+      program.command("connect").action(() => noteActiveSite("globex-test"));
+      installTelemetry(program, "1.0.0-test");
+      await program.parseAsync(["connect"], { from: "user" });
+      __finalizeForTest(0);
+      const rec = JSON.parse(readFileSync(spoolPath(), "utf-8").trim()) as SpoolRecord;
+      expect(rec.site_name).toBe("globex-test");
+      expect(takeActiveSite()).toBeUndefined();
+    });
+
+    it("drops a noted site on recorder reset", () => {
+      noteActiveSite("globex-test");
+      __resetTelemetryRecorderForTest();
+      expect(takeActiveSite()).toBeUndefined();
     });
   });
 });
