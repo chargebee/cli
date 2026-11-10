@@ -41,7 +41,7 @@ change-case@5.4.4 (MIT)
 This package ships no LICENSE, LICENCE, or COPYING file. Its package.json
 declares the SPDX license identifier "MIT".
 
-chargebee@3.34.0 (MIT)
+chargebee@3.35.0 (MIT)
 ----------------------
 The MIT License
 
