@@ -36,4 +36,26 @@ export function registerLedgerAccountBalance(parent: Command): void {
       } catch (e) { handleSdkError(e); }
     });
 
+  cmd
+    .command("update-overdraft-limit")
+    .argument("[json]", "'-' reads a JSON object from stdin.")
+    .description("Update the overdraft limit")
+    .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
+    .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
+    .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs ledger-account-balance update-overdraft-limit\n")
+    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+      const fromStdin = readJsonMarker(json, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "update_overdraft_limit", opIdV1: "", pcVersionFlag: opts.pcVersion });
+      if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "ledger-account-balance update-overdraft-limit");
+      if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "update_overdraft_limit", opIdV1: "", method: "POST", uri: "/ledger_account_balances/update_overdraft_limit", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
+      await ensureWriteAllowed("POST", "ledger-account-balance update-overdraft-limit", opts.yes === true);
+      try {
+        const client = await getClient();
+        const result = await (client as any).ledgerAccountBalance.updateOverdraftLimit(params);
+        printResult(result);
+      } catch (e) { handleSdkError(e); }
+    });
+
 }

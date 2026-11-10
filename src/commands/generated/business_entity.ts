@@ -5,8 +5,9 @@ import { Option, type Command } from "commander";
 
 import { getClient, ensureWriteAllowed, ensureCatalogAllowed } from "../../lib/api/sdk.js";
 import { handleSdkError, printResult } from "../../lib/api/print.js";
-import { handleCodeSample } from "../../lib/api/generated-command.js";
-import { loadOperationParams, readJsonMarker } from "../../lib/api/stdin-params.js";
+import { assertResourceId, handleCodeSample } from "../../lib/api/generated-command.js";
+import { warnBareListFilters } from "../../lib/codesample/index.js";
+import { loadOperationParams, takeResourceId, readJsonMarker, warnBareJsonFilters } from "../../lib/api/stdin-params.js";
 
 import { toSdkParams } from "../../lib/api/params.js";
 
@@ -15,6 +16,28 @@ export function registerBusinessEntity(parent: Command): void {
     .command("business-entity")
     .alias("business_entity")
     .description("API operations for business entities");
+
+  cmd
+    .command("create")
+    .argument("[json]", "'-' reads a JSON object from stdin.")
+    .description("Create a business_entity")
+    .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
+    .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
+    .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs business-entity create\n")
+    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+      const fromStdin = readJsonMarker(json, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_a_business_entity", opIdV1: "", pcVersionFlag: opts.pcVersion });
+      if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "business-entity create");
+      if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_a_business_entity", opIdV1: "", method: "POST", uri: "/business_entities", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
+      await ensureWriteAllowed("POST", "business-entity create", opts.yes === true);
+      try {
+        const client = await getClient();
+        const result = await (client as any).businessEntity.create(params);
+        printResult(result);
+      } catch (e) { handleSdkError(e); }
+    });
 
   cmd
     .command("create-transfers")
@@ -54,6 +77,77 @@ export function registerBusinessEntity(parent: Command): void {
       try {
         const client = await getClient();
         const result = await (client as any).businessEntity.getTransfers(toSdkParams(params, "GET", false));
+        printResult(result);
+      } catch (e) { handleSdkError(e); }
+    });
+
+  cmd
+    .command("list")
+    .argument("[json]", "'-' reads a JSON object from stdin.")
+    .description("List business entities")
+    .option("-d, --data <pairs...>", "Parameters as key=value. List filters require an operator suffix (id[is]=…). Bare keys: limit, offset, include_deleted.")
+    .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
+    .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .addHelpText("after", "\n\u001b[1mLIST FILTERS\u001b[0m\n  Filter fields need an operator suffix: [is], [in], [starts_with], [between], [gt], [lt], ...\n  Pagination uses bare keys: -d limit=10\n  See https://apidocs.chargebee.com/docs/api/list-ops\n  Per-resource Filter Params: chargebee docs business-entity list")
+    .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs business-entity list\n")
+    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+      const fromStdin = readJsonMarker(json, command);
+      const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "list_business_entities", opIdV1: "", pcVersionFlag: opts.pcVersion });
+      if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "business-entity list");
+      if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "list_business_entities", opIdV1: "", method: "GET", uri: "/business_entities", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
+      if (fromStdin) warnBareJsonFilters(params, "business-entity");
+      else warnBareListFilters(opts.data ?? [], "business-entity");
+      try {
+        const client = await getClient();
+        const result = await (client as any).businessEntity.list(toSdkParams(params, "GET", true));
+        printResult(result);
+      } catch (e) { handleSdkError(e); }
+    });
+
+  cmd
+    .command("retrieve")
+    .argument("[business-entity-id]", "A unique and immutable identifier for the business entity.")
+    .argument("[json]", "'-' reads a JSON object from stdin.")
+    .description("Retrieve a business entity")
+    .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
+    .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
+    .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs business-entity retrieve\n")
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string }, command: Command) => {
+      const resource = takeResourceId(id, json, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "GET", jsonInput: false, opIdV2: "retrieve_a_business_entity", opIdV1: "", pcVersionFlag: opts.pcVersion });
+      if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "business-entity retrieve");
+      if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "retrieve_a_business_entity", opIdV1: "", method: "GET", uri: "/business_entities/{id}", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "business-entity-id", pcVersionFlag: opts.pcVersion });
+      if (!resource.id) command.error("error: missing required argument 'business-entity-id'");
+      assertResourceId(resource.id, command);
+      try {
+        const client = await getClient();
+        const result = await (client as any).businessEntity.retrieve(resource.id, toSdkParams(params, "GET", false));
+        printResult(result);
+      } catch (e) { handleSdkError(e); }
+    });
+
+  cmd
+    .command("update")
+    .argument("[business-entity-id]", "A unique and immutable identifier for the business entity.")
+    .argument("[json]", "'-' reads a JSON object from stdin.")
+    .description("Update business entity")
+    .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
+    .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
+    .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs business-entity update\n")
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+      const resource = takeResourceId(id, json, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "update_business_entity", opIdV1: "", pcVersionFlag: opts.pcVersion });
+      if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "business-entity update");
+      if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "update_business_entity", opIdV1: "", method: "POST", uri: "/business_entities/{id}", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "business-entity-id", pcVersionFlag: opts.pcVersion });
+      if (!resource.id) command.error("error: missing required argument 'business-entity-id'");
+      assertResourceId(resource.id, command);
+      await ensureWriteAllowed("POST", "business-entity update", opts.yes === true);
+      try {
+        const client = await getClient();
+        const result = await (client as any).businessEntity.update(resource.id, params);
         printResult(result);
       } catch (e) { handleSdkError(e); }
     });

@@ -12,6 +12,7 @@ import { registerBusinessEntity } from "./business_entity.js";
 import { registerBusinessRule } from "./business_rule.js";
 import { registerBusinessRuleset } from "./business_ruleset.js";
 import { registerCard } from "./card.js";
+import { registerCollectionsPaymentPromise } from "./collections_payment_promise.js";
 import { registerComment } from "./comment.js";
 import { registerConfiguration } from "./configuration.js";
 import { registerCoupon } from "./coupon.js";
@@ -60,6 +61,7 @@ import { registerPaymentVoucher } from "./payment_voucher.js";
 import { registerPersonalizedOffer } from "./personalized_offer.js";
 import { registerPlan } from "./plan.js";
 import { registerPortalSession } from "./portal_session.js";
+import { registerPriceRamp } from "./price_ramp.js";
 import { registerPriceVariant } from "./price_variant.js";
 import { registerPricingPageSession } from "./pricing_page_session.js";
 import { registerPromotionalCredit } from "./promotional_credit.js";
@@ -70,6 +72,7 @@ import { registerQuoteEntitlement } from "./quote_entitlement.js";
 import { registerRamp } from "./ramp.js";
 import { registerRecordedPurchase } from "./recorded_purchase.js";
 import { registerResourceMigration } from "./resource_migration.js";
+import { registerRetrySegment } from "./retry_segment.js";
 import { registerRule } from "./rule.js";
 import { registerSiteMigrationDetail } from "./site_migration_detail.js";
 import { registerSubscription } from "./subscription.js";
@@ -109,6 +112,8 @@ export function registerAll(rootCmd: Command): void {
   { const cmd = rootCmd.commands.find(c => c.name() === "business-ruleset"); if (cmd) setCommandGroup(cmd, "resource"); }
   registerCard(rootCmd);
   { const cmd = rootCmd.commands.find(c => c.name() === "card"); if (cmd) setCommandGroup(cmd, "resource"); }
+  registerCollectionsPaymentPromise(rootCmd);
+  { const cmd = rootCmd.commands.find(c => c.name() === "collections-payment-promise"); if (cmd) setCommandGroup(cmd, "resource"); }
   registerComment(rootCmd);
   { const cmd = rootCmd.commands.find(c => c.name() === "comment"); if (cmd) setCommandGroup(cmd, "resource"); }
   registerConfiguration(rootCmd);
@@ -205,6 +210,8 @@ export function registerAll(rootCmd: Command): void {
   { const cmd = rootCmd.commands.find(c => c.name() === "plan"); if (cmd) setCommandGroup(cmd, "resource"); }
   registerPortalSession(rootCmd);
   { const cmd = rootCmd.commands.find(c => c.name() === "portal-session"); if (cmd) setCommandGroup(cmd, "resource"); }
+  registerPriceRamp(rootCmd);
+  { const cmd = rootCmd.commands.find(c => c.name() === "price-ramp"); if (cmd) setCommandGroup(cmd, "resource"); }
   registerPriceVariant(rootCmd);
   { const cmd = rootCmd.commands.find(c => c.name() === "price-variant"); if (cmd) setCommandGroup(cmd, "resource"); }
   registerPricingPageSession(rootCmd);
@@ -225,6 +232,8 @@ export function registerAll(rootCmd: Command): void {
   { const cmd = rootCmd.commands.find(c => c.name() === "recorded-purchase"); if (cmd) setCommandGroup(cmd, "resource"); }
   registerResourceMigration(rootCmd);
   { const cmd = rootCmd.commands.find(c => c.name() === "resource-migration"); if (cmd) setCommandGroup(cmd, "resource"); }
+  registerRetrySegment(rootCmd);
+  { const cmd = rootCmd.commands.find(c => c.name() === "retry-segment"); if (cmd) setCommandGroup(cmd, "resource"); }
   registerRule(rootCmd);
   { const cmd = rootCmd.commands.find(c => c.name() === "rule"); if (cmd) setCommandGroup(cmd, "resource"); }
   registerSiteMigrationDetail(rootCmd);

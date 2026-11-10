@@ -113,6 +113,10 @@ export const docsOperationIds: Record<string, Record<string, { v1: string; v2: s
     }
   },
   "business-entity": {
+    "create": {
+      "v1": "",
+      "v2": "create_a_business_entity"
+    },
     "create-transfers": {
       "v1": "",
       "v2": "transfer_resources_to_another_business_entity"
@@ -120,6 +124,18 @@ export const docsOperationIds: Record<string, Record<string, { v1: string; v2: s
     "get-transfers": {
       "v1": "",
       "v2": "list_the_business_entity_transfers"
+    },
+    "list": {
+      "v1": "",
+      "v2": "list_business_entities"
+    },
+    "retrieve": {
+      "v1": "",
+      "v2": "retrieve_a_business_entity"
+    },
+    "update": {
+      "v1": "",
+      "v2": "update_business_entity"
     }
   },
   "business-rule": {
@@ -230,6 +246,28 @@ export const docsOperationIds: Record<string, Record<string, { v1: string; v2: s
     "update-card-for-customer": {
       "v1": "update_card_for_a_customer",
       "v2": "update_card_for_a_customer"
+    }
+  },
+  "collections-payment-promise": {
+    "cancel": {
+      "v1": "cancel_a_collections_payment_promise",
+      "v2": "cancel_a_collections_payment_promise"
+    },
+    "create-collections-payment-promise": {
+      "v1": "create_a_collections_payment_promise",
+      "v2": "create_a_collections_payment_promise"
+    },
+    "list-collections-payment-promises": {
+      "v1": "list_collections_payment_promises",
+      "v2": "list_collections_payment_promises"
+    },
+    "retrieve": {
+      "v1": "retrieve_a_payment_promise",
+      "v2": "retrieve_a_payment_promise"
+    },
+    "update-collections-payment-promise": {
+      "v1": "update_a_collections_payment_promise",
+      "v2": "update_a_collections_payment_promise"
     }
   },
   "comment": {
@@ -1109,6 +1147,10 @@ export const docsOperationIds: Record<string, Record<string, { v1: string; v2: s
       "v1": "remove_payment_from_an_invoice",
       "v2": "remove_payment_from_an_invoice"
     },
+    "remove-payment-schedule-scheme": {
+      "v1": "",
+      "v2": "remove_payment_schedule_scheme_from_an_invoice"
+    },
     "remove-tax-withheld": {
       "v1": "remove_tax_withheld_for_an_invoice",
       "v2": "remove_tax_withheld_for_an_invoice"
@@ -1254,6 +1296,10 @@ export const docsOperationIds: Record<string, Record<string, { v1: string; v2: s
     "list-ledger-account-balances": {
       "v1": "",
       "v2": "list_ledger_account_balances"
+    },
+    "update-overdraft-limit": {
+      "v1": "",
+      "v2": "update_overdraft_limit"
     }
   },
   "ledger-operation": {
@@ -1612,6 +1658,28 @@ export const docsOperationIds: Record<string, Record<string, { v1: string; v2: s
       "v2": "retrieve_a_portal_session"
     }
   },
+  "price-ramp": {
+    "create": {
+      "v1": "",
+      "v2": "create_a_price_ramp"
+    },
+    "delete": {
+      "v1": "",
+      "v2": "delete_a_price_ramp"
+    },
+    "list": {
+      "v1": "",
+      "v2": "list_price_ramps"
+    },
+    "retrieve": {
+      "v1": "",
+      "v2": "retrieve_a_price_ramp"
+    },
+    "update": {
+      "v1": "",
+      "v2": "update_a_price_ramp"
+    }
+  },
   "price-variant": {
     "create": {
       "v1": "",
@@ -1830,6 +1898,12 @@ export const docsOperationIds: Record<string, Record<string, { v1: string; v2: s
     "retrieve-latest": {
       "v1": "retrieve_latest_migration_details",
       "v2": "retrieve_latest_migration_details"
+    }
+  },
+  "retry-segment": {
+    "retrieve": {
+      "v1": "retrieve_a_retry_segment",
+      "v2": "retrieve_a_retry_segment"
     }
   },
   "rule": {

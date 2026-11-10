@@ -97,7 +97,7 @@
 
     "character-entities-legacy": ["character-entities-legacy@3.0.0", "", {}, "sha512-RpPp0asT/6ufRm//AJVwpViZbGM/MkjQFxJccQRHmISF/22NBtsHqAWmL+/pmkPWoIUJdWyeVleTl1wydHATVQ=="],
 
-    "chargebee": ["chargebee@3.34.0", "", { "dependencies": { "zod": "^4.3.6" }, "peerDependencies": { "@opentelemetry/api": "^1.9.0" }, "optionalPeers": ["@opentelemetry/api"] }, "sha512-ODO/NvUCRlpvZpMu0jhzsnQ0GG5n4clL5fSqtAzYFbLIm6qoXGiq0O/fPNTLAmkaKt8Ejh42V21H4+15WlK8aw=="],
+    "chargebee": ["chargebee@3.35.0", "", { "dependencies": { "zod": "^4.3.6" }, "peerDependencies": { "@opentelemetry/api": "^1.9.0" }, "optionalPeers": ["@opentelemetry/api"] }, "sha512-ioa/XVCOlczBvNDi6wdle6qpdqwuZj39f2SPZIF3op3GiElbO2HcCH1SD6aZ8k+/2U9avpHqw8SW3TJiLwYvSQ=="],
 
     "comma-separated-tokens": ["comma-separated-tokens@2.0.3", "", {}, "sha512-Fu4hJdvzeylCfQPp9SGWidpzrMs7tTrlu6Vb8XGaRGck8QSNZJJp538Wrb60Lax4fPwR64ViY468OIUTbRlGZg=="],
 

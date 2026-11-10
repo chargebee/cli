@@ -710,6 +710,31 @@ export function registerInvoice(parent: Command): void {
     });
 
   cmd
+    .command("remove-payment-schedule-scheme")
+    .argument("[invoice-id]", "The invoice number.")
+    .argument("[json]", "'-' reads a JSON object from stdin.")
+    .description("Remove payment schedule scheme from an invoice")
+    .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
+    .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
+    .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
+    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs invoice remove-payment-schedule-scheme\n")
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+      const resource = takeResourceId(id, json, command);
+      const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "remove_payment_schedule_scheme_from_an_invoice", opIdV1: "", pcVersionFlag: opts.pcVersion });
+      if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "invoice remove-payment-schedule-scheme");
+      if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "remove_payment_schedule_scheme_from_an_invoice", opIdV1: "", method: "POST", uri: "/invoices/{id}/remove_payment_schedule_scheme", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "invoice-id", pcVersionFlag: opts.pcVersion });
+      if (!resource.id) command.error("error: missing required argument 'invoice-id'");
+      assertResourceId(resource.id, command);
+      await ensureWriteAllowed("POST", "invoice remove-payment-schedule-scheme", opts.yes === true);
+      try {
+        const client = await getClient();
+        const result = await (client as any).invoice.removePaymentScheduleScheme(resource.id, params);
+        printResult(result);
+      } catch (e) { handleSdkError(e); }
+    });
+
+  cmd
     .command("remove-tax-withheld")
     .argument("[invoice-id]", "The invoice number.")
     .argument("[json]", "'-' reads a JSON object from stdin.")
