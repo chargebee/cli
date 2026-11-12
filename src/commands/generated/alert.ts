@@ -47,14 +47,15 @@ export function registerAlert(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs alert create\n")
-    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
       const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_an_alert", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "alert create");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_an_alert", opIdV1: "", method: "POST", uri: "/alerts", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
-      await ensureWriteAllowed("POST", "alert create", opts.yes === true);
+      await ensureWriteAllowed("POST", "alert create", opts);
       try {
         const client = await getClient();
         const result = await (client as any).alert.create(params);
@@ -70,16 +71,17 @@ export function registerAlert(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs alert delete\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "delete_an_alert", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "alert delete");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "delete_an_alert", opIdV1: "", method: "POST", uri: "/alerts/{id}/delete", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "alert-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'alert-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "alert delete", opts.yes === true);
+      await ensureWriteAllowed("POST", "alert delete", opts);
       try {
         const client = await getClient();
         const result = await (client as any).alert.delete(resource.id, params);
@@ -141,16 +143,17 @@ export function registerAlert(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs alert update\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "update_an_alert", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "alert update");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "update_an_alert", opIdV1: "", method: "POST", uri: "/alerts/{id}", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "alert-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'alert-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "alert update", opts.yes === true);
+      await ensureWriteAllowed("POST", "alert update", opts);
       try {
         const client = await getClient();
         const result = await (client as any).alert.update(resource.id, params);

@@ -24,13 +24,14 @@ export function registerCreditNote(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs credit-note create\n")
-    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
       const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_credit_note", opIdV1: "create_credit_note", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_credit_note", opIdV1: "create_credit_note", method: "POST", uri: "/credit_notes", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
-      await ensureWriteAllowed("POST", "credit-note create", opts.yes === true);
+      await ensureWriteAllowed("POST", "credit-note create", opts);
       try {
         const client = await getClient();
         const result = await (client as any).creditNote.create(params);
@@ -68,15 +69,16 @@ export function registerCreditNote(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs credit-note delete\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "delete_a_credit_note", opIdV1: "delete_a_credit_note", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "delete_a_credit_note", opIdV1: "delete_a_credit_note", method: "POST", uri: "/credit_notes/{id}/delete", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "credit-note-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'credit-note-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "credit-note delete", opts.yes === true);
+      await ensureWriteAllowed("POST", "credit-note delete", opts);
       try {
         const client = await getClient();
         const result = await (client as any).creditNote.delete(resource.id, params);
@@ -113,13 +115,14 @@ export function registerCreditNote(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs credit-note import-credit-note\n")
-    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
       const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "import_credit_note", opIdV1: "import_credit_note", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "import_credit_note", opIdV1: "import_credit_note", method: "POST", uri: "/credit_notes/import_credit_note", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
-      await ensureWriteAllowed("POST", "credit-note import-credit-note", opts.yes === true);
+      await ensureWriteAllowed("POST", "credit-note import-credit-note", opts);
       try {
         const client = await getClient();
         const result = await (client as any).creditNote.importCreditNote(params);
@@ -179,15 +182,16 @@ export function registerCreditNote(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs credit-note record-refund\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "record_refund_for_a_credit_note", opIdV1: "record_refund_for_a_credit_note", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "record_refund_for_a_credit_note", opIdV1: "record_refund_for_a_credit_note", method: "POST", uri: "/credit_notes/{id}/record_refund", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "credit-note-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'credit-note-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "credit-note record-refund", opts.yes === true);
+      await ensureWriteAllowed("POST", "credit-note record-refund", opts);
       try {
         const client = await getClient();
         const result = await (client as any).creditNote.recordRefund(resource.id, params);
@@ -203,15 +207,16 @@ export function registerCreditNote(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs credit-note refund\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "refund_a_credit_note", opIdV1: "refund_a_credit_note", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "refund_a_credit_note", opIdV1: "refund_a_credit_note", method: "POST", uri: "/credit_notes/{id}/refund", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "credit-note-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'credit-note-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "credit-note refund", opts.yes === true);
+      await ensureWriteAllowed("POST", "credit-note refund", opts);
       try {
         const client = await getClient();
         const result = await (client as any).creditNote.refund(resource.id, params);
@@ -227,15 +232,16 @@ export function registerCreditNote(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs credit-note remove-tax-withheld-refund\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "remove_tax_withheld_refunds_from_a_credit_note", opIdV1: "remove_tax_withheld_refunds_from_a_credit_note", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "remove_tax_withheld_refunds_from_a_credit_note", opIdV1: "remove_tax_withheld_refunds_from_a_credit_note", method: "POST", uri: "/credit_notes/{id}/remove_tax_withheld_refund", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "credit-note-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'credit-note-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "credit-note remove-tax-withheld-refund", opts.yes === true);
+      await ensureWriteAllowed("POST", "credit-note remove-tax-withheld-refund", opts);
       try {
         const client = await getClient();
         const result = await (client as any).creditNote.removeTaxWithheldRefund(resource.id, params);
@@ -251,15 +257,16 @@ export function registerCreditNote(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs credit-note resend-einvoice\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "resend_failed_einvoice_in_credit_notes", opIdV1: "resend_failed_einvoice_in_credit_notes", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "resend_failed_einvoice_in_credit_notes", opIdV1: "resend_failed_einvoice_in_credit_notes", method: "POST", uri: "/credit_notes/{id}/resend_einvoice", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "credit-note-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'credit-note-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "credit-note resend-einvoice", opts.yes === true);
+      await ensureWriteAllowed("POST", "credit-note resend-einvoice", opts);
       try {
         const client = await getClient();
         const result = await (client as any).creditNote.resendEinvoice(resource.id, params);
@@ -297,15 +304,16 @@ export function registerCreditNote(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs credit-note send-einvoice\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "send_an_einvoice_for_credit_notes", opIdV1: "send_an_einvoice_for_credit_notes", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "send_an_einvoice_for_credit_notes", opIdV1: "send_an_einvoice_for_credit_notes", method: "POST", uri: "/credit_notes/{id}/send_einvoice", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "credit-note-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'credit-note-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "credit-note send-einvoice", opts.yes === true);
+      await ensureWriteAllowed("POST", "credit-note send-einvoice", opts);
       try {
         const client = await getClient();
         const result = await (client as any).creditNote.sendEinvoice(resource.id, params);
@@ -321,15 +329,16 @@ export function registerCreditNote(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs credit-note send-email\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "send_credit_note_email", opIdV1: "send_credit_note_email", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "send_credit_note_email", opIdV1: "send_credit_note_email", method: "POST", uri: "/credit_notes/{id}/send_email", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "credit-note-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'credit-note-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "credit-note send-email", opts.yes === true);
+      await ensureWriteAllowed("POST", "credit-note send-email", opts);
       try {
         const client = await getClient();
         const result = await (client as any).creditNote.sendEmail(resource.id, params);
@@ -345,15 +354,16 @@ export function registerCreditNote(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs credit-note update\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "update_credit_note_details", opIdV1: "update_credit_note_details", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "update_credit_note_details", opIdV1: "update_credit_note_details", method: "POST", uri: "/credit_notes/{id}/update", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "credit-note-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'credit-note-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "credit-note update", opts.yes === true);
+      await ensureWriteAllowed("POST", "credit-note update", opts);
       try {
         const client = await getClient();
         const result = await (client as any).creditNote.update(resource.id, params);
@@ -369,15 +379,16 @@ export function registerCreditNote(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs credit-note void-credit-note\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "void_a_credit_note", opIdV1: "void_a_credit_note", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "void_a_credit_note", opIdV1: "void_a_credit_note", method: "POST", uri: "/credit_notes/{id}/void", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "credit-note-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'credit-note-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "credit-note void-credit-note", opts.yes === true);
+      await ensureWriteAllowed("POST", "credit-note void-credit-note", opts);
       try {
         const client = await getClient();
         const result = await (client as any).creditNote.voidCreditNote(resource.id, params);

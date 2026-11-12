@@ -24,15 +24,16 @@ export function registerCustomer(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs customer add-contact\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "add_contacts_to_a_customer", opIdV1: "add_contacts_to_a_customer", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "add_contacts_to_a_customer", opIdV1: "add_contacts_to_a_customer", method: "POST", uri: "/customers/{id}/add_contact", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "customer-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'customer-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "customer add-contact", opts.yes === true);
+      await ensureWriteAllowed("POST", "customer add-contact", opts);
       try {
         const client = await getClient();
         const result = await (client as any).customer.addContact(resource.id, params);
@@ -48,15 +49,16 @@ export function registerCustomer(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs customer add-promotional-credits\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "", opIdV1: "", method: "POST", uri: "/customers/{id}/add_promotional_credits", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: undefined, pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "customer add-promotional-credits", opts.yes === true);
+      await ensureWriteAllowed("POST", "customer add-promotional-credits", opts);
       try {
         const client = await getClient();
         const result = await (client as any).customer.addPromotionalCredits(resource.id, params);
@@ -72,15 +74,16 @@ export function registerCustomer(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs customer assign-payment-role\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "assign_payment_role", opIdV1: "assign_payment_role", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "assign_payment_role", opIdV1: "assign_payment_role", method: "POST", uri: "/customers/{id}/assign_payment_role", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "customer-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'customer-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "customer assign-payment-role", opts.yes === true);
+      await ensureWriteAllowed("POST", "customer assign-payment-role", opts);
       try {
         const client = await getClient();
         const result = await (client as any).customer.assignPaymentRole(resource.id, params);
@@ -96,15 +99,16 @@ export function registerCustomer(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs customer change-billing-date\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "change_billing_date", opIdV1: "change_billing_date", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "change_billing_date", opIdV1: "change_billing_date", method: "POST", uri: "/customers/{id}/change_billing_date", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "customer-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'customer-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "customer change-billing-date", opts.yes === true);
+      await ensureWriteAllowed("POST", "customer change-billing-date", opts);
       try {
         const client = await getClient();
         const result = await (client as any).customer.changeBillingDate(resource.id, params);
@@ -120,15 +124,16 @@ export function registerCustomer(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs customer clear-personal-data\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "clear_personal_data_of_a_customer", opIdV1: "clear_personal_data_of_a_customer", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "clear_personal_data_of_a_customer", opIdV1: "clear_personal_data_of_a_customer", method: "POST", uri: "/customers/{id}/clear_personal_data", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "customer-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'customer-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "customer clear-personal-data", opts.yes === true);
+      await ensureWriteAllowed("POST", "customer clear-personal-data", opts);
       try {
         const client = await getClient();
         const result = await (client as any).customer.clearPersonalData(resource.id, params);
@@ -144,15 +149,16 @@ export function registerCustomer(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs customer collect-payment\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "collect_payment_for_customer", opIdV1: "collect_payment_for_customer", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "collect_payment_for_customer", opIdV1: "collect_payment_for_customer", method: "POST", uri: "/customers/{id}/collect_payment", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "customer-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'customer-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "customer collect-payment", opts.yes === true);
+      await ensureWriteAllowed("POST", "customer collect-payment", opts);
       try {
         const client = await getClient();
         const result = await (client as any).customer.collectPayment(resource.id, params);
@@ -189,13 +195,14 @@ export function registerCustomer(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs customer create\n")
-    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
       const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_a_customer", opIdV1: "create_a_customer", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_a_customer", opIdV1: "create_a_customer", method: "POST", uri: "/customers", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
-      await ensureWriteAllowed("POST", "customer create", opts.yes === true);
+      await ensureWriteAllowed("POST", "customer create", opts);
       try {
         const client = await getClient();
         const result = await (client as any).customer.create(params);
@@ -211,15 +218,16 @@ export function registerCustomer(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs customer deduct-promotional-credits\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "", opIdV1: "", method: "POST", uri: "/customers/{id}/deduct_promotional_credits", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: undefined, pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "customer deduct-promotional-credits", opts.yes === true);
+      await ensureWriteAllowed("POST", "customer deduct-promotional-credits", opts);
       try {
         const client = await getClient();
         const result = await (client as any).customer.deductPromotionalCredits(resource.id, params);
@@ -235,15 +243,16 @@ export function registerCustomer(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs customer delete\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "delete_a_customer", opIdV1: "delete_a_customer", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "delete_a_customer", opIdV1: "delete_a_customer", method: "POST", uri: "/customers/{id}/delete", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "customer-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'customer-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "customer delete", opts.yes === true);
+      await ensureWriteAllowed("POST", "customer delete", opts);
       try {
         const client = await getClient();
         const result = await (client as any).customer.delete(resource.id, params);
@@ -259,15 +268,16 @@ export function registerCustomer(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs customer delete-contact\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "delete_contacts_for_a_customer", opIdV1: "delete_contacts_for_a_customer", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "delete_contacts_for_a_customer", opIdV1: "delete_contacts_for_a_customer", method: "POST", uri: "/customers/{id}/delete_contact", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "customer-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'customer-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "customer delete-contact", opts.yes === true);
+      await ensureWriteAllowed("POST", "customer delete-contact", opts);
       try {
         const client = await getClient();
         const result = await (client as any).customer.deleteContact(resource.id, params);
@@ -283,15 +293,16 @@ export function registerCustomer(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs customer delete-relationship\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "delink_a_customer", opIdV1: "delink_a_customer", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "delink_a_customer", opIdV1: "delink_a_customer", method: "POST", uri: "/customers/{id}/delete_relationship", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "customer-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'customer-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "customer delete-relationship", opts.yes === true);
+      await ensureWriteAllowed("POST", "customer delete-relationship", opts);
       try {
         const client = await getClient();
         const result = await (client as any).customer.deleteRelationship(resource.id, params);
@@ -372,13 +383,14 @@ export function registerCustomer(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs customer merge\n")
-    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
       const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "merge_customers", opIdV1: "merge_customers", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "merge_customers", opIdV1: "merge_customers", method: "POST", uri: "/customers/merge", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
-      await ensureWriteAllowed("POST", "customer merge", opts.yes === true);
+      await ensureWriteAllowed("POST", "customer merge", opts);
       try {
         const client = await getClient();
         const result = await (client as any).customer.merge(params);
@@ -393,13 +405,14 @@ export function registerCustomer(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs customer move\n")
-    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
       const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "move_a_customer", opIdV1: "move_a_customer", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "move_a_customer", opIdV1: "move_a_customer", method: "POST", uri: "/customers/move", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
-      await ensureWriteAllowed("POST", "customer move", opts.yes === true);
+      await ensureWriteAllowed("POST", "customer move", opts);
       try {
         const client = await getClient();
         const result = await (client as any).customer.move(params);
@@ -415,15 +428,16 @@ export function registerCustomer(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs customer record-excess-payment\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "record_an_excess_payment_for_a_customer", opIdV1: "record_an_excess_payment_for_a_customer", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "record_an_excess_payment_for_a_customer", opIdV1: "record_an_excess_payment_for_a_customer", method: "POST", uri: "/customers/{id}/record_excess_payment", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "customer-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'customer-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "customer record-excess-payment", opts.yes === true);
+      await ensureWriteAllowed("POST", "customer record-excess-payment", opts);
       try {
         const client = await getClient();
         const result = await (client as any).customer.recordExcessPayment(resource.id, params);
@@ -439,15 +453,16 @@ export function registerCustomer(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs customer relationships\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "link_a_customer", opIdV1: "link_a_customer", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "link_a_customer", opIdV1: "link_a_customer", method: "POST", uri: "/customers/{id}/relationships", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "customer-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'customer-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "customer relationships", opts.yes === true);
+      await ensureWriteAllowed("POST", "customer relationships", opts);
       try {
         const client = await getClient();
         const result = await (client as any).customer.relationships(resource.id, params);
@@ -485,15 +500,16 @@ export function registerCustomer(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs customer send-payment-request\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "send_payment_request_email", opIdV1: "send_payment_request_email", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "send_payment_request_email", opIdV1: "send_payment_request_email", method: "POST", uri: "/customers/{id}/send_payment_request", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "customer-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'customer-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "customer send-payment-request", opts.yes === true);
+      await ensureWriteAllowed("POST", "customer send-payment-request", opts);
       try {
         const client = await getClient();
         const result = await (client as any).customer.sendPaymentRequest(resource.id, params);
@@ -509,15 +525,16 @@ export function registerCustomer(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs customer set-promotional-credits\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "", opIdV1: "", method: "POST", uri: "/customers/{id}/set_promotional_credits", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: undefined, pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "customer set-promotional-credits", opts.yes === true);
+      await ensureWriteAllowed("POST", "customer set-promotional-credits", opts);
       try {
         const client = await getClient();
         const result = await (client as any).customer.setPromotionalCredits(resource.id, params);
@@ -533,15 +550,16 @@ export function registerCustomer(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs customer update\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "update_a_customer", opIdV1: "update_a_customer", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "update_a_customer", opIdV1: "update_a_customer", method: "POST", uri: "/customers/{id}", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "customer-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'customer-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "customer update", opts.yes === true);
+      await ensureWriteAllowed("POST", "customer update", opts);
       try {
         const client = await getClient();
         const result = await (client as any).customer.update(resource.id, params);
@@ -557,15 +575,16 @@ export function registerCustomer(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs customer update-billing-info\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "update_billing_info_for_a_customer", opIdV1: "update_billing_info_for_a_customer", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "update_billing_info_for_a_customer", opIdV1: "update_billing_info_for_a_customer", method: "POST", uri: "/customers/{id}/update_billing_info", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "customer-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'customer-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "customer update-billing-info", opts.yes === true);
+      await ensureWriteAllowed("POST", "customer update-billing-info", opts);
       try {
         const client = await getClient();
         const result = await (client as any).customer.updateBillingInfo(resource.id, params);
@@ -581,15 +600,16 @@ export function registerCustomer(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs customer update-contact\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "update_contacts_for_a_customer", opIdV1: "update_contacts_for_a_customer", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "update_contacts_for_a_customer", opIdV1: "update_contacts_for_a_customer", method: "POST", uri: "/customers/{id}/update_contact", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "customer-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'customer-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "customer update-contact", opts.yes === true);
+      await ensureWriteAllowed("POST", "customer update-contact", opts);
       try {
         const client = await getClient();
         const result = await (client as any).customer.updateContact(resource.id, params);
@@ -605,15 +625,16 @@ export function registerCustomer(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs customer update-hierarchy-settings\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "update_hierarchy_access_settings_for_a_customer", opIdV1: "update_hierarchy_access_settings_for_a_customer", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "update_hierarchy_access_settings_for_a_customer", opIdV1: "update_hierarchy_access_settings_for_a_customer", method: "POST", uri: "/customers/{id}/update_hierarchy_settings", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "customer-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'customer-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "customer update-hierarchy-settings", opts.yes === true);
+      await ensureWriteAllowed("POST", "customer update-hierarchy-settings", opts);
       try {
         const client = await getClient();
         const result = await (client as any).customer.updateHierarchySettings(resource.id, params);
@@ -629,15 +650,16 @@ export function registerCustomer(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs customer update-payment-method\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "update_payment_method_for_a_customer", opIdV1: "update_payment_method_for_a_customer", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "update_payment_method_for_a_customer", opIdV1: "update_payment_method_for_a_customer", method: "POST", uri: "/customers/{id}/update_payment_method", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "customer-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'customer-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "customer update-payment-method", opts.yes === true);
+      await ensureWriteAllowed("POST", "customer update-payment-method", opts);
       try {
         const client = await getClient();
         const result = await (client as any).customer.updatePaymentMethod(resource.id, params);

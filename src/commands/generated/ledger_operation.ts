@@ -23,14 +23,15 @@ export function registerLedgerOperation(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs ledger-operation allocate\n")
-    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
       const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: true, opIdV2: "allocate", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "ledger-operation allocate");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "allocate", opIdV1: "", method: "POST", uri: "/ledger_operations/allocate", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
-      await ensureWriteAllowed("POST", "ledger-operation allocate", opts.yes === true);
+      await ensureWriteAllowed("POST", "ledger-operation allocate", opts);
       try {
         const client = await getClient();
         const result = await (client as any).ledgerOperation.allocate(params);
@@ -45,14 +46,15 @@ export function registerLedgerOperation(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs ledger-operation authorize\n")
-    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
       const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: true, opIdV2: "authorize", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "ledger-operation authorize");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "authorize", opIdV1: "", method: "POST", uri: "/ledger_operations/authorize", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
-      await ensureWriteAllowed("POST", "ledger-operation authorize", opts.yes === true);
+      await ensureWriteAllowed("POST", "ledger-operation authorize", opts);
       try {
         const client = await getClient();
         const result = await (client as any).ledgerOperation.authorize(params);
@@ -67,14 +69,15 @@ export function registerLedgerOperation(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs ledger-operation capture\n")
-    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
       const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: true, opIdV2: "capture", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "ledger-operation capture");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "capture", opIdV1: "", method: "POST", uri: "/ledger_operations/capture", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
-      await ensureWriteAllowed("POST", "ledger-operation capture", opts.yes === true);
+      await ensureWriteAllowed("POST", "ledger-operation capture", opts);
       try {
         const client = await getClient();
         const result = await (client as any).ledgerOperation.capture(params);
@@ -89,14 +92,15 @@ export function registerLedgerOperation(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs ledger-operation capture-authorization\n")
-    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
       const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: true, opIdV2: "capture_authorization", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "ledger-operation capture-authorization");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "capture_authorization", opIdV1: "", method: "POST", uri: "/ledger_operations/capture_authorization", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
-      await ensureWriteAllowed("POST", "ledger-operation capture-authorization", opts.yes === true);
+      await ensureWriteAllowed("POST", "ledger-operation capture-authorization", opts);
       try {
         const client = await getClient();
         const result = await (client as any).ledgerOperation.captureAuthorization(params);
@@ -131,14 +135,15 @@ export function registerLedgerOperation(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs ledger-operation release-authorization\n")
-    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
       const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: true, opIdV2: "release_authorization", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "ledger-operation release-authorization");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "release_authorization", opIdV1: "", method: "POST", uri: "/ledger_operations/release_authorization", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
-      await ensureWriteAllowed("POST", "ledger-operation release-authorization", opts.yes === true);
+      await ensureWriteAllowed("POST", "ledger-operation release-authorization", opts);
       try {
         const client = await getClient();
         const result = await (client as any).ledgerOperation.releaseAuthorization(params);

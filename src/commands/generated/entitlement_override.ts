@@ -24,16 +24,17 @@ export function registerEntitlementOverride(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs entitlement-override add-entitlement-override-for-subscription\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "upsert_or_remove_entitlement_overrides_for_a_subscription", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "entitlement-override add-entitlement-override-for-subscription");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "upsert_or_remove_entitlement_overrides_for_a_subscription", opIdV1: "", method: "POST", uri: "/subscriptions/{id}/entitlement_overrides", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "subscription-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'subscription-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "entitlement-override add-entitlement-override-for-subscription", opts.yes === true);
+      await ensureWriteAllowed("POST", "entitlement-override add-entitlement-override-for-subscription", opts);
       try {
         const client = await getClient();
         const result = await (client as any).entitlementOverride.addEntitlementOverrideForSubscription(resource.id, params);

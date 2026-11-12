@@ -24,15 +24,16 @@ export function registerCurrency(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs currency add-schedule\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "add_schedule", opIdV1: "add_schedule", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "add_schedule", opIdV1: "add_schedule", method: "POST", uri: "/currencies/{id}/add_schedule", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "site-currency-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'site-currency-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "currency add-schedule", opts.yes === true);
+      await ensureWriteAllowed("POST", "currency add-schedule", opts);
       try {
         const client = await getClient();
         const result = await (client as any).currency.addSchedule(resource.id, params);
@@ -47,13 +48,14 @@ export function registerCurrency(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs currency create\n")
-    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
       const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "add_a_new_currency", opIdV1: "add_a_new_currency", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "add_a_new_currency", opIdV1: "add_a_new_currency", method: "POST", uri: "/currencies", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
-      await ensureWriteAllowed("POST", "currency create", opts.yes === true);
+      await ensureWriteAllowed("POST", "currency create", opts);
       try {
         const client = await getClient();
         const result = await (client as any).currency.create(params);
@@ -91,15 +93,16 @@ export function registerCurrency(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs currency remove-schedule\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "remove_schedule", opIdV1: "remove_schedule", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "remove_schedule", opIdV1: "remove_schedule", method: "POST", uri: "/currencies/{id}/remove_schedule", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "site-currency-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'site-currency-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "currency remove-schedule", opts.yes === true);
+      await ensureWriteAllowed("POST", "currency remove-schedule", opts);
       try {
         const client = await getClient();
         const result = await (client as any).currency.removeSchedule(resource.id, params);
@@ -137,15 +140,16 @@ export function registerCurrency(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs currency update\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "update_a_currency", opIdV1: "update_a_currency", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "update_a_currency", opIdV1: "update_a_currency", method: "POST", uri: "/currencies/{id}", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "site-currency-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'site-currency-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "currency update", opts.yes === true);
+      await ensureWriteAllowed("POST", "currency update", opts);
       try {
         const client = await getClient();
         const result = await (client as any).currency.update(resource.id, params);

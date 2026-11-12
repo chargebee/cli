@@ -2,7 +2,7 @@
  * Isolated CLI tests: the live-site write confirmation as emitted into the
  * generated commands. A live site refuses unconfirmed mutating operations before
  * any SDK client is constructed, runs them once confirmed at the prompt or with
- * --yes, still runs reads, and still runs the non-GET operations that only
+ * --allow-write (or the deprecated -y/--yes), still runs reads, and still runs the non-GET operations that only
  * compute or generate URLs (estimates, exports). A test site runs writes.
  */
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
@@ -24,6 +24,7 @@ import {
 
 const REFUSAL = "Refusing to run a write operation on live site";
 const NOTICE = 'Writing to live site "acme"';
+const DEPRECATION = "-y/--yes on API write commands is deprecated";
 
 let configDir: string;
 let constructions: ClientConstruction[];
@@ -76,7 +77,7 @@ describe("live site without a terminal", () => {
     const result = await runCli(["customer", "create", "-d", "first_name=Ada"]);
     expect(result.exitCode).toBe(6);
     expect(result.stderr).toContain(REFUSAL);
-    expect(result.stderr).toContain("--yes");
+    expect(result.stderr).toContain("--allow-write");
     expect(constructions).toHaveLength(0);
   });
 
@@ -87,17 +88,44 @@ describe("live site without a terminal", () => {
     expect(constructions).toHaveLength(0);
   });
 
-  it("runs a write confirmed with --yes", async () => {
-    const result = await runCli(["customer", "create", "-d", "first_name=Ada", "--yes"]);
+  it("runs a write confirmed with --allow-write", async () => {
+    const result = await runCli(["customer", "create", "-d", "first_name=Ada", "--allow-write"]);
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toContain("cus_new_acme");
     expect(result.stderr).toContain(NOTICE);
   });
 
-  it("accepts -y as the short form of --yes", async () => {
+  it("does not warn about deprecation for --allow-write", async () => {
+    const result = await runCli(["customer", "create", "-d", "first_name=Ada", "--allow-write"]);
+    expect(result.stderr).not.toContain(DEPRECATION);
+  });
+
+  it("still accepts the deprecated --yes and warns", async () => {
+    const result = await runCli(["customer", "create", "-d", "first_name=Ada", "--yes"]);
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain("cus_new_acme");
+    expect(result.stderr).toContain(DEPRECATION);
+    expect(result.stderr).toContain("--allow-write");
+  });
+
+  it("still accepts the deprecated -y and warns", async () => {
     const result = await runCli(["customer", "create", "-y", "-d", "first_name=Ada"]);
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toContain("cus_new_acme");
+    expect(result.stderr).toContain(DEPRECATION);
+  });
+
+  it("does not warn when --yes is passed alongside --allow-write", async () => {
+    const result = await runCli(["customer", "create", "-d", "first_name=Ada", "--allow-write", "--yes"]);
+    expect(result.exitCode).toBe(0);
+    expect(result.stderr).not.toContain(DEPRECATION);
+  });
+
+  it("lists --allow-write in help and hides the deprecated --yes", async () => {
+    const result = await runCli(["customer", "create", "--help"]);
+    const help = result.stdout + result.stderr;
+    expect(help).toContain("--allow-write");
+    expect(help).not.toContain("--yes");
   });
 
   it("refuses an unconfirmed write in --json mode with a structured error", async () => {
@@ -107,8 +135,8 @@ describe("live site without a terminal", () => {
     expect(constructions).toHaveLength(0);
   });
 
-  it("runs a write confirmed with --yes in --json mode", async () => {
-    const result = await runCli(["--json", "customer", "create", "-d", "first_name=Ada", "--yes"]);
+  it("runs a write confirmed with --allow-write in --json mode", async () => {
+    const result = await runCli(["--json", "customer", "create", "-d", "first_name=Ada", "--allow-write"]);
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toContain("cus_new_acme");
   });
@@ -174,9 +202,9 @@ describe("live site in a terminal", () => {
     expect(constructions).toHaveLength(0);
   });
 
-  it("skips the prompt with --yes", async () => {
+  it("skips the prompt with --allow-write", async () => {
     useTerminal(false);
-    const result = await runCli(["customer", "create", "-d", "first_name=Ada", "--yes"]);
+    const result = await runCli(["customer", "create", "-d", "first_name=Ada", "--allow-write"]);
     expect(prompts).toHaveLength(0);
     expect(result.exitCode).toBe(0);
   });
@@ -191,10 +219,10 @@ describe("live site in a terminal", () => {
     expect(constructions).toHaveLength(0);
   });
 
-  it("runs a write confirmed with --yes on a CI runner with a terminal", async () => {
+  it("runs a write confirmed with --allow-write on a CI runner with a terminal", async () => {
     useTerminal(false);
     env.set("CI", "true");
-    const result = await runCli(["customer", "create", "-d", "first_name=Ada", "--yes"]);
+    const result = await runCli(["customer", "create", "-d", "first_name=Ada", "--allow-write"]);
     expect(prompts).toHaveLength(0);
     expect(result.exitCode).toBe(0);
   });

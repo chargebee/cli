@@ -22,16 +22,17 @@ export function registerMeteredFeature(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs metered-feature archive\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "archive_a_metered_feature", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "metered-feature archive");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "archive_a_metered_feature", opIdV1: "", method: "POST", uri: "/metered_features/{id}/archive_command", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "metered-feature-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'metered-feature-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "metered-feature archive", opts.yes === true);
+      await ensureWriteAllowed("POST", "metered-feature archive", opts);
       try {
         const client = await getClient();
         const result = await (client as any).meteredFeature.archive(resource.id, params);
@@ -46,14 +47,15 @@ export function registerMeteredFeature(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs metered-feature create\n")
-    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
       const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_a_metered_feature", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "metered-feature create");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_a_metered_feature", opIdV1: "", method: "POST", uri: "/metered_features", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
-      await ensureWriteAllowed("POST", "metered-feature create", opts.yes === true);
+      await ensureWriteAllowed("POST", "metered-feature create", opts);
       try {
         const client = await getClient();
         const result = await (client as any).meteredFeature.create(params);
@@ -69,16 +71,17 @@ export function registerMeteredFeature(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs metered-feature delete\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "delete_a_metered_feature", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "metered-feature delete");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "delete_a_metered_feature", opIdV1: "", method: "POST", uri: "/metered_features/{id}/delete", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "metered-feature-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'metered-feature-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "metered-feature delete", opts.yes === true);
+      await ensureWriteAllowed("POST", "metered-feature delete", opts);
       try {
         const client = await getClient();
         const result = await (client as any).meteredFeature.delete(resource.id, params);
@@ -94,16 +97,17 @@ export function registerMeteredFeature(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs metered-feature reactivate\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "reactivate_a_metered_feature", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "metered-feature reactivate");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "reactivate_a_metered_feature", opIdV1: "", method: "POST", uri: "/metered_features/{id}/reactivate_command", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "metered-feature-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'metered-feature-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "metered-feature reactivate", opts.yes === true);
+      await ensureWriteAllowed("POST", "metered-feature reactivate", opts);
       try {
         const client = await getClient();
         const result = await (client as any).meteredFeature.reactivate(resource.id, params);

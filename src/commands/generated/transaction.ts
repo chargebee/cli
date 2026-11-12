@@ -23,13 +23,14 @@ export function registerTransaction(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs transaction create-authorization\n")
-    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
       const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_an_authorization_payment", opIdV1: "create_an_authorization_payment", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_an_authorization_payment", opIdV1: "create_an_authorization_payment", method: "POST", uri: "/transactions/create_authorization", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
-      await ensureWriteAllowed("POST", "transaction create-authorization", opts.yes === true);
+      await ensureWriteAllowed("POST", "transaction create-authorization", opts);
       try {
         const client = await getClient();
         const result = await (client as any).transaction.createAuthorization(params);
@@ -45,15 +46,16 @@ export function registerTransaction(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs transaction delete-offline-transaction\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "delete_an_offline_transaction", opIdV1: "delete_an_offline_transaction", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "delete_an_offline_transaction", opIdV1: "delete_an_offline_transaction", method: "POST", uri: "/transactions/{id}/delete_offline_transaction", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "transaction-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'transaction-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "transaction delete-offline-transaction", opts.yes === true);
+      await ensureWriteAllowed("POST", "transaction delete-offline-transaction", opts);
       try {
         const client = await getClient();
         const result = await (client as any).transaction.deleteOfflineTransaction(resource.id, params);
@@ -113,15 +115,16 @@ export function registerTransaction(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs transaction reconcile\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "reconcile_transaction", opIdV1: "reconcile_transaction", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "reconcile_transaction", opIdV1: "reconcile_transaction", method: "POST", uri: "/transactions/{id}/reconcile", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "transaction-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'transaction-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "transaction reconcile", opts.yes === true);
+      await ensureWriteAllowed("POST", "transaction reconcile", opts);
       try {
         const client = await getClient();
         const result = await (client as any).transaction.reconcile(resource.id, params);
@@ -137,15 +140,16 @@ export function registerTransaction(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs transaction record-refund\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "record_an_offline_refund", opIdV1: "record_an_offline_refund", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "record_an_offline_refund", opIdV1: "record_an_offline_refund", method: "POST", uri: "/transactions/{id}/record_refund", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "transaction-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'transaction-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "transaction record-refund", opts.yes === true);
+      await ensureWriteAllowed("POST", "transaction record-refund", opts);
       try {
         const client = await getClient();
         const result = await (client as any).transaction.recordRefund(resource.id, params);
@@ -161,15 +165,16 @@ export function registerTransaction(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs transaction refund\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "refund_a_payment", opIdV1: "refund_a_payment", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "refund_a_payment", opIdV1: "refund_a_payment", method: "POST", uri: "/transactions/{id}/refund", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "transaction-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'transaction-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "transaction refund", opts.yes === true);
+      await ensureWriteAllowed("POST", "transaction refund", opts);
       try {
         const client = await getClient();
         const result = await (client as any).transaction.refund(resource.id, params);
@@ -251,15 +256,16 @@ export function registerTransaction(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs transaction void-transaction\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "void_an_authorization_transaction", opIdV1: "void_an_authorization_transaction", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "void_an_authorization_transaction", opIdV1: "void_an_authorization_transaction", method: "POST", uri: "/transactions/{id}/void", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "transaction-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'transaction-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "transaction void-transaction", opts.yes === true);
+      await ensureWriteAllowed("POST", "transaction void-transaction", opts);
       try {
         const client = await getClient();
         const result = await (client as any).transaction.voidTransaction(resource.id, params);

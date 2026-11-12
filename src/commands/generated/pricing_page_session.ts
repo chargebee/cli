@@ -21,14 +21,15 @@ export function registerPricingPageSession(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs pricing-page-session create-for-existing-subscription\n")
-    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
       const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_pricing_page_for_existing_subscription", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "pricing-page-session create-for-existing-subscription");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_pricing_page_for_existing_subscription", opIdV1: "", method: "POST", uri: "/pricing_page_sessions/create_for_existing_subscription", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
-      await ensureWriteAllowed("POST", "pricing-page-session create-for-existing-subscription", opts.yes === true);
+      await ensureWriteAllowed("POST", "pricing-page-session create-for-existing-subscription", opts);
       try {
         const client = await getClient();
         const result = await (client as any).pricingPageSession.createForExistingSubscription(params);
@@ -43,14 +44,15 @@ export function registerPricingPageSession(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs pricing-page-session create-for-new-subscription\n")
-    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
       const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_pricing_page_for_new_subscription", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "pricing-page-session create-for-new-subscription");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_pricing_page_for_new_subscription", opIdV1: "", method: "POST", uri: "/pricing_page_sessions/create_for_new_subscription", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
-      await ensureWriteAllowed("POST", "pricing-page-session create-for-new-subscription", opts.yes === true);
+      await ensureWriteAllowed("POST", "pricing-page-session create-for-new-subscription", opts);
       try {
         const client = await getClient();
         const result = await (client as any).pricingPageSession.createForNewSubscription(params);

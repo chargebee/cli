@@ -2,8 +2,8 @@
  * Pure logic for the live-site write confirmation gate.
  *
  * Write operations on live (production) sites need explicit confirmation: an
- * interactive yes/no prompt, or `--yes`. Without a terminal and without
- * `--yes` the write is refused.
+ * interactive yes/no prompt, or `--allow-write`. Without a terminal and without
+ * `--allow-write` the write is refused.
  *
  * Kept separate from `sdk.ts` (which imports the Chargebee SDK and is a common
  * mock target in tests) so this logic can be unit-tested in isolation.
@@ -98,9 +98,9 @@ export function isReadOnlyOperation(operationKey?: string): boolean {
 /**
  * How a write should proceed:
  * - `allow`: not a write, or not a live site — run without ceremony.
- * - `allow_live`: live-site write confirmed up front with `--yes`.
+ * - `allow_live`: live-site write confirmed up front with `--allow-write`.
  * - `confirm`: live-site write that must be confirmed at an interactive prompt.
- * - `refuse`: live-site write with no `--yes` and no way to prompt.
+ * - `refuse`: live-site write with no `--allow-write` and no way to prompt.
  */
 export type WriteDecision = "allow" | "allow_live" | "confirm" | "refuse";
 
@@ -108,11 +108,11 @@ export function liveWriteDecision(opts: {
   method: string;
   site: string;
   apiKey?: string;
-  yes: boolean;
+  allowWrite: boolean;
   canPrompt: boolean;
 }): WriteDecision {
   if (!isWriteMethod(opts.method) || !isLiveSite(opts.site, opts.apiKey)) return "allow";
-  if (opts.yes) return "allow_live";
+  if (opts.allowWrite) return "allow_live";
   return opts.canPrompt ? "confirm" : "refuse";
 }
 
@@ -126,12 +126,16 @@ export function liveWriteNotice(site: string): string {
   return `${paint("33", "⚠")} Writing to live site "${site}".`;
 }
 
+/** The stderr notice printed when the deprecated `-y/--yes` confirms a write. */
+export const DEPRECATED_YES_NOTICE =
+  "warning: -y/--yes on API write commands is deprecated and will be removed in the next major version; use --allow-write.";
+
 /** The message shown when a live-site write cannot be confirmed. */
 export function unconfirmedWriteMessage(site: string, commandName: string): string {
   return (
     `${paint("31", "✗")} Refusing to run a write operation on live site "${site}" without confirmation.\n\n` +
     `  "${commandName}" changes data on a live (production) site.\n` +
-    "  Re-run with --yes to confirm, or run it in a terminal to answer the prompt.\n" +
+    "  Re-run with --allow-write to confirm, or run it in a terminal to answer the prompt.\n" +
     '  To experiment safely, use a test site (name ending in "-test", or a test_ API key).\n'
   );
 }
