@@ -241,8 +241,8 @@ ${sectionTitle("EXAMPLES")}
   chargebee auth add                     Connect a site interactively
   chargebee auth add --profile staging   Save credentials as staging
 
-Writes on live sites ask for confirmation (or need --yes): a site whose name
-doesn't end in -test, unless its API key starts with test_. Prefer
+Writes on live sites ask for confirmation (or need --allow-write): a site
+whose name doesn't end in -test, unless its API key starts with test_. Prefer
 CHARGEBEE_API_KEY over --api-key so the secret is not stored in shell history.
 
 --region (${REGIONS.join(" | ")}) records where the site is hosted and is used to

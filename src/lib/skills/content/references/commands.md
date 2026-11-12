@@ -233,10 +233,10 @@ A site is considered live unless:
 On a live site:
 
 - In a terminal, the CLI asks `Run "<command>" on LIVE site "<site>"?` (default No).
-- `-y` / `--yes` skips the prompt and runs the write.
-- Without a terminal, on a CI runner, in `--json` mode, or with a stdin JSON body, a write without `--yes` is refused with exit code `6` (`live_write_refused`). Declining the prompt also exits `6` (`live_write_declined`).
+- `--allow-write` skips the prompt and runs the write. The older `-y` / `--yes` still works but is deprecated and prints a warning.
+- Without a terminal, on a CI runner, in `--json` mode, or with a stdin JSON body, a write without `--allow-write` is refused with exit code `6` (`live_write_refused`). Declining the prompt also exits `6` (`live_write_declined`).
 
-Reads and explicitly allowed non-mutating operations (estimates, exports, hosted-page URLs, PDF downloads) run on live sites without confirmation. Only pass `--yes` on a live site when the user has explicitly confirmed that write.
+Reads and explicitly allowed non-mutating operations (estimates, exports, hosted-page URLs, PDF downloads) run on live sites without confirmation. Only pass `--allow-write` on a live site when the user has explicitly confirmed that write.
 
 ### Product Catalog
 

@@ -25,16 +25,17 @@ export function registerBusinessRuleset(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs business-ruleset activate\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "activate_a_business_ruleset", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "business-ruleset activate");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "activate_a_business_ruleset", opIdV1: "", method: "POST", uri: "/business_rulesets/{id}/activate", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "business-ruleset-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'business-ruleset-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "business-ruleset activate", opts.yes === true);
+      await ensureWriteAllowed("POST", "business-ruleset activate", opts);
       try {
         const client = await getClient();
         const result = await (client as any).businessRuleset.activate(resource.id, params);
@@ -50,16 +51,17 @@ export function registerBusinessRuleset(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs business-ruleset add-rules\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "add_business_rules_to_a_ruleset", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "business-ruleset add-rules");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "add_business_rules_to_a_ruleset", opIdV1: "", method: "POST", uri: "/business_rulesets/{id}/add_rules", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "business-ruleset-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'business-ruleset-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "business-ruleset add-rules", opts.yes === true);
+      await ensureWriteAllowed("POST", "business-ruleset add-rules", opts);
       try {
         const client = await getClient();
         const result = await (client as any).businessRuleset.addRules(resource.id, params);
@@ -74,14 +76,15 @@ export function registerBusinessRuleset(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs business-ruleset create\n")
-    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const fromStdin = readJsonMarker(json, command);
       const params = await loadOperationParams(opts.data ?? [], fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "create_a_business_ruleset", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "business-ruleset create");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "create_a_business_ruleset", opIdV1: "", method: "POST", uri: "/business_rulesets", dataFlags: opts.data ?? [], params, pcVersionFlag: opts.pcVersion });
-      await ensureWriteAllowed("POST", "business-ruleset create", opts.yes === true);
+      await ensureWriteAllowed("POST", "business-ruleset create", opts);
       try {
         const client = await getClient();
         const result = await (client as any).businessRuleset.create(params);
@@ -97,16 +100,17 @@ export function registerBusinessRuleset(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs business-ruleset deactivate\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "deactivate_a_business_ruleset", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "business-ruleset deactivate");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "deactivate_a_business_ruleset", opIdV1: "", method: "POST", uri: "/business_rulesets/{id}/deactivate", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "business-ruleset-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'business-ruleset-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "business-ruleset deactivate", opts.yes === true);
+      await ensureWriteAllowed("POST", "business-ruleset deactivate", opts);
       try {
         const client = await getClient();
         const result = await (client as any).businessRuleset.deactivate(resource.id, params);
@@ -122,16 +126,17 @@ export function registerBusinessRuleset(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs business-ruleset delete\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "delete_a_business_ruleset", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "business-ruleset delete");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "delete_a_business_ruleset", opIdV1: "", method: "POST", uri: "/business_rulesets/{id}/delete", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "business-ruleset-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'business-ruleset-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "business-ruleset delete", opts.yes === true);
+      await ensureWriteAllowed("POST", "business-ruleset delete", opts);
       try {
         const client = await getClient();
         const result = await (client as any).businessRuleset.delete(resource.id, params);
@@ -193,16 +198,17 @@ export function registerBusinessRuleset(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs business-ruleset remove-rules\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "remove_business_rules_from_a_ruleset", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "business-ruleset remove-rules");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "remove_business_rules_from_a_ruleset", opIdV1: "", method: "POST", uri: "/business_rulesets/{id}/remove_rules", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "business-ruleset-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'business-ruleset-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "business-ruleset remove-rules", opts.yes === true);
+      await ensureWriteAllowed("POST", "business-ruleset remove-rules", opts);
       try {
         const client = await getClient();
         const result = await (client as any).businessRuleset.removeRules(resource.id, params);
@@ -241,16 +247,17 @@ export function registerBusinessRuleset(parent: Command): void {
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
-    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")
+    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")
+    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())
     .addHelpText("after", "\n\u001b[1mDOCUMENTATION\u001b[0m\n  chargebee docs business-ruleset update\n")
-    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }, command: Command) => {
+    .action(async (id: string | undefined, json: string | undefined, opts: { data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }, command: Command) => {
       const resource = takeResourceId(id, json, command);
       const params = await loadOperationParams(opts.data ?? [], resource.fromStdin, command, { method: "POST", jsonInput: false, opIdV2: "update_a_business_ruleset", opIdV1: "", pcVersionFlag: opts.pcVersion });
       if (opts.codeSample !== "list") await ensureCatalogAllowed("pc2", "business-ruleset update");
       if (opts.codeSample) return handleCodeSample({ lang: opts.codeSample, opIdV2: "update_a_business_ruleset", opIdV1: "", method: "POST", uri: "/business_rulesets/{id}", dataFlags: opts.data ?? [], params, resourceId: resource.id, pathParamName: "business-ruleset-id", pcVersionFlag: opts.pcVersion });
       if (!resource.id) command.error("error: missing required argument 'business-ruleset-id'");
       assertResourceId(resource.id, command);
-      await ensureWriteAllowed("POST", "business-ruleset update", opts.yes === true);
+      await ensureWriteAllowed("POST", "business-ruleset update", opts);
       try {
         const client = await getClient();
         const result = await (client as any).businessRuleset.update(resource.id, params);

@@ -12,6 +12,7 @@ import {
 } from "../config/host.js";
 import { DEFAULT_REGION, parseRegion, type Region } from "../config/region.js";
 import {
+  DEPRECATED_YES_NOTICE,
   isWriteMethod,
   liveWriteDecision,
   liveWriteNotice,
@@ -382,11 +383,18 @@ export async function ensureCatalogAllowed(opCatalog: CatalogTag, commandName: s
 }
 
 /**
- * Require confirmation (prompt or `--yes`) for writes on live sites.
+ * Require confirmation (prompt or `--allow-write`) for writes on live sites.
+ * `yes` is the deprecated `-y/--yes` alias for `allowWrite`.
  * Unresolved credentials fail open so the API error surfaces.
  */
-export async function ensureWriteAllowed(method: string, commandName: string, yes = false): Promise<void> {
+export async function ensureWriteAllowed(
+  method: string,
+  commandName: string,
+  confirmation: { allowWrite?: boolean; yes?: boolean } = {},
+): Promise<void> {
   if (!isWriteMethod(method)) return;
+  if (confirmation.yes === true && confirmation.allowWrite !== true) diagnostic(DEPRECATED_YES_NOTICE);
+  const allowWrite = confirmation.allowWrite === true || confirmation.yes === true;
 
   let site: string;
   let apiKey: string;
@@ -398,7 +406,7 @@ export async function ensureWriteAllowed(method: string, commandName: string, ye
 
   // CI runners can allocate pseudo-terminals; nobody is there to answer the prompt.
   const interactive = canPrompt() && !detectIsCi();
-  const decision = liveWriteDecision({ method, site, apiKey, yes, canPrompt: interactive });
+  const decision = liveWriteDecision({ method, site, apiKey, allowWrite, canPrompt: interactive });
   if (decision === "allow") return;
 
   if (decision === "refuse") {

@@ -56,8 +56,8 @@ describe("isWriteMethod", () => {
 });
 
 describe("liveWriteDecision", () => {
-  const decide = (o: { method?: string; site?: string; apiKey?: string; yes?: boolean; canPrompt?: boolean }) =>
-    liveWriteDecision({ method: "POST", site: "acme", yes: false, canPrompt: false, ...o });
+  const decide = (o: { method?: string; site?: string; apiKey?: string; allowWrite?: boolean; canPrompt?: boolean }) =>
+    liveWriteDecision({ method: "POST", site: "acme", allowWrite: false, canPrompt: false, ...o });
 
   it("allows reads on any site, with or without a terminal", () => {
     expect(decide({ method: "GET" })).toBe("allow");
@@ -68,7 +68,7 @@ describe("liveWriteDecision", () => {
     expect(decide({ site: "acme-test" })).toBe("allow");
     expect(decide({ site: "acme-test", apiKey: "live_x" })).toBe("allow");
     expect(decide({ site: "acme", apiKey: "test_x" })).toBe("allow");
-    expect(decide({ site: "acme-test", yes: true })).toBe("allow");
+    expect(decide({ site: "acme-test", allowWrite: true })).toBe("allow");
   });
 
   it("asks for confirmation on a live site when a prompt is possible", () => {
@@ -81,9 +81,9 @@ describe("liveWriteDecision", () => {
     expect(decide({ method: "PUT" })).toBe("refuse");
   });
 
-  it("runs a live-site write confirmed with --yes, prompt or not", () => {
-    expect(decide({ yes: true })).toBe("allow_live");
-    expect(decide({ yes: true, canPrompt: true })).toBe("allow_live");
+  it("runs a live-site write confirmed with --allow-write, prompt or not", () => {
+    expect(decide({ allowWrite: true })).toBe("allow_live");
+    expect(decide({ allowWrite: true, canPrompt: true })).toBe("allow_live");
   });
 });
 
@@ -157,17 +157,17 @@ describe("generated write gate emission (resource+action allowlist)", () => {
 
   it("customer create stays gated (confirmed on live, allowed on test site)", () => {
     expect(isGated("POST", "customer.create")).toBe(true);
-    expect(liveWriteDecision({ method: "POST", site: "acme", yes: false, canPrompt: false })).toBe("refuse");
-    expect(liveWriteDecision({ method: "POST", site: "acme-test", yes: false, canPrompt: false })).toBe("allow");
+    expect(liveWriteDecision({ method: "POST", site: "acme", allowWrite: false, canPrompt: false })).toBe("refuse");
+    expect(liveWriteDecision({ method: "POST", site: "acme-test", allowWrite: false, canPrompt: false })).toBe("allow");
   });
 });
 
 describe("live-site write messages", () => {
-  it("refusal names the site and command and explains --yes", () => {
+  it("refusal names the site and command and explains --allow-write", () => {
     const msg = unconfirmedWriteMessage("acme", "customer create");
     expect(msg).toContain('Refusing to run a write operation on live site "acme"');
     expect(msg).toContain('"customer create"');
-    expect(msg).toContain("--yes");
+    expect(msg).toContain("--allow-write");
     expect(msg).toContain("name ending in \"-test\", or a test_ API key");
   });
 

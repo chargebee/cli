@@ -68,11 +68,11 @@ For important changes, retrieve the resource afterward or inspect the command re
 
 ### Live-site safety
 
-Write operations on live (production) sites change real billing data and need confirmation. In a terminal the CLI asks yes/no; without one (as when an agent runs it) the command is refused with exit code `6` unless `--yes` is passed.
+Write operations on live (production) sites change real billing data and need confirmation. In a terminal the CLI asks yes/no; without one (as when an agent runs it) the command is refused with exit code `6` unless `--allow-write` is passed.
 
 - Use a test site for create, update, and delete operations unless the user explicitly asks to change the live site.
-- Never add `--yes` to a write on a live site on your own. Before running it, tell the user the site and the exact command, and get their explicit confirmation for that write.
-- If a live-site write is refused, report the refusal and ask the user; do not retry with `--yes` automatically.
+- Never add `--allow-write` to a write on a live site on your own. Before running it, tell the user the site and the exact command, and get their explicit confirmation for that write.
+- If a live-site write is refused, report the refusal and ask the user; do not retry with `--allow-write` automatically.
 
 ### Product Catalog
 

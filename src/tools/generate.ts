@@ -507,9 +507,9 @@ function generateResourceFile(r: Resource): string {
       op.method.toUpperCase() !== "GET" && !isReadOnlyOperation(`${r.sdkName}.${op.sdkAction}`);
     const list = isListOp(op.cliCommand);
     const optsType = isWrite
-      ? `{ data?: string[]; codeSample?: string; pcVersion?: string; yes?: boolean }`
+      ? `{ data?: string[]; codeSample?: string; pcVersion?: string; allowWrite?: boolean; yes?: boolean }`
       : `{ data?: string[]; codeSample?: string; pcVersion?: string }`;
-    const writeCheck = `      await ensureWriteAllowed("${op.method}", "${r.cliName} ${op.cliCommand}", opts.yes === true);`;
+    const writeCheck = `      await ensureWriteAllowed("${op.method}", "${r.cliName} ${op.cliCommand}", opts);`;
     const dataHelp = list
       ? "Parameters as key=value. List filters require an operator suffix (id[is]=…). Bare keys: limit, offset, include_deleted."
       : "Request parameters in key=value format; repeat for multiple fields";
@@ -535,7 +535,9 @@ function generateResourceFile(r: Resource): string {
     // Preserve the existing override for scripts without foregrounding it in help.
     L.push(`    .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())`);
     if (isWrite) {
-      L.push(`    .option("-y, --yes", "Skip the confirmation prompt for writes on a live site")`);
+      L.push(`    .option("--allow-write", "Allow this write on a live site without a confirmation prompt")`);
+      // Deprecated alias kept for scripts written against v1.5.1; remove in the next major.
+      L.push(`    .addOption(new Option("-y, --yes", "Deprecated alias for --allow-write").hideHelp())`);
     }
     if (list) {
       L.push(`    .addHelpText("after", "${listHelp}")`);
