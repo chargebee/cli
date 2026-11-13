@@ -20,7 +20,7 @@ export function registerBusinessEntity(parent: Command): void {
   cmd
     .command("create")
     .argument("[json]", "'-' reads a JSON object from stdin.")
-    .description("Create a business_entity")
+    .description("Create a business entity")
     .option("-d, --data <pairs...>", "Request parameters in key=value format; repeat for multiple fields")
     .option("-s, --code-sample <lang>", "Generate code sample (curl, python, nodejs, go, ruby, java, php, dotnet, list)")
     .addOption(new Option("--pc-version <version>", "Product catalog version for the code sample (v1 or v2)").hideHelp())
