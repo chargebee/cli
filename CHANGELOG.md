@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.5.2](https://github.com/chargebee/cli/compare/v1.5.1...v1.5.2) (2026-11-13)
+
+
+### Bug Fixes
+
+* **cli:** rename live-site write confirmation flag to --allow-write ([b4eec6f](https://github.com/chargebee/cli/commit/b4eec6fb0989962e2557564e50dba4b06aa97bb7))
+* **codegen:** regenerate commands from latest OpenAPI spec ([dd71121](https://github.com/chargebee/cli/commit/dd711216aae6ea3cbb9fd8c6724837173f527438))
+* **deps:** bump chargebee to 3.35.0 ([b0be15d](https://github.com/chargebee/cli/commit/b0be15d9e4b7999d9abe0774237ccaed8d28506b))
+* **telemetry:** label auth add/switch events with the newly active site ([da82925](https://github.com/chargebee/cli/commit/da829257102232ce135da7af98a2326223e6e0e4))
+
 ## [1.5.1](https://github.com/chargebee/cli/compare/v1.5.0...v1.5.1) (2026-11-04)
 
 
