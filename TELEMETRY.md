@@ -84,7 +84,7 @@ A telemetry request has the following structure:
 | `pcv` | When available | Product Catalog version (`v1` or `v2`) of the configured site. |
 | `code_lang` | Code generation | Generated code language, such as `go` or `js`. |
 | `agent` | When detected | Supported agent runtime: `claude-code`, `cursor`, `codex` (sandboxed runs) or `gemini-cli`, detected from environment variables those tools set. |
-| `listen_phase` | `chargebee listen` | Tunnel lifecycle state: `established`, `closed`, or `error`. |
+| `listen_phase` | `chargebee listen` | Tunnel lifecycle state: `established` (first connection), `reconnected` (connected again after a drop), `closed`, or `error` (a connection attempt failed). |
 | `first_run` | First recorded event only | Date (`YYYY-MM-DD`) the first-run notice was shown. |
 
 ## What is Never Collected
