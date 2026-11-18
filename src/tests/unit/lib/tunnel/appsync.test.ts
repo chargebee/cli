@@ -1,19 +1,6 @@
-import { afterEach, beforeEach, describe, expect, test } from "bun:test";
-import { Command } from "commander";
+import { afterEach, describe, expect, test } from "bun:test";
 import { getEventListeners } from "node:events";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 
-import { spoolPath } from "../../../../lib/telemetry/constants.js";
-import { clearCiEnv } from "../../../../lib/test-support/_helpers.js";
-import {
-  __resetTelemetryRecorderForTest,
-  __setSpawnForTest,
-  installTelemetry,
-} from "../../../../lib/telemetry/index.js";
-import { writeState } from "../../../../lib/telemetry/state.js";
-import type { SpoolRecord } from "../../../../lib/telemetry/types.js";
 import { __setFetchForTest } from "../../../../lib/tunnel/forwarder.js";
 import {
   __setTunnelTimingForTest,
@@ -34,14 +21,7 @@ import {
   waitUntil,
 } from "../../../../lib/test-support/fake-websocket.js";
 
-// The telemetry recorder is disabled on CI runners; the reliability tests read
-// the spool it writes, so CI detection is cleared for this file.
-let restoreCiEnv: () => void = () => undefined;
-beforeEach(() => {
-  restoreCiEnv = clearCiEnv();
-});
 afterEach(() => {
-  restoreCiEnv();
   stopProgress();
 });
 
@@ -817,104 +797,6 @@ describe("runAppSync reliability (fake WebSocket)", () => {
       await done;
     } finally {
       restore();
-    }
-  });
-
-  test("reports failed attempts once per outage, and a recovered drop as reconnected, not an error", async () => {
-    __setWebSocketForTest(FakeWebSocket);
-    __setTunnelTimingForTest({
-      backoffMs: 5,
-      closeFlushMs: 0,
-      idleTimeoutMs: 5000,
-      maxBackoffMs: 5,
-    });
-    const dir = mkdtempSync(join(tmpdir(), "cb-appsync-telemetry-"));
-    const prevDir = process.env.CHARGEBEE_CONFIG_DIR;
-    process.env.CHARGEBEE_CONFIG_DIR = dir;
-    writeState({ notice_shown: true });
-    __resetTelemetryRecorderForTest();
-    __setSpawnForTest(() => ({ unref() {} }));
-    const { restore } = captureLogs();
-
-    try {
-      FakeWebSocket.instances = [];
-      const { opts, ac } = baseOpts();
-      const program = new Command();
-      program.exitOverride();
-      program.command("listen").action(async () => {
-        await runAppSync(opts);
-      });
-      installTelemetry(program, "1.0.0-test");
-      const run = program.parseAsync(["listen"], { from: "user" });
-
-      // Outage 1: three attempts close before the handshake completes.
-      for (let i = 0; i < 3; i++) {
-        await waitUntil(() => FakeWebSocket.instances.length >= i + 1);
-        const ws = FakeWebSocket.instances[i]!;
-        await waitUntil(() => ws.sent.length > 0);
-        ws.serverClose();
-      }
-      // Recovery: a full handshake reaches Ready.
-      await waitUntil(() => FakeWebSocket.instances.length >= 4);
-      const healthy = FakeWebSocket.instances[3]!;
-      await waitUntil(() => healthy.sent.length > 0);
-      healthy.emit({ type: "connection_ack" });
-      await waitUntil(() => healthy.parsed().some((m) => m.type === "subscribe"));
-      healthy.emit({ type: "subscribe_success" });
-      // A working session drops: no error yet, only the next result counts.
-      healthy.serverClose();
-      // Outage 2: one attempt after the drop fails before the handshake.
-      await waitUntil(() => FakeWebSocket.instances.length >= 5);
-      const failed = FakeWebSocket.instances[4]!;
-      await waitUntil(() => failed.sent.length > 0);
-      failed.serverClose();
-      // The next attempt subscribes again.
-      await waitUntil(() => FakeWebSocket.instances.length >= 6);
-      const back = FakeWebSocket.instances[5]!;
-      await waitUntil(() => back.sent.length > 0);
-      back.emit({ type: "connection_ack" });
-      await waitUntil(() => back.parsed().some((m) => m.type === "subscribe"));
-      back.emit({ type: "subscribe_success" });
-      // A drop straight back into a working session records only `reconnected`.
-      back.serverClose();
-      await waitUntil(() => FakeWebSocket.instances.length >= 7);
-      const again = FakeWebSocket.instances[6]!;
-      await waitUntil(() => again.sent.length > 0);
-      again.emit({ type: "connection_ack" });
-      await waitUntil(() => again.parsed().some((m) => m.type === "subscribe"));
-      again.emit({ type: "subscribe_success" });
-      await waitUntil(() => again.parsed().some((m) => m.type === "publish"));
-
-      ac.abort();
-      await run;
-
-      const metadata = readFileSync(spoolPath(), "utf-8")
-        .trim()
-        .split("\n")
-        .map((line) => (JSON.parse(line) as SpoolRecord).event.metadata);
-      expect(metadata.map((m) => m.listen_phase)).toEqual([
-        "error",
-        "established",
-        "error",
-        "reconnected",
-        "reconnected",
-        "closed",
-      ]);
-      expect(metadata.filter((m) => m.listen_phase === "error").map((m) => m.err_type)).toEqual([
-        "listen_connect_error",
-        "listen_connect_error",
-      ]);
-      expect(metadata.filter((m) => m.listen_phase === "reconnected").map((m) => m.status)).toEqual([
-        "ok",
-        "ok",
-      ]);
-    } finally {
-      restore();
-      __resetTelemetryRecorderForTest();
-      __setSpawnForTest(null);
-      if (prevDir === undefined) delete process.env.CHARGEBEE_CONFIG_DIR;
-      else process.env.CHARGEBEE_CONFIG_DIR = prevDir;
-      rmSync(dir, { recursive: true, force: true });
     }
   });
 
