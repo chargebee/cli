@@ -4,6 +4,7 @@ import {
   AppSyncErrorCode,
   classifyAppSyncFailure,
   handlerError,
+  isSessionExpired,
   listenUserMessage,
   parseHandlerError,
 } from "../../../../lib/tunnel/appsync-errors.js";
@@ -100,6 +101,20 @@ describe("classifyAppSyncFailure", () => {
       code: AppSyncErrorCode.APPSYNC_ERROR,
       permanent: false,
     });
+  });
+});
+
+describe("isSessionExpired", () => {
+  const classify = (message: string) => classifyAppSyncFailure({ errors: [{ message }] });
+
+  it("is true only for a CONTROL_FAILED heartbeat that ended in 404", () => {
+    expect(isSessionExpired(classify("CONTROL_FAILED:heartbeat:404"))).toBe(true);
+    expect(isSessionExpired(classify("CONTROL_FAILED:heartbeat:503"))).toBe(false);
+    expect(isSessionExpired(classify("CONTROL_FAILED:heartbeat"))).toBe(false);
+    expect(isSessionExpired(classify("ENABLE_FAILED:404"))).toBe(false);
+    expect(isSessionExpired(classifyAppSyncFailure({ errors: [{ errorType: "UnauthorizedException" }] }))).toBe(
+      false,
+    );
   });
 });
 

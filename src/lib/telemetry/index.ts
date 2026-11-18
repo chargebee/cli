@@ -28,7 +28,7 @@ import { detectInstallMethod } from "../update/index.js";
 import { knownCommandPath } from "./command-path.js";
 import type { SpoolRecord } from "./types.js";
 
-export type ListenPhase = "established" | "closed" | "error";
+export type ListenPhase = "established" | "reconnected" | "closed" | "error";
 
 /** Process start — duration is measured from here so it covers parse + action. */
 const PROCESS_START = Date.now();

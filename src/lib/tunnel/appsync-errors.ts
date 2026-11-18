@@ -138,6 +138,16 @@ export function classifyAppSyncFailure(msg: AppSyncErrorMessage): AppSyncFailure
 }
 
 /**
+ * True when a heartbeat was refused because Chargebee no longer holds the
+ * session (`CONTROL_FAILED:<op>:404`). Sessions expire 90 s after the last
+ * accepted heartbeat, and a heartbeat cannot revive one; only a new subscribe
+ * registers it again.
+ */
+export function isSessionExpired(failure: AppSyncFailure): boolean {
+  return failure.code === AppSyncErrorCode.CONTROL_FAILED && httpStatus(failure.detail) === 404;
+}
+
+/**
  * User-facing copy. No vendor or pipeline names (AppSync, Lambda, authorizer).
  */
 export function listenUserMessage(code: string, detail?: string): string {

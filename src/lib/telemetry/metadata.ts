@@ -14,7 +14,7 @@ export interface MetadataInput {
   errorType?: string;
   productCatalogVersion?: string;
   generatedResource?: string;
-  listenPhase?: "established" | "closed" | "error";
+  listenPhase?: "established" | "reconnected" | "closed" | "error";
   /** How this copy was installed (npm, github, pnpm, ...), from the update module. */
   installMethod?: string;
   /** Date (YYYY-MM-DD) the first-run notice was shown; set only on an install's first event. */
