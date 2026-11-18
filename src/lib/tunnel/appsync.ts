@@ -3,7 +3,12 @@ import { randomUUID } from "node:crypto";
 
 import type { WebhookMsg } from "../protocol/types.js";
 import { emitListenPhase } from "../telemetry/index.js";
-import { AppSyncErrorCode, classifyAppSyncFailure, listenUserMessage } from "./appsync-errors.js";
+import {
+  AppSyncErrorCode,
+  classifyAppSyncFailure,
+  isSessionExpired,
+  listenUserMessage,
+} from "./appsync-errors.js";
 import { forward } from "./forwarder.js";
 import * as display from "./display.js";
 
@@ -347,13 +352,19 @@ export async function runAppSync(opts: AppSyncOptions): Promise<RunAppSyncOutcom
   // from before and after a reconnect still forward in the order they arrived.
   const forwardQueue = new ForwardQueue(FORWARD_CONCURRENCY);
   let backoff = initialBackoffMs;
-  // One telemetry error event per outage, not one per failed attempt.
+  // A failed attempt is reported once per outage, not once per attempt.
   let outageReported = false;
+  // The first subscribe of this process is `established`; later ones are `reconnected`.
+  let everSubscribed = false;
 
   try {
     while (!opts.signal.aborted) {
       display.startProgress("Connecting webhook tunnel");
-      const outcome = await connectAppSync(opts, forwardQueue);
+      const outcome = await connectAppSync(
+        opts,
+        forwardQueue,
+        everSubscribed ? "reconnected" : "established",
+      );
 
       if (outcome.kind === "aborted" || opts.signal.aborted) return { kind: "aborted" };
 
@@ -367,9 +378,13 @@ export async function runAppSync(opts: AppSyncOptions): Promise<RunAppSyncOutcom
         return outcome;
       }
 
+      // A working session that dropped is not an error: the next successful
+      // subscribe reports `reconnected`. Only an attempt that never subscribed is.
       const wasSubscribed = outcome.subscribedMs !== undefined;
-      if (wasSubscribed) outageReported = false;
-      if (!outageReported) {
+      if (wasSubscribed) {
+        everSubscribed = true;
+        outageReported = false;
+      } else if (!outageReported) {
         emitListenPhase("error", "listen_connect_error");
         outageReported = true;
       }
@@ -391,7 +406,14 @@ export async function runAppSync(opts: AppSyncOptions): Promise<RunAppSyncOutcom
   }
 }
 
-function connectAppSync(opts: AppSyncOptions, forwardQueue: ForwardQueue): Promise<ConnectOutcome> {
+/** Disconnect reason after a heartbeat finds the session gone on Chargebee's side. */
+const SESSION_EXPIRED_REASON = "The listen session expired";
+
+function connectAppSync(
+  opts: AppSyncOptions,
+  forwardQueue: ForwardQueue,
+  subscribedPhase: "established" | "reconnected",
+): Promise<ConnectOutcome> {
   const {
     httpDomain,
     realtimeDomain,
@@ -498,6 +520,32 @@ function connectAppSync(opts: AppSyncOptions, forwardQueue: ForwardQueue): Promi
       closeSocket();
     }, connectTimeoutMs);
 
+    /** True from the first refused heartbeat until one is accepted again. */
+    let keepaliveFailing = false;
+
+    /**
+     * A refused heartbeat. The session gone (404) → reconnect, which registers
+     * it again. The key or site denied (401/403) → stop, as on connect.
+     * Anything else → keep the socket; the next heartbeat retries. Warn once
+     * per run of failures, not on every heartbeat.
+     */
+    const onKeepaliveFailure = (msg: ServerMessage) => {
+      const failure = classifyAppSyncFailure(msg);
+      if (failure.code === AppSyncErrorCode.APPSYNC_UNAUTHORIZED) {
+        finish({ kind: "permanent", reason: failure.reason, code: failure.code });
+        closeSocket();
+        return;
+      }
+      if (isSessionExpired(failure)) {
+        finish({ kind: "transient", reason: SESSION_EXPIRED_REASON, subscribedMs: subscribedMs() });
+        closeSocket();
+        return;
+      }
+      if (keepaliveFailing) return;
+      keepaliveFailing = true;
+      display.warn("Session keepalive failed; retrying");
+    };
+
     const armIdleTimer = () => {
       if (finished || idleThresholdMs <= 0) return;
       if (idleTimer !== undefined) clearTimeout(idleTimer);
@@ -546,7 +594,7 @@ function connectAppSync(opts: AppSyncOptions, forwardQueue: ForwardQueue): Promi
           connectDeadline = undefined;
           subscribedAt = Date.now();
           display.ready(forwardTo);
-          emitListenPhase("established");
+          emitListenPhase(subscribedPhase);
           publishControl("heartbeat");
           heartbeat = setInterval(() => publishControl("heartbeat"), heartbeatMs);
           armIdleTimer();
@@ -569,11 +617,17 @@ function connectAppSync(opts: AppSyncOptions, forwardQueue: ForwardQueue): Promi
           break;
         }
         case "publish_error":
-          display.warn("Session keepalive failed");
+          // After abort the only publish in flight is `disable`; its reply says nothing about heartbeats.
+          if (signal.aborted) break;
+          onKeepaliveFailure(msg);
           break;
         case "publish_success":
+          if (signal.aborted) break;
           if (Array.isArray(msg.failed) && msg.failed.length > 0) {
-            display.warn("Session keepalive failed");
+            onKeepaliveFailure({ errors: msg.failed });
+          } else if (keepaliveFailing) {
+            keepaliveFailing = false;
+            display.warn("Session keepalive restored");
           }
           break;
         case "broadcast_error":

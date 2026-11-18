@@ -202,13 +202,18 @@ function baseOpts(over: Partial<AppSyncOptions> = {}): {
   };
 }
 
-async function handshake(): Promise<{
+/**
+ * Start a run and complete its handshake. Pass `controller` to own the abort
+ * before the run starts, so `finally` can stop it even if a wait here fails.
+ */
+async function handshake(controller?: AbortController): Promise<{
   ws: FakeWebSocket;
   ac: AbortController;
   done: Promise<RunAppSyncOutcome>;
 }> {
   FakeWebSocket.instances = [];
-  const { opts, ac } = baseOpts();
+  const { opts, ac: own } = baseOpts(controller ? { signal: controller.signal } : {});
+  const ac = controller ?? own;
   const done = runAppSync(opts);
   await waitUntil(() => (FakeWebSocket.instances[0]?.sent.length ?? 0) > 0);
   const ws = FakeWebSocket.instances[0]!;
@@ -381,7 +386,7 @@ describe("runAppSync (fake WebSocket)", () => {
       ws.emit({ type: "publish_error", errors: [{ message: "throttled" }] });
       ws.emit({ type: "data", event: { event_type: "subscription_created" } });
       await waitUntil(() => logs.some((l) => l.includes("failed:")));
-      expect(logs).toContain("> Session keepalive failed");
+      expect(logs).toContain("> Session keepalive failed; retrying");
       expect(
         logs.some((l) =>
           l.includes("subscription_created \u2192 failed:") &&
@@ -436,7 +441,8 @@ describe("runAppSync (fake WebSocket)", () => {
       ws.emit({ type: "publish_success", failed: [{ index: 0 }] });
       ws.emit({ type: "publish_success", failed: [] });
       expect(logs).toContain("> A webhook event could not be delivered");
-      expect(logs.filter((l) => l === "> Session keepalive failed")).toHaveLength(1);
+      expect(logs.filter((l) => l === "> Session keepalive failed; retrying")).toHaveLength(1);
+      expect(logs.filter((l) => l === "> Session keepalive restored")).toHaveLength(1);
 
       ws.emit({
         type: "data",
@@ -634,7 +640,7 @@ describe("runAppSync reliability (fake WebSocket)", () => {
       FakeWebSocket.instances = [];
       const { opts, ac } = baseOpts();
       const done = runAppSync(opts);
-      // Never emit connection_ack  the deadline must fire on its own.
+      // Never emit connection_ack â€” the deadline must fire on its own.
       await waitUntil(() => FakeWebSocket.instances.length >= 2, 2000);
       expect(
         logs.some((l) =>
@@ -664,7 +670,7 @@ describe("runAppSync reliability (fake WebSocket)", () => {
       const { ws, ac, done } = await handshake();
       expect(ws.readyState).toBe(1);
 
-      // No "ka" or any other frame arrives  the socket goes idle after subscribing.
+      // No "ka" or any other frame arrives â€” the socket goes idle after subscribing.
       await waitUntil(() => FakeWebSocket.instances.length >= 2, 2000);
       expect(ws.readyState).toBe(3);
       expect(
@@ -814,7 +820,7 @@ describe("runAppSync reliability (fake WebSocket)", () => {
     }
   });
 
-  test("emits one telemetry error phase per outage, not one per failed attempt", async () => {
+  test("reports failed attempts once per outage, and a recovered drop as reconnected, not an error", async () => {
     __setWebSocketForTest(FakeWebSocket);
     __setTunnelTimingForTest({
       backoffMs: 5,
@@ -855,18 +861,53 @@ describe("runAppSync reliability (fake WebSocket)", () => {
       healthy.emit({ type: "connection_ack" });
       await waitUntil(() => healthy.parsed().some((m) => m.type === "subscribe"));
       healthy.emit({ type: "subscribe_success" });
-      // Outage 2.
+      // A working session drops: no error yet, only the next result counts.
       healthy.serverClose();
+      // Outage 2: one attempt after the drop fails before the handshake.
       await waitUntil(() => FakeWebSocket.instances.length >= 5);
+      const failed = FakeWebSocket.instances[4]!;
+      await waitUntil(() => failed.sent.length > 0);
+      failed.serverClose();
+      // The next attempt subscribes again.
+      await waitUntil(() => FakeWebSocket.instances.length >= 6);
+      const back = FakeWebSocket.instances[5]!;
+      await waitUntil(() => back.sent.length > 0);
+      back.emit({ type: "connection_ack" });
+      await waitUntil(() => back.parsed().some((m) => m.type === "subscribe"));
+      back.emit({ type: "subscribe_success" });
+      // A drop straight back into a working session records only `reconnected`.
+      back.serverClose();
+      await waitUntil(() => FakeWebSocket.instances.length >= 7);
+      const again = FakeWebSocket.instances[6]!;
+      await waitUntil(() => again.sent.length > 0);
+      again.emit({ type: "connection_ack" });
+      await waitUntil(() => again.parsed().some((m) => m.type === "subscribe"));
+      again.emit({ type: "subscribe_success" });
+      await waitUntil(() => again.parsed().some((m) => m.type === "publish"));
 
       ac.abort();
       await run;
 
-      const phases = readFileSync(spoolPath(), "utf-8")
+      const metadata = readFileSync(spoolPath(), "utf-8")
         .trim()
         .split("\n")
-        .map((line) => (JSON.parse(line) as SpoolRecord).event.metadata.listen_phase);
-      expect(phases).toEqual(["error", "established", "error", "closed"]);
+        .map((line) => (JSON.parse(line) as SpoolRecord).event.metadata);
+      expect(metadata.map((m) => m.listen_phase)).toEqual([
+        "error",
+        "established",
+        "error",
+        "reconnected",
+        "reconnected",
+        "closed",
+      ]);
+      expect(metadata.filter((m) => m.listen_phase === "error").map((m) => m.err_type)).toEqual([
+        "listen_connect_error",
+        "listen_connect_error",
+      ]);
+      expect(metadata.filter((m) => m.listen_phase === "reconnected").map((m) => m.status)).toEqual([
+        "ok",
+        "ok",
+      ]);
     } finally {
       restore();
       __resetTelemetryRecorderForTest();
@@ -874,6 +915,157 @@ describe("runAppSync reliability (fake WebSocket)", () => {
       if (prevDir === undefined) delete process.env.CHARGEBEE_CONFIG_DIR;
       else process.env.CHARGEBEE_CONFIG_DIR = prevDir;
       rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  /** Resolve with `"pending"` if `p` hasn't settled in `ms`, so a hung run still reaches cleanup. */
+  function within<T>(p: Promise<T>, ms = 2000): Promise<T | "pending"> {
+    return Promise.race([p, new Promise<"pending">((r) => setTimeout(() => r("pending"), ms))]);
+  }
+
+  for (const [label, frame] of [
+    ["publish_error", { type: "publish_error", errors: [{ message: "CONTROL_FAILED:heartbeat:404" }] }],
+    ["publish_success with failed", { type: "publish_success", failed: [{ message: "CONTROL_FAILED:heartbeat:404" }] }],
+  ] as const) {
+    test(`reconnects when a heartbeat finds the session expired (${label})`, async () => {
+      __setWebSocketForTest(FakeWebSocket);
+      __setTunnelTimingForTest({ backoffMs: 10, closeFlushMs: 0, idleTimeoutMs: 5000 });
+      const { logs, restore } = captureLogs();
+      const ac = new AbortController();
+      let done: Promise<RunAppSyncOutcome> | undefined;
+
+      try {
+        const run = await handshake(ac);
+        done = run.done;
+        run.ws.emit(frame);
+
+        await waitUntil(() => FakeWebSocket.instances.length >= 2, 2000);
+        expect(run.ws.readyState).toBe(3);
+        expect(
+          logs.some((l) => l.startsWith("> Disconnected: The listen session expired. Reconnecting in")),
+        ).toBe(true);
+        expect(logs).not.toContain("> Session keepalive failed; retrying");
+
+        // The new socket subscribes again, which registers a fresh session.
+        const next = FakeWebSocket.instances[1]!;
+        await waitUntil(() => next.sent.length > 0);
+        next.emit({ type: "connection_ack" });
+        await waitUntil(() => next.parsed().some((m) => m.type === "subscribe"));
+        expect(next.parsed().find((m) => m.type === "subscribe")?.channel).toBe(
+          "/webhooks/550e8400-e29b-41d4-a716-446655440000",
+        );
+      } finally {
+        ac.abort();
+        if (done) await within(done);
+        restore();
+      }
+    });
+  }
+
+  test("stops with a permanent outcome when a heartbeat is unauthorized", async () => {
+    __setWebSocketForTest(FakeWebSocket);
+    __setTunnelTimingForTest({ backoffMs: 10, closeFlushMs: 0, idleTimeoutMs: 5000 });
+    const { logs, restore } = captureLogs();
+    const ac = new AbortController();
+    let done: Promise<RunAppSyncOutcome> | undefined;
+
+    try {
+      const run = await handshake(ac);
+      done = run.done;
+      run.ws.emit({
+        type: "publish_error",
+        errors: [{ errorType: "UnauthorizedException", message: "denied" }],
+      });
+
+      expect(await within(done)).toEqual({
+        kind: "permanent",
+        reason: "Could not authorize the listen session.",
+        code: "APPSYNC_UNAUTHORIZED",
+      });
+      expect(run.ws.readyState).toBe(3);
+      expect(FakeWebSocket.instances).toHaveLength(1);
+      expect(logs.some((l) => l.includes("Reconnecting"))).toBe(false);
+    } finally {
+      ac.abort();
+      if (done) await within(done);
+      restore();
+    }
+  });
+
+  test("only warns on other heartbeat failures and keeps the socket", async () => {
+    __setWebSocketForTest(FakeWebSocket);
+    __setTunnelTimingForTest({ backoffMs: 10, closeFlushMs: 0, idleTimeoutMs: 5000 });
+    const { logs, restore } = captureLogs();
+    const ac = new AbortController();
+    let done: Promise<RunAppSyncOutcome> | undefined;
+
+    try {
+      const run = await handshake(ac);
+      done = run.done;
+      const { ws } = run;
+      // ESS down, its key misconfigured, or unreachable (no status): none end the session.
+      for (const message of [
+        "CONTROL_FAILED:heartbeat:503",
+        "CONTROL_FAILED:heartbeat:403",
+        "CONTROL_FAILED:heartbeat",
+      ]) {
+        ws.emit({ type: "publish_error", errors: [{ message }] });
+      }
+      await new Promise((r) => setTimeout(r, 30));
+
+      // One warning for the whole run of failures, not one per heartbeat.
+      const failing = () => logs.filter((l) => l === "> Session keepalive failed; retrying");
+      const restored = () => logs.filter((l) => l === "> Session keepalive restored");
+      expect(failing()).toHaveLength(1);
+      expect(restored()).toHaveLength(0);
+      expect(ws.readyState).toBe(1);
+      expect(FakeWebSocket.instances).toHaveLength(1);
+
+      // An accepted heartbeat ends the run; a later failure warns again.
+      ws.emit({ type: "publish_success" });
+      ws.emit({ type: "publish_success" });
+      expect(restored()).toHaveLength(1);
+      ws.emit({ type: "publish_error", errors: [{ message: "CONTROL_FAILED:heartbeat:503" }] });
+      expect(failing()).toHaveLength(2);
+      expect(ws.readyState).toBe(1);
+    } finally {
+      ac.abort();
+      if (done) await within(done);
+      restore();
+    }
+  });
+
+  test("ignores publish replies after shutdown starts (the reply to disable)", async () => {
+    __setWebSocketForTest(FakeWebSocket);
+    // Keep the socket open briefly after abort, as in production, so replies can still arrive.
+    __setTunnelTimingForTest({ backoffMs: 10, closeFlushMs: 50, idleTimeoutMs: 5000 });
+    const { logs, restore } = captureLogs();
+    const ac = new AbortController();
+    let done: Promise<RunAppSyncOutcome> | undefined;
+
+    try {
+      const run = await handshake(ac);
+      done = run.done;
+      const { ws } = run;
+      ws.emit({ type: "publish_error", errors: [{ message: "CONTROL_FAILED:heartbeat:503" }] });
+      expect(logs.filter((l) => l === "> Session keepalive failed; retrying")).toHaveLength(1);
+
+      ac.abort();
+      expect(ws.parsed().some((m) => (m.events as string[] | undefined)?.[0] === '{"op":"disable"}')).toBe(true);
+      // Replies to `disable` while the socket drains: none may report on heartbeats.
+      ws.emit({ type: "publish_success" });
+      ws.emit({ type: "publish_error", errors: [{ message: "CONTROL_FAILED:disable:404" }] });
+      ws.emit({ type: "publish_error", errors: [{ errorType: "UnauthorizedException" }] });
+
+      expect(await within(done)).toEqual({ kind: "aborted" });
+      expect(logs).not.toContain("> Session keepalive restored");
+      expect(logs.filter((l) => l === "> Session keepalive failed; retrying")).toHaveLength(1);
+      expect(logs.some((l) => l.includes("Reconnecting"))).toBe(false);
+      expect(FakeWebSocket.instances).toHaveLength(1);
+    } finally {
+      ac.abort();
+      if (done) await within(done);
+      restore();
     }
   });
 
