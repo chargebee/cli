@@ -202,13 +202,18 @@ function baseOpts(over: Partial<AppSyncOptions> = {}): {
   };
 }
 
-async function handshake(): Promise<{
+/**
+ * Start a run and complete its handshake. Pass `controller` to own the abort
+ * before the run starts, so `finally` can stop it even if a wait here fails.
+ */
+async function handshake(controller?: AbortController): Promise<{
   ws: FakeWebSocket;
   ac: AbortController;
   done: Promise<RunAppSyncOutcome>;
 }> {
   FakeWebSocket.instances = [];
-  const { opts, ac } = baseOpts();
+  const { opts, ac: own } = baseOpts(controller ? { signal: controller.signal } : {});
+  const ac = controller ?? own;
   const done = runAppSync(opts);
   await waitUntil(() => (FakeWebSocket.instances[0]?.sent.length ?? 0) > 0);
   const ws = FakeWebSocket.instances[0]!;
@@ -913,6 +918,11 @@ describe("runAppSync reliability (fake WebSocket)", () => {
     }
   });
 
+  /** Resolve with `"pending"` if `p` hasn't settled in `ms`, so a hung run still reaches cleanup. */
+  function within<T>(p: Promise<T>, ms = 2000): Promise<T | "pending"> {
+    return Promise.race([p, new Promise<"pending">((r) => setTimeout(() => r("pending"), ms))]);
+  }
+
   for (const [label, frame] of [
     ["publish_error", { type: "publish_error", errors: [{ message: "CONTROL_FAILED:heartbeat:404" }] }],
     ["publish_success with failed", { type: "publish_success", failed: [{ message: "CONTROL_FAILED:heartbeat:404" }] }],
@@ -921,13 +931,16 @@ describe("runAppSync reliability (fake WebSocket)", () => {
       __setWebSocketForTest(FakeWebSocket);
       __setTunnelTimingForTest({ backoffMs: 10, closeFlushMs: 0, idleTimeoutMs: 5000 });
       const { logs, restore } = captureLogs();
+      const ac = new AbortController();
+      let done: Promise<RunAppSyncOutcome> | undefined;
 
       try {
-        const { ws, ac, done } = await handshake();
-        ws.emit(frame);
+        const run = await handshake(ac);
+        done = run.done;
+        run.ws.emit(frame);
 
         await waitUntil(() => FakeWebSocket.instances.length >= 2, 2000);
-        expect(ws.readyState).toBe(3);
+        expect(run.ws.readyState).toBe(3);
         expect(
           logs.some((l) => l.startsWith("> Disconnected: The listen session expired. Reconnecting in")),
         ).toBe(true);
@@ -941,10 +954,9 @@ describe("runAppSync reliability (fake WebSocket)", () => {
         expect(next.parsed().find((m) => m.type === "subscribe")?.channel).toBe(
           "/webhooks/550e8400-e29b-41d4-a716-446655440000",
         );
-
-        ac.abort();
-        await done;
       } finally {
+        ac.abort();
+        if (done) await within(done);
         restore();
       }
     });
@@ -954,23 +966,28 @@ describe("runAppSync reliability (fake WebSocket)", () => {
     __setWebSocketForTest(FakeWebSocket);
     __setTunnelTimingForTest({ backoffMs: 10, closeFlushMs: 0, idleTimeoutMs: 5000 });
     const { logs, restore } = captureLogs();
+    const ac = new AbortController();
+    let done: Promise<RunAppSyncOutcome> | undefined;
 
     try {
-      const { ws, done } = await handshake();
-      ws.emit({
+      const run = await handshake(ac);
+      done = run.done;
+      run.ws.emit({
         type: "publish_error",
         errors: [{ errorType: "UnauthorizedException", message: "denied" }],
       });
 
-      await expect(done).resolves.toEqual({
+      expect(await within(done)).toEqual({
         kind: "permanent",
         reason: "Could not authorize the listen session.",
         code: "APPSYNC_UNAUTHORIZED",
       });
-      expect(ws.readyState).toBe(3);
+      expect(run.ws.readyState).toBe(3);
       expect(FakeWebSocket.instances).toHaveLength(1);
       expect(logs.some((l) => l.includes("Reconnecting"))).toBe(false);
     } finally {
+      ac.abort();
+      if (done) await within(done);
       restore();
     }
   });
@@ -979,9 +996,13 @@ describe("runAppSync reliability (fake WebSocket)", () => {
     __setWebSocketForTest(FakeWebSocket);
     __setTunnelTimingForTest({ backoffMs: 10, closeFlushMs: 0, idleTimeoutMs: 5000 });
     const { logs, restore } = captureLogs();
+    const ac = new AbortController();
+    let done: Promise<RunAppSyncOutcome> | undefined;
 
     try {
-      const { ws, ac, done } = await handshake();
+      const run = await handshake(ac);
+      done = run.done;
+      const { ws } = run;
       // ESS down, its key misconfigured, or unreachable (no status): none end the session.
       for (const message of [
         "CONTROL_FAILED:heartbeat:503",
@@ -1007,10 +1028,43 @@ describe("runAppSync reliability (fake WebSocket)", () => {
       ws.emit({ type: "publish_error", errors: [{ message: "CONTROL_FAILED:heartbeat:503" }] });
       expect(failing()).toHaveLength(2);
       expect(ws.readyState).toBe(1);
+    } finally {
+      ac.abort();
+      if (done) await within(done);
+      restore();
+    }
+  });
+
+  test("ignores publish replies after shutdown starts (the reply to disable)", async () => {
+    __setWebSocketForTest(FakeWebSocket);
+    // Keep the socket open briefly after abort, as in production, so replies can still arrive.
+    __setTunnelTimingForTest({ backoffMs: 10, closeFlushMs: 50, idleTimeoutMs: 5000 });
+    const { logs, restore } = captureLogs();
+    const ac = new AbortController();
+    let done: Promise<RunAppSyncOutcome> | undefined;
+
+    try {
+      const run = await handshake(ac);
+      done = run.done;
+      const { ws } = run;
+      ws.emit({ type: "publish_error", errors: [{ message: "CONTROL_FAILED:heartbeat:503" }] });
+      expect(logs.filter((l) => l === "> Session keepalive failed; retrying")).toHaveLength(1);
 
       ac.abort();
-      await done;
+      expect(ws.parsed().some((m) => (m.events as string[] | undefined)?.[0] === '{"op":"disable"}')).toBe(true);
+      // Replies to `disable` while the socket drains: none may report on heartbeats.
+      ws.emit({ type: "publish_success" });
+      ws.emit({ type: "publish_error", errors: [{ message: "CONTROL_FAILED:disable:404" }] });
+      ws.emit({ type: "publish_error", errors: [{ errorType: "UnauthorizedException" }] });
+
+      expect(await within(done)).toEqual({ kind: "aborted" });
+      expect(logs).not.toContain("> Session keepalive restored");
+      expect(logs.filter((l) => l === "> Session keepalive failed; retrying")).toHaveLength(1);
+      expect(logs.some((l) => l.includes("Reconnecting"))).toBe(false);
+      expect(FakeWebSocket.instances).toHaveLength(1);
     } finally {
+      ac.abort();
+      if (done) await within(done);
       restore();
     }
   });

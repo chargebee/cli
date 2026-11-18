@@ -617,9 +617,12 @@ function connectAppSync(
           break;
         }
         case "publish_error":
+          // After abort the only publish in flight is `disable`; its reply says nothing about heartbeats.
+          if (signal.aborted) break;
           onKeepaliveFailure(msg);
           break;
         case "publish_success":
+          if (signal.aborted) break;
           if (Array.isArray(msg.failed) && msg.failed.length > 0) {
             onKeepaliveFailure({ errors: msg.failed });
           } else if (keepaliveFailing) {
