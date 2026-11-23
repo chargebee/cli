@@ -33,6 +33,8 @@ import { registerEstimate } from "./estimate.js";
 import { registerEvent } from "./event.js";
 import { registerExport } from "./export.js";
 import { registerFeature } from "./feature.js";
+import { registerGatewayRequestLog } from "./gateway_request_log.js";
+import { registerGatewayWebhookLog } from "./gateway_webhook_log.js";
 import { registerGift } from "./gift.js";
 import { registerGrantBlock } from "./grant_block.js";
 import { registerHostedPage } from "./hosted_page.js";
@@ -53,6 +55,7 @@ import { registerOmnichannelOneTimeOrder } from "./omnichannel_one_time_order.js
 import { registerOmnichannelSubscription } from "./omnichannel_subscription.js";
 import { registerOmnichannelSubscriptionItem } from "./omnichannel_subscription_item.js";
 import { registerOrder } from "./order.js";
+import { registerOrganizationDetail } from "./organization_detail.js";
 import { registerPaymentIntent } from "./payment_intent.js";
 import { registerPaymentSchedule } from "./payment_schedule.js";
 import { registerPaymentScheduleScheme } from "./payment_schedule_scheme.js";
@@ -154,6 +157,10 @@ export function registerAll(rootCmd: Command): void {
   { const cmd = rootCmd.commands.find(c => c.name() === "export"); if (cmd) setCommandGroup(cmd, "resource"); }
   registerFeature(rootCmd);
   { const cmd = rootCmd.commands.find(c => c.name() === "feature"); if (cmd) setCommandGroup(cmd, "resource"); }
+  registerGatewayRequestLog(rootCmd);
+  { const cmd = rootCmd.commands.find(c => c.name() === "gateway-request-log"); if (cmd) setCommandGroup(cmd, "resource"); }
+  registerGatewayWebhookLog(rootCmd);
+  { const cmd = rootCmd.commands.find(c => c.name() === "gateway-webhook-log"); if (cmd) setCommandGroup(cmd, "resource"); }
   registerGift(rootCmd);
   { const cmd = rootCmd.commands.find(c => c.name() === "gift"); if (cmd) setCommandGroup(cmd, "resource"); }
   registerGrantBlock(rootCmd);
@@ -194,6 +201,8 @@ export function registerAll(rootCmd: Command): void {
   { const cmd = rootCmd.commands.find(c => c.name() === "omnichannel-subscription-item"); if (cmd) setCommandGroup(cmd, "resource"); }
   registerOrder(rootCmd);
   { const cmd = rootCmd.commands.find(c => c.name() === "order"); if (cmd) setCommandGroup(cmd, "resource"); }
+  registerOrganizationDetail(rootCmd);
+  { const cmd = rootCmd.commands.find(c => c.name() === "organization-detail"); if (cmd) setCommandGroup(cmd, "resource"); }
   registerPaymentIntent(rootCmd);
   { const cmd = rootCmd.commands.find(c => c.name() === "payment-intent"); if (cmd) setCommandGroup(cmd, "resource"); }
   registerPaymentSchedule(rootCmd);
