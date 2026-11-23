@@ -882,6 +882,26 @@ export const docsOperationIds: Record<string, Record<string, { v1: string; v2: s
       "v2": "update_a_feature"
     }
   },
+  "gateway-request-log": {
+    "list": {
+      "v1": "list_gateway_request_logs",
+      "v2": "list_gateway_request_logs"
+    },
+    "retrieve": {
+      "v1": "retrieve_a_gateway_request_log",
+      "v2": "retrieve_a_gateway_request_log"
+    }
+  },
+  "gateway-webhook-log": {
+    "list": {
+      "v1": "list_gateway_webhook_logs",
+      "v2": "list_gateway_webhook_logs"
+    },
+    "retrieve": {
+      "v1": "retrieve_a_gateway_webhook_log",
+      "v2": "retrieve_a_gateway_webhook_log"
+    }
+  },
   "gift": {
     "cancel": {
       "v1": "cancel_a_gift",
@@ -1468,6 +1488,20 @@ export const docsOperationIds: Record<string, Record<string, { v1: string; v2: s
     "update": {
       "v1": "update_an_order",
       "v2": "update_an_order"
+    }
+  },
+  "organization-detail": {
+    "create": {
+      "v1": "update_organization_details",
+      "v2": "update_organization_details"
+    },
+    "list": {
+      "v1": "list_organization_details",
+      "v2": "list_organization_details"
+    },
+    "retrieve": {
+      "v1": "retrieve_organization_details",
+      "v2": "retrieve_organization_details"
     }
   },
   "payment-intent": {
