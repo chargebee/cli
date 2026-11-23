@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.5.3](https://github.com/chargebee/cli/compare/v1.5.2...v1.5.3) (2026-11-23)
+
+
+### Bug Fixes
+
+* **cli:** add gateway-request-log, gateway-webhook-log and organization-detail commands ([96f7bac](https://github.com/chargebee/cli/commit/96f7bac6c2832e92a86e7a0a28db4bb2f58985aa))
+* **cli:** reconcile OpenAPI commands and code-sample generator ([5f80a72](https://github.com/chargebee/cli/commit/5f80a72ebefb6092f343f5e93957c53973145702))
+* **listen:** ignore publish replies once shutdown starts ([dfce78c](https://github.com/chargebee/cli/commit/dfce78c1be52c684e8115d827b8b08396456e79d))
+* **listen:** report reconnects as reconnected and recover expired sessions ([0ec2e49](https://github.com/chargebee/cli/commit/0ec2e49d9a5749243cd6f5ad7044d3fb795def35))
+
 ## [1.5.2](https://github.com/chargebee/cli/compare/v1.5.1...v1.5.2) (2026-11-13)
 
 
