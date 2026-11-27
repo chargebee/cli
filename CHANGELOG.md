@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.4](https://github.com/chargebee/cli/compare/v1.5.3...v1.5.4) (2026-11-27)
+
+
+### Bug Fixes
+
+* **cli:** reconcile OpenAPI commands and code-sample generator ([8e0fa46](https://github.com/chargebee/cli/commit/8e0fa463f7d3c1415a852eb4c17bfd8e78d311f7))
+
 ## [1.5.3](https://github.com/chargebee/cli/compare/v1.5.2...v1.5.3) (2026-11-23)
 
 
